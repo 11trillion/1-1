@@ -2,6 +2,7 @@ package com.oneonone.common.model;
 
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Version;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
 import java.time.LocalDateTime;
@@ -41,4 +42,9 @@ public abstract class BaseEntity {
 
     @Comment("삭제자")
     private Long deletedBy;
+
+    @Version
+    @Column(name = "version", nullable = false)
+    @Comment("버전")
+    private Long version;
 }

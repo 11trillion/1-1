@@ -1,10 +1,27 @@
 description = 'API Gateway for routing and filtering all microservices'
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    // Spring Cloud Config Client (Config 서버에서 설정 받아오기)
     implementation 'org.springframework.cloud:spring-cloud-starter-config'
+
+    // Spring Cloud Gateway (WebFlux 버전)
     implementation 'org.springframework.cloud:spring-cloud-starter-gateway-server-webflux'
+
+    // Monitoring
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    // Eureka Client (Service Discovery)
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+
+    // Spring Cloud LoadBalancer (Eureka + 로드밸런싱)
+    implementation 'org.springframework.cloud:spring-cloud-starter-loadbalancer'
+
+    // JWT (JJWT)
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+
+    // Test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }

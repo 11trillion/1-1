@@ -50,3 +50,5 @@ env.properties
 # Lock files
 *.lock
 
+*.tar
+*.class

@@ -35,18 +35,3 @@ out/
 
 ### VS Code ###
 .vscode/
-
-### .env ###
-env.properties
-*.env
-.env.local
-
-### Q Classes
-**/generated/
-
-# Binary/Cache Files
-*.bin
-
-# Lock files
-*.lock
-

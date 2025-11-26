@@ -9,7 +9,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class PointController {
 
     @GetMapping("/test")
-    public void test (){
+    public String test (){
         System.out.println("test");
+        return "좋아요";
     }
 }

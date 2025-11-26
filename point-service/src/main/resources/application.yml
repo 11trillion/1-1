@@ -1,15 +1,16 @@
 server:
-  port: ${USER_SERVICE_PORT}
+  port: 0
 
 spring:
   application:
-    name: user-service
+    name: point-service
   config:
-    import: "configserver:${CONFIG_SERVER_URL}"
-  profiles:
-    active: local
+    import: "configserver:"
+
 
 eureka:
   client:
     service-url:
-      defaultZone: ${EUREKA_DEFAULT_ZONE}
+      defaultZone: http://localhost:8761/eureka
+    register-with-eureka: true
+    fetch-registry: true

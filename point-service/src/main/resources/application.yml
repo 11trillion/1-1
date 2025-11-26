@@ -5,7 +5,7 @@ spring:
   application:
     name: point-service
   config:
-    import: "configserver:"
+    import: optional:"configserver:"
 
 
 eureka:

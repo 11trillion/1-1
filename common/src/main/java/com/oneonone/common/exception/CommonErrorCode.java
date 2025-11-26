@@ -18,7 +18,10 @@ public enum CommonErrorCode implements ErrorCode{
     METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, "C002", "지원하지 않는 HTTP 메서드입니다."),
     BAD_REQUEST(HttpStatus.BAD_REQUEST, "C003","요청 형식이 올바르지 않습니다."),
     NOT_FOUND(HttpStatus.NOT_FOUND, "C004","요청하신 경로를 찾을 수 없습니다."),
-    VALIDATION_ERROR(HttpStatus.BAD_REQUEST, "C005","Validation Error");
+    VALIDATION_ERROR(HttpStatus.BAD_REQUEST, "C005","잘못된 입력값입니다"),
+    SERVICE_ERROR(HttpStatus.SERVICE_UNAVAILABLE, "C006" , "서비스가 사용 불가 상태입니다."),
+    INVALID_HEADER_USER_ROLE(HttpStatus.BAD_REQUEST, "C007", "잘못된 X-User-Role 헤더입니다."),
+    ;
 
     private final HttpStatus httpStatus;
     private final String code;

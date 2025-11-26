@@ -1,10 +1,10 @@
-package com.oneonone.common;
+package com.oneonone.userservice;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class CommonApplicationTests {
+class UserServiceApplicationTests {
 
     @Test
     void contextLoads() {

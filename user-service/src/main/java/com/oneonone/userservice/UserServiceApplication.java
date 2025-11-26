@@ -1,13 +1,13 @@
-package com.oneonone.common;
+package com.oneonone.userservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class CommonApplication {
+public class UserServiceApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(CommonApplication.class, args);
+        SpringApplication.run(UserServiceApplication.class, args);
     }
 
 }

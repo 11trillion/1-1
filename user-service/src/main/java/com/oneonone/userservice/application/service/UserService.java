@@ -1,4 +1,5 @@
 package com.oneonone.userservice.application.service;
 
-public interface UserService {
+public class UserService {
+
 }

@@ -28,7 +28,8 @@ public class UserController {
                 request.getUsername(),
                 request.getPassword(),
                 request.getNickname(),
-                request.getSlackId()
+                request.getSlackId(),
+                request.getRole()
         );
         User user = userService.signUp(command);
         SignupResponse response = SignupResponse.from(user);

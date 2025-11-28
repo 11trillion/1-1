@@ -27,9 +27,11 @@ public class User extends BaseEntity {
     private String nickname;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private UserStatus status;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private UserRole role;
 
     @Column(nullable = false)
@@ -41,13 +43,14 @@ public class User extends BaseEntity {
     public static User create(String username,
                               String encodedPassword,
                               String nickname,
-                              String slackId) {
+                              String slackId,
+                              UserRole role) {
         return User.builder()
                 .username(username)
                 .password(encodedPassword)
                 .nickname(nickname)
                 .status(UserStatus.ACTIVE)
-                .role(UserRole.USER)
+                .role(role == null ? UserRole.USER : role)
                 .pointBalance(0L)
                 .slackId(slackId)
                 .build();

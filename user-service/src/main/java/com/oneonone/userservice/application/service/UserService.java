@@ -26,7 +26,8 @@ public class UserService {
                 command.username(),
                 encodedPassword,
                 command.nickname(),
-                command.slackId()
+                command.slackId(),
+                command.role()
         );
         return userRepository.save(user);
     }

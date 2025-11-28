@@ -1,5 +1,6 @@
 package com.oneonone.userservice.presentation.dto.request;
 
+import com.oneonone.common.enums.UserRole;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
@@ -21,4 +22,6 @@ public class SignupRequest {
 
     @NotBlank(message = "슬랙 ID는 필수입니다.")
     private String slackId;
+
+    private UserRole role;
 }

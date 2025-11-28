@@ -82,7 +82,7 @@ public class Game extends BaseEntity {
     }
 
     private static void validateTime(LocalDateTime startAt, LocalDateTime endAt) {
-        if (endAt != null && startAt.isBefore(endAt)) {
+        if (endAt != null && endAt.isBefore(startAt)) {
             throw new IllegalArgumentException("종료 시간은 시작 시간보다 이전일 수 없습니다.");
         }
     }

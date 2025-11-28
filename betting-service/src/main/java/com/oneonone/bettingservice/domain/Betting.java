@@ -1,7 +1,7 @@
 package com.oneonone.bettingservice.domain;
 
+import com.oneonone.common.model.BaseEntity;
 import jakarta.persistence.*;
-import jakarta.validation.groups.Default;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,14 +12,14 @@ import java.util.UUID;
 @Getter
 @Setter
 @Table(name = "p_betting")
-public class Betting {
+public class Betting extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "bet_id")
     private UUID id;
 
     @Column(name = "user_id", nullable = false)
-    private UUID userId;
+    private Long userId;
 
     @Column(name = "game_id", nullable = false)
     private UUID gameId;
@@ -38,7 +38,35 @@ public class Betting {
     @Column(name = "bet_result", nullable = false)
     private BetResult betResult = BetResult.PENDING;
 
+    // 생성
+    public static  Betting createBetting(
+            Long userId,
+            UUID gameId,
+            Integer betAmount,
+            BigDecimal odds,
+            BetType betType,
+            BetResult betResult
+    ){
+        Betting betting = new Betting();
+        betting.setUserId(userId);
+        betting.setGameId(gameId);
+        betting.setBetAmount(betAmount);
+        betting.setOdds(odds);
+        betting.setBetType(betType);
+        betting.setBetResult(betResult);
+        return betting;
+    }
 
-
-
+    // 수정
+    public void updateBetting(
+            Integer betAmount,
+            BigDecimal odds,
+            BetType betType,
+            BetResult betResult
+    ){
+        if(betResult != null) this.betAmount = betAmount;
+        if(odds != null) this.odds = odds;
+        if(betType != null) this.betType = betType;
+        if(betResult != null) this.betResult = betResult;
+    }
 }

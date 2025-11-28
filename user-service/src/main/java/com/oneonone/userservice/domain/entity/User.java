@@ -24,6 +24,9 @@ public class User extends BaseEntity {
     private String password;
 
     @Column(nullable = false)
+    private String nickname;
+
+    @Column(nullable = false)
     private UserStatus status;
 
     @Column(nullable = false)
@@ -34,4 +37,19 @@ public class User extends BaseEntity {
 
     @Column
     private String slackId;
+
+    public static User create(String username,
+                              String encodedPassword,
+                              String nickname,
+                              String slackId) {
+        return User.builder()
+                .username(username)
+                .password(encodedPassword)
+                .nickname(nickname)
+                .status(UserStatus.ACTIVE)
+                .role(UserRole.USER)
+                .pointBalance(0L)
+                .slackId(slackId)
+                .build();
+    }
 }

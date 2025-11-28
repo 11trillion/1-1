@@ -22,8 +22,6 @@ public record GameUpdateRequest (
         @Min(value = 0, message = "어웨이 팀 점수는 0 이상이어야 합니다.")
         int awayScore,
         @NotNull(message = "경기 상태는 필수입니다.")
-        GameStatus status,
-        @NotNull(message = "경기 결과는 필수입니다.")
-        GameResult result
+        GameStatus status
 ) {
 }

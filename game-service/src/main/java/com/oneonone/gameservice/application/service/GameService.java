@@ -1,9 +1,8 @@
 package com.oneonone.gameservice.application.service;
 
-import com.oneonone.gameservice.application.dto.GameCreateRequest;
-import com.oneonone.gameservice.application.dto.GameCreateResponse;
-import com.oneonone.gameservice.application.dto.GameResponse;
+import com.oneonone.gameservice.application.dto.*;
 import com.oneonone.gameservice.domain.entity.Game;
+import com.oneonone.gameservice.domain.entity.GameStatus;
 import com.oneonone.gameservice.infrastructure.repository.GameJPARepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +41,23 @@ public class GameService {
     public Game getGameById(@Valid @PathVariable UUID gameId) {
         return gameRepository.findById(gameId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 게임 id를 찾을 수 없습니다."));
+    }
+
+    @Transactional
+    public GameUpdateResponse updateGame(UUID gameId, GameUpdateRequest gameUpdateRequest) {
+        Game game = gameRepository.findById(gameId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 게임 id를 찾을 수 없습니다."));
+
+        game.update(
+                gameUpdateRequest.homeTeam(),
+                gameUpdateRequest.awayTeam(),
+                gameUpdateRequest.startAt(),
+                gameUpdateRequest.endAt(),
+                gameUpdateRequest.homeScore(),
+                gameUpdateRequest.awayScore(),
+                gameUpdateRequest.status()
+        );
+        return GameUpdateResponse.from(game);
     }
 
 }

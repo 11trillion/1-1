@@ -105,5 +105,52 @@ public class Game extends BaseEntity {
         this.result = GameResult.checkScore(homeScore, awayScore);
     }
 
+    public void update(
+            String homeTeam, String awayTeam, LocalDateTime startAt,
+            LocalDateTime endAt, int homeScore, int awayScore, GameStatus status) {
+
+        validateTeams(homeTeam, awayTeam);
+        validateScore(homeScore, awayScore);
+
+
+        this.homeTeam = homeTeam;
+        this.awayTeam = awayTeam;
+        this.startAt = startAt;
+        this.homeScore = homeScore;
+        this.awayScore = awayScore;
+
+        if (status == GameStatus.SCHEDULED) {
+            this.endAt = null;
+            this.status = GameStatus.SCHEDULED;
+            this.result = GameResult.WAIT;
+            return;
+        }
+
+        if (status == GameStatus.PROGRESS) {
+            this.endAt = null;
+            this.status = GameStatus.PROGRESS;
+            this.result = GameResult.WAIT;
+            return;
+        }
+
+        if (status == GameStatus.END) {
+            if (endAt == null) {
+                throw new IllegalArgumentException("종료 상태에서는 종료 시간이 필수입니다.");
+            }
+            validateTime(startAt, endAt);
+            this.endAt = endAt;
+            this.status = GameStatus.END;
+            this.result = GameResult.checkScore(homeScore, awayScore);
+            return;
+        }
+
+        // 나머지 상태는 기본 적용
+        this.status = status;
+        this.result = GameResult.checkScore(homeScore, awayScore);
+
+
+
+    }
+
 
 }

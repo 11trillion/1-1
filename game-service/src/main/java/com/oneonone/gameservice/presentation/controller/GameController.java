@@ -1,9 +1,7 @@
 package com.oneonone.gameservice.presentation.controller;
 
 import com.oneonone.common.response.ApiResponse;
-import com.oneonone.gameservice.application.dto.GameCreateRequest;
-import com.oneonone.gameservice.application.dto.GameCreateResponse;
-import com.oneonone.gameservice.application.dto.GameResponse;
+import com.oneonone.gameservice.application.dto.*;
 import com.oneonone.gameservice.application.service.GameService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -44,5 +42,14 @@ public class GameController {
     public ResponseEntity<ApiResponse<GameResponse>> getGameById(@Valid @PathVariable UUID gameId) {
         GameResponse result = GameResponse.from(gameService.getGameById(gameId));
         return ResponseEntity.ok(ApiResponse.success(result,"게임 단건조회 결과입니다."));
+    }
+
+    @Operation(summary = "게임 정보 수정", description = "게임의 정보를 수정합니다")
+    @PutMapping("/{gameId}")
+    public ResponseEntity<ApiResponse<GameUpdateResponse>> updateGame(
+            @Valid @PathVariable UUID gameId,
+            @RequestBody GameUpdateRequest gameUpdateRequest) {
+        GameUpdateResponse result = gameService.updateGame(gameId,gameUpdateRequest);
+        return ResponseEntity.ok(ApiResponse.success(result,"게임 정보 수정이 완료되었습니다."));
     }
 }

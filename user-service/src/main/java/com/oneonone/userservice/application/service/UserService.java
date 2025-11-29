@@ -6,6 +6,7 @@ import com.oneonone.userservice.application.command.SignupCommand;
 import com.oneonone.userservice.domain.entity.User;
 import com.oneonone.userservice.domain.repository.UserRepository;
 import com.oneonone.userservice.exception.UserErrorCode;
+import com.oneonone.userservice.presentation.dto.response.UserResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -32,5 +33,10 @@ public class UserService {
                 command.role()
         );
         return userRepository.save(user);
+    }
+
+    public UserResponse getMyProfile(Long userId) {
+        User user = userRepository.findByUserId(userId).orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
+        return UserResponse.from(user);
     }
 }

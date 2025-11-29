@@ -10,6 +10,7 @@ import com.oneonone.userservice.presentation.dto.request.LoginRequest;
 import com.oneonone.userservice.presentation.dto.request.SignupRequest;
 import com.oneonone.userservice.presentation.dto.response.LoginResponse;
 import com.oneonone.userservice.presentation.dto.response.SignupResponse;
+import com.oneonone.userservice.presentation.dto.response.UserResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -50,9 +51,8 @@ public class UserController {
 
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<UserResponse>> getMyProfile(
-            @RequestHeader("X-User-Id") Long userId,
-            @RequestHeader("X-User-Role") String role) {
-
+            @RequestHeader("X-User-Id") Long userId) {
+        UserResponse response = userService.getMyProfile(userId);
+        return ResponseEntity.ok(ApiResponse.success(response, "사용자 정보 조회 성공"));
     }
-    )
 }

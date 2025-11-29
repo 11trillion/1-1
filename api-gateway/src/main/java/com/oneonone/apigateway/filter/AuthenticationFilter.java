@@ -7,6 +7,7 @@ import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
@@ -33,11 +34,12 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                 Claims claims = jwtTokenProvider.getClaims(token);
                 String userId = claims.getSubject();
                 String role = claims.get(JwtTokenProvider.AUTHORIZATION_KEY, String.class);
-                exchange.getRequest().mutate()
+                ServerHttpRequest newRequest = exchange.getRequest().mutate()
                         .header("X-User-Id", userId)
                         .header("X-User-Role", role)
                         .build();
-                return chain.filter(exchange);
+                ServerWebExchange newExchange = exchange.mutate().request(newRequest).build();
+                return chain.filter(newExchange);
             } catch (Exception e) {
                 log.error("JWT processing error: {}", e.getMessage());
                 return onError(exchange, "JWT processing failed", HttpStatus.UNAUTHORIZED);

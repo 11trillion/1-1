@@ -21,18 +21,11 @@ spring:
               enabled: true  # ??? ?????? ?? ???? ???? ????? ??
               lower-case-service-id: true
           routes:
-#            # User Service Routes
-#            - id : user-service
-#              uri: lb://user-service
-#              predicates:
-#                - Path=/api/v1/users/**
-
             - id: user-service-public
               uri: lb://user-service
               predicates:
                 - Path=/api/v1/users/signup, /api/v1/users/login
 
-             # 인증이 필요한 경로
             - id: user-service-private
               uri: lb://user-service
               predicates:

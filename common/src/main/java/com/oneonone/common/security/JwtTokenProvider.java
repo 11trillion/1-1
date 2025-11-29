@@ -32,7 +32,7 @@ public class JwtTokenProvider {
     public void init() {
         log.info("Initializing JWT Token Provider");
         if (secretKey == null || secretKey.isEmpty())
-            throw new IllegalArgumentException("JWT secret key can not be null or empty"); // TODO: ErrorCode 수정
+            throw new IllegalArgumentException("JWT secret key can not be null or empty");
         byte[] bytes = Base64.getDecoder().decode(secretKey);
         key = Keys.hmacShaKeyFor(bytes);
         log.info("JWT Token Provider initialized successful");
@@ -53,7 +53,7 @@ public class JwtTokenProvider {
 
     public String substringToken(String token) {
         if (token != null && token.startsWith(BEARER_PREFIX)) return token.substring(BEARER_PREFIX.length());
-        throw new IllegalArgumentException("Invalid token format"); // TODO
+        throw new IllegalArgumentException("Invalid token format");
     }
 
     public boolean validateToken(String token) {
@@ -64,7 +64,7 @@ public class JwtTokenProvider {
                     .parseClaimsJws(token);
             return true;
         } catch (Exception e) {
-            log.error("Error: {}", e.getMessage()); // TODO: 에러 세분화
+            log.error("Error: {}", e.getMessage());
             return false;
         }
     }

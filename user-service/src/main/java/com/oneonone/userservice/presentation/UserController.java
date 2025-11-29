@@ -36,7 +36,7 @@ public class UserController {
         );
         User user = userService.signUp(command);
         SignupResponse response = SignupResponse.from(user);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response, "회원가입이 완료되었습니다."));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response, "회원가입 완료"));
     }
 
     @PostMapping("/login")
@@ -46,7 +46,7 @@ public class UserController {
                 request.password()
         );
         LoginResponse response = authService.login(command);
-        return ResponseEntity.ok(ApiResponse.success(response, "로그인 성공했습니다."));
+        return ResponseEntity.ok(ApiResponse.success(response, "로그인 성공"));
     }
 
     @GetMapping("/me")

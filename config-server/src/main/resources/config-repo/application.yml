@@ -2,7 +2,7 @@ jwt:
   secret:
     key: d2Y5ZjJrM2oyZjAyMzlqZjIwMzlqZnNkbGZrajIzMDlzZGZsa2oyMzA5YWJjMTIzNDU2Nzg5MA==  # Base64 인코딩된 키
   token:
-    expiration: 900000  # 15분 (밀리초)
+    expiration: 900000
 
 management:
   endpoints:

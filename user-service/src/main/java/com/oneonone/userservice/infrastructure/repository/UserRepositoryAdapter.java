@@ -5,6 +5,8 @@ import com.oneonone.userservice.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
 @RequiredArgsConstructor
 public class UserRepositoryAdapter implements UserRepository {
@@ -19,5 +21,10 @@ public class UserRepositoryAdapter implements UserRepository {
     @Override
     public boolean existsByUsername(String username) {
         return jpaUserRepository.existsByUsername(username);
+    }
+
+    @Override
+    public Optional<User> findByUsername(String username) {
+        return jpaUserRepository.findByUsername(username);
     }
 }

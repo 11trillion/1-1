@@ -27,7 +27,7 @@ public class Betting extends BaseEntity {
     @Column(name = "bet_amount", nullable = false)
     private Integer betAmount;
 
-    @Column(name = "oods", nullable = false)
+    @Column(name = "odds", nullable = false)
     private BigDecimal odds;
 
     @Enumerated(EnumType.STRING)

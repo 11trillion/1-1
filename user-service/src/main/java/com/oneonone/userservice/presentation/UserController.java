@@ -14,10 +14,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -30,11 +27,11 @@ public class UserController {
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse<SignupResponse>> signup(@Valid @RequestBody SignupRequest request) {
         SignupCommand command = new SignupCommand(
-                request.getUsername(),
-                request.getPassword(),
-                request.getNickname(),
-                request.getSlackId(),
-                request.getRole()
+                request.username(),
+                request.password(),
+                request.nickname(),
+                request.slackId(),
+                request.role()
         );
         User user = userService.signUp(command);
         SignupResponse response = SignupResponse.from(user);
@@ -44,10 +41,18 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponse>> login(@Valid @RequestBody LoginRequest request) {
         LoginCommand command = new LoginCommand(
-                request.getUsername(),
-                request.getPassword()
+                request.username(),
+                request.password()
         );
         LoginResponse response = authService.login(command);
         return ResponseEntity.ok(ApiResponse.success(response, "로그인 성공했습니다."));
     }
+
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<UserResponse>> getMyProfile(
+            @RequestHeader("X-User-Id") Long userId,
+            @RequestHeader("X-User-Role") String role) {
+
+    }
+    )
 }

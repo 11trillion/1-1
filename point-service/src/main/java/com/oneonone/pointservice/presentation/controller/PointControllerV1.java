@@ -3,11 +3,13 @@ package com.oneonone.pointservice.presentation.controller;
 import com.oneonone.common.response.ApiResponse;
 import com.oneonone.pointservice.application.PointServiceV1;
 import com.oneonone.pointservice.domain.entity.Point;
+import com.oneonone.pointservice.domain.enums.PointStatus;
 import com.oneonone.pointservice.presentation.request.CreatePointRequest;
 import com.oneonone.pointservice.presentation.request.UpdatePointStatusRequest;
 import com.oneonone.pointservice.presentation.response.PointResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -47,7 +49,12 @@ public class PointControllerV1 {
     @GetMapping
     public ApiResponse<Map<String, Object>> getPoints(
             @RequestParam Long userId,
-            @RequestParam(required = false) String status,
+            @RequestParam(required = false) PointStatus status,
+            @PageableDefault(
+                    size = 20,
+                    sort = "createdAt",
+                    direction = Sort.Direction.DESC
+            )
             Pageable pageable) {
 
         Page<PointResponse> page = pointServiceV1.getPoints(userId, status, pageable);
@@ -59,7 +66,10 @@ public class PointControllerV1 {
                         "size", page.getSize(),
                         "totalElements", page.getTotalElements(),
                         "totalPages", page.getTotalPages(),
-                        "hasNext", page.hasNext()
+                        "hasNext", page.hasNext(),
+                        "hasPrevious", page.hasPrevious(),
+                        "isFirst", page.isFirst(),
+                        "isLast", page.isLast()
                 )
         );
 

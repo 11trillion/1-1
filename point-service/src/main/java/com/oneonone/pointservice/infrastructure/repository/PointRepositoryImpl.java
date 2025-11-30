@@ -4,6 +4,8 @@ import com.oneonone.pointservice.domain.entity.Point;
 import com.oneonone.pointservice.domain.enums.PointStatus;
 import com.oneonone.pointservice.domain.repository.PointRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -26,12 +28,12 @@ public class PointRepositoryImpl implements PointRepository {
     }
 
     @Override
-    public List<Point> findByUserId(Long userId) {
-        return pointJpaRepository.findByUserId(userId);
+    public Page<Point> findByUserId(Long userId, Pageable pageable) {
+        return pointJpaRepository.findByUserId(userId, pageable);
     }
 
     @Override
-    public List<Point> findByUserIdAndStatus(Long userId, PointStatus pointStatus) {
-        return pointJpaRepository.findByUserIdAndStatus(userId, pointStatus);
+    public Page<Point> findByUserIdAndStatus(Long userId, PointStatus pointStatus, Pageable pageable) {
+        return pointJpaRepository.findByUserIdAndStatus(userId, pointStatus, pageable);
     }
 }

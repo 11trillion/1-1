@@ -41,23 +41,14 @@ public class PointServiceV1 {
         return pointRepository.save(point);
     }
 
-    public Page<PointResponse> getPoints(Long userId, String status, Pageable pageable) {
-        List<Point> points;
-
+    public Page<PointResponse> getPoints(Long userId, PointStatus status, Pageable pageable) {
+        Page<Point> page;
         if (status != null) {
-            points = pointRepository.findByUserIdAndStatus(userId, PointStatus.valueOf(status));
+            page = pointRepository.findByUserIdAndStatus(userId, status, pageable);
         } else {
-            points = pointRepository.findByUserId(userId);
+            page = pointRepository.findByUserId(userId, pageable);
         }
-
-        int start = (int) pageable.getOffset();
-        int end = Math.min(start + pageable.getPageSize(), points.size());
-        List<PointResponse> content = points.subList(start, end)
-                .stream()
-                .map(PointResponse::from)
-                .collect(Collectors.toList());
-
-        return new PageImpl<>(content, pageable, points.size());
+        return page.map(PointResponse::from);
     }
 }
 

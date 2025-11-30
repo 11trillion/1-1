@@ -4,12 +4,12 @@ import com.oneonone.common.response.ApiResponse;
 import com.oneonone.pointservice.application.PointServiceV1;
 import com.oneonone.pointservice.domain.entity.Point;
 import com.oneonone.pointservice.presentation.request.CreatePointRequest;
+import com.oneonone.pointservice.presentation.request.UpdatePointStatusRequest;
 import com.oneonone.pointservice.presentation.response.PointResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,5 +27,15 @@ public class PointControllerV1 {
         );
         PointResponse pointResponse = PointResponse.from(point);
         return ApiResponse.success(pointResponse, "포인트 생성 성공");
+    }
+
+    @PatchMapping("/{pointId}/status")
+    public ApiResponse<PointResponse> updatePointStatus(
+            @PathVariable("pointId") UUID pointId,
+            @RequestBody UpdatePointStatusRequest request
+    ) {
+        Point updatedPoint = pointServiceV1.updatePointStatus(pointId, request.getStatus());
+        PointResponse pointResponse = PointResponse.from(updatedPoint);
+        return ApiResponse.success(pointResponse, "포인트 상태 변경 성공");
     }
 }

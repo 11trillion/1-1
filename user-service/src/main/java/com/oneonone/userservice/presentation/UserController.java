@@ -61,7 +61,7 @@ public class UserController {
     @PatchMapping("/me")
     public ResponseEntity<ApiResponse<UserResponse>> updateMyProfile(
             @RequestHeader("X-User-Id") Long userId,
-            @RequestBody UpdateUserRequest request) {
+            @Valid @RequestBody UpdateUserRequest request) {
         UpdateUserCommand command = new UpdateUserCommand(
                 request.password(),
                 request.nickname(),

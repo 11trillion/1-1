@@ -39,6 +39,7 @@ public class UserService {
         return UserResponse.from(user);
     }
 
+    @Transactional
     public UserResponse updateMyProfile(Long userId, UpdateUserCommand command) {
         User user = findUserById(userId);
         if (command.nickname() != null && userRepository.existsByNickname(command.nickname())) {

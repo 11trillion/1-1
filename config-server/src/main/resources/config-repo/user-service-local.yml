@@ -1,8 +1,0 @@
-server:
-  port: ${USER_SERVICE_PORT}
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: refresh

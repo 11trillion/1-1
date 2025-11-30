@@ -1,10 +1,12 @@
 package com.oneonone.pointservice.infrastructure.repository;
 
 import com.oneonone.pointservice.domain.entity.Point;
+import com.oneonone.pointservice.domain.enums.PointStatus;
 import com.oneonone.pointservice.domain.repository.PointRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -21,5 +23,15 @@ public class PointRepositoryImpl implements PointRepository {
     @Override
     public Optional<Point> findById(UUID pointId) {
         return pointJpaRepository.findById(pointId);
+    }
+
+    @Override
+    public List<Point> findByUserId(Long userId) {
+        return pointJpaRepository.findByUserId(userId);
+    }
+
+    @Override
+    public List<Point> findByUserIdAndStatus(Long userId, PointStatus pointStatus) {
+        return pointJpaRepository.findByUserIdAndStatus(userId, pointStatus);
     }
 }

@@ -5,7 +5,7 @@ spring:
   application:
     name: point-service
   datasource:
-    url: jdbc:postgresql://oneonone-postgres:5432/oneonone?currentSchema=points
+    url: jdbc:postgresql://localhost:5432/oneonone
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
@@ -18,7 +18,7 @@ spring:
       hibernate:
         format_sql: true
         show_sql: true
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+        dialect:
         default_schema: points
 
 management:

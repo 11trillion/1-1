@@ -3,11 +3,13 @@ package com.oneonone.userservice.presentation;
 import com.oneonone.common.response.ApiResponse;
 import com.oneonone.userservice.application.command.LoginCommand;
 import com.oneonone.userservice.application.command.SignupCommand;
+import com.oneonone.userservice.application.command.UpdateUserCommand;
 import com.oneonone.userservice.application.service.AuthService;
 import com.oneonone.userservice.application.service.UserService;
 import com.oneonone.userservice.domain.entity.User;
 import com.oneonone.userservice.presentation.dto.request.LoginRequest;
 import com.oneonone.userservice.presentation.dto.request.SignupRequest;
+import com.oneonone.userservice.presentation.dto.request.UpdateUserRequest;
 import com.oneonone.userservice.presentation.dto.response.LoginResponse;
 import com.oneonone.userservice.presentation.dto.response.SignupResponse;
 import com.oneonone.userservice.presentation.dto.response.UserResponse;
@@ -53,6 +55,19 @@ public class UserController {
     public ResponseEntity<ApiResponse<UserResponse>> getMyProfile(
             @RequestHeader("X-User-Id") Long userId) {
         UserResponse response = userService.getMyProfile(userId);
-        return ResponseEntity.ok(ApiResponse.success(response, "사용자 정보 조회 성공"));
+        return ResponseEntity.ok(ApiResponse.success(response, "내 정보 조회 성공"));
+    }
+
+    @PatchMapping("/me")
+    public ResponseEntity<ApiResponse<UserResponse>> updateMyProfile(
+            @RequestHeader("X-User-Id") Long userId,
+            @RequestBody UpdateUserRequest request) {
+        UpdateUserCommand command = new UpdateUserCommand(
+                request.password(),
+                request.nickname(),
+                request.slackId()
+        );
+        UserResponse response = userService.updateMyProfile(userId, command);
+        return ResponseEntity.ok(ApiResponse.success(response, "내 정보 업데이트 성공"));
     }
 }

@@ -2,6 +2,7 @@ package com.oneonone.userservice.application.service;
 
 import com.oneonone.common.exception.BusinessException;
 import com.oneonone.userservice.application.command.SignupCommand;
+import com.oneonone.userservice.application.command.UpdateUserCommand;
 import com.oneonone.userservice.domain.entity.User;
 import com.oneonone.userservice.domain.repository.UserRepository;
 import com.oneonone.userservice.exception.UserErrorCode;
@@ -34,7 +35,25 @@ public class UserService {
     }
 
     public UserResponse getMyProfile(Long userId) {
-        User user = userRepository.findByUserId(userId).orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
+        User user = findUserById(userId);
         return UserResponse.from(user);
+    }
+
+    public UserResponse updateMyProfile(Long userId, UpdateUserCommand command) {
+        User user = findUserById(userId);
+        if (command.nickname() != null && userRepository.existsByNickname(command.nickname())) {
+            throw new BusinessException(UserErrorCode.INVALID_NICKNAME);
+        }
+        String encodedPw = command.password() != null ? passwordEncoder.encode(command.password()) : null;
+        user.updateMyProfile(
+                encodedPw,
+                command.nickname(),
+                command.slackId());
+        return UserResponse.from(user);
+    }
+
+    private User findUserById(Long userId) {
+        return userRepository.findByUserId(userId)
+                .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
     }
 }

@@ -1,8 +1,10 @@
 package com.oneonone.userservice.domain.entity;
 
 import com.oneonone.common.enums.UserRole;
+import com.oneonone.common.exception.BusinessException;
 import com.oneonone.common.model.BaseEntity;
 import com.oneonone.userservice.domain.enums.UserStatus;
+import com.oneonone.userservice.exception.UserErrorCode;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -54,5 +56,21 @@ public class User extends BaseEntity {
                 .pointBalance(0L)
                 .slackId(slackId)
                 .build();
+    }
+
+    public void updateMyProfile(String password,
+                              String nickname,
+                              String slackId) {
+        if (password != null && !password.isBlank()) this.password = password;
+        if (nickname != null) {
+            validate(nickname);
+            this.nickname = nickname;
+        }
+        if (slackId != null) this.slackId = slackId;
+    }
+
+    public void validate(String nickname) {
+        if (nickname.length() < 2) throw new BusinessException(UserErrorCode.INVALID_NICKNAME);
+        // TODO: slack ID 등 검증 필요 시 추가
     }
 }

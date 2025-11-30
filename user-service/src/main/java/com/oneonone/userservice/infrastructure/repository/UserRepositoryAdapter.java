@@ -32,4 +32,9 @@ public class UserRepositoryAdapter implements UserRepository {
     public Optional<User> findByUserId(Long userId) {
         return jpaUserRepository.findByUserId(userId);
     }
+
+    @Override
+    public boolean existsByNickname(String nickname) {
+        return jpaUserRepository.existsByNickname(nickname);
+    }
 }

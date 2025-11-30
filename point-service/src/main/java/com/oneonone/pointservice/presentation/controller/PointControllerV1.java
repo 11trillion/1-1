@@ -1,5 +1,6 @@
 package com.oneonone.pointservice.presentation.controller;
 
+import com.oneonone.common.response.ApiResponse;
 import com.oneonone.pointservice.application.PointServiceV1;
 import com.oneonone.pointservice.domain.entity.Point;
 import com.oneonone.pointservice.presentation.request.CreatePointRequest;
@@ -17,13 +18,14 @@ public class PointControllerV1 {
     private final PointServiceV1 pointServiceV1;;
 
     @PostMapping
-    public PointResponse createPoint(@RequestBody CreatePointRequest request){
+    public ApiResponse<PointResponse> createPoint(@RequestBody CreatePointRequest request){
         Point point = pointServiceV1.createPoint(
                 request.getPointType(),
                 request.getAmount(),
                 request.getDescription(),
                 request.getUserId()
         );
-        return PointResponse.from(point);
+        PointResponse pointResponse = PointResponse.from(point);
+        return ApiResponse.success(pointResponse, "포인트 생성 성공");
     }
 }

@@ -70,4 +70,11 @@ public class UserController {
         UserResponse response = userService.updateMyProfile(userId, command);
         return ResponseEntity.ok(ApiResponse.success(response, "내 정보 업데이트 성공"));
     }
+
+    @DeleteMapping("/me")
+    public ResponseEntity<ApiResponse<Void>> deleteMyProfile(
+            @RequestHeader("X-User-Id") Long userId) {
+        userService.deleteMyProfile(userId);
+        return ResponseEntity.noContent().build();
+    }
 }

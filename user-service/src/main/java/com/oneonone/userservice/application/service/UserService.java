@@ -53,6 +53,12 @@ public class UserService {
         return UserResponse.from(user);
     }
 
+    @Transactional
+    public void deleteMyProfile(Long userId) {
+        User user = findUserById(userId);
+//        user.softDelete(userId); // TODO: 주석 해제
+    }
+
     private User findUserById(Long userId) {
         return userRepository.findByUserId(userId)
                 .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));

@@ -47,4 +47,9 @@ public abstract class BaseEntity {
     @Column(name = "version", nullable = false)
     @Comment("버전")
     private Long version;
+
+    public void softDelete(Long userId){
+        this.deletedBy = userId;
+        this.deletedAt = LocalDateTime.now();
+    }
 }

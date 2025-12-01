@@ -1,6 +1,13 @@
 spring:
   application:
     name: betting-service
+  config:
+    import: "configserver:"
+  cloud:
+    config:
+      discovery:
+        enabled: true
+        service-id: config-server
 
 Server:
   port: 0

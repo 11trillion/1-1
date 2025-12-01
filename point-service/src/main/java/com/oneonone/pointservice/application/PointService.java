@@ -39,13 +39,20 @@ public class PointService {
         return pointRepository.save(point);
     }
 
-    public Page<PointResponse> getPoints(Long userId, PointStatus status, Pageable pageable) {
-        Page<Point> page;
-        if (status != null) {
-            page = pointRepository.findByUserIdAndStatus(userId, status, pageable);
-        } else {
-            page = pointRepository.findByUserId(userId, pageable);
+    public Page<PointResponse> getPoints(Long userId, String status, Pageable pageable) {
+        PointStatus pointStatus = null;
+        if (status != null && !status.isBlank()) {
+            try {
+                pointStatus = PointStatus.valueOf(status.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                throw new BusinessException(PointErrorCode.INVALID_STATUS);
+            }
         }
+
+        Page<Point> page = (pointStatus != null)
+                ? pointRepository.findByUserIdAndStatus(userId, pointStatus, pageable)
+                : pointRepository.findByUserId(userId, pageable);
+
         return page.map(PointResponse::from);
     }
 

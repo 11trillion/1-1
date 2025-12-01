@@ -17,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -39,7 +40,7 @@ public class PointController {
             description = "포인트를 생성합니다. 생성된 포인트는 기본적으로 PENDING 상태입니다."
     )
     @PostMapping
-    public ApiResponse<PointResponse> createPoint(
+    public ResponseEntity<ApiResponse<PointResponse>> createPoint(
             @Parameter(description = "포인트 생성 요청 정보", required = true)
             @RequestBody CreatePointRequest request
     ){
@@ -50,7 +51,7 @@ public class PointController {
                 request.getUserId()
         );
         PointResponse pointResponse = PointResponse.from(point);
-        return ApiResponse.success(pointResponse, "포인트 생성 성공");
+        return ResponseEntity.ok(ApiResponse.success(pointResponse, "포인트 생성 성공"));
     }
 
     // ======================
@@ -61,7 +62,7 @@ public class PointController {
             description = "포인트의 상태를 변경합니다. SUCCESS 상태인 포인트는 변경할 수 없습니다."
     )
     @PatchMapping("/{pointId}/status")
-    public ApiResponse<PointResponse> updatePointStatus(
+    public ResponseEntity<ApiResponse<PointResponse>> updatePointStatus(
             @Parameter(description = "포인트 ID", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
             @PathVariable UUID pointId,
 
@@ -70,7 +71,7 @@ public class PointController {
     ) {
         Point updatedPoint = pointService.updatePointStatus(pointId, request.getStatus());
         PointResponse pointResponse = PointResponse.from(updatedPoint);
-        return ApiResponse.success(pointResponse, "포인트 상태 변경 성공");
+        return ResponseEntity.ok(ApiResponse.success(pointResponse, "포인트 상태 변경 성공"));
     }
 
     // ======================
@@ -81,7 +82,7 @@ public class PointController {
             description = "사용자의 포인트 내역을 조회합니다. 상태(PENDING, SUCCESS, FAILED)로 필터링할 수 있습니다."
     )
     @GetMapping
-    public ApiResponse<Page<PointResponse>> getPoints(
+    public ResponseEntity<ApiResponse<Page<PointResponse>>> getPoints(
             @Parameter(description = "사용자 ID", example = "1001", required = true)
             @RequestParam Long userId,
 
@@ -95,23 +96,7 @@ public class PointController {
                     direction = Sort.Direction.DESC
             )
             Pageable pageable) {
-
-        PointStatus pointStatus = null;
-
-        if (status != null) {
-            if (status.isBlank()) {
-                throw new BusinessException(PointErrorCode.INVALID_STATUS);
-            }
-            try {
-                pointStatus = PointStatus.valueOf(status.toUpperCase());
-            } catch (IllegalArgumentException e) {
-                throw new BusinessException(PointErrorCode.INVALID_STATUS);
-            }
-        }
-
-        Page<PointResponse> result =
-                pointService.getPoints(userId, pointStatus, pageable);
-
-        return ApiResponse.success(result, "포인트 조회 성공");
+        Page<PointResponse> result = pointService.getPoints(userId, status, pageable);
+        return ResponseEntity.ok(ApiResponse.success(result, "포인트 조회 성공"));
     }
 }

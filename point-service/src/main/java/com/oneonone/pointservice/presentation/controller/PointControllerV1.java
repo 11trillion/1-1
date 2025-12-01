@@ -1,7 +1,9 @@
 package com.oneonone.pointservice.presentation.controller;
 
+import com.oneonone.common.exception.BusinessException;
 import com.oneonone.common.response.ApiResponse;
 import com.oneonone.pointservice.application.PointServiceV1;
+import com.oneonone.pointservice.domain.PointErrorCode;
 import com.oneonone.pointservice.domain.entity.Point;
 import com.oneonone.pointservice.domain.enums.PointStatus;
 import com.oneonone.pointservice.presentation.request.CreatePointRequest;
@@ -47,9 +49,9 @@ public class PointControllerV1 {
     }
 
     @GetMapping
-    public ApiResponse<Map<String, Object>> getPoints(
+    public ApiResponse<Page<PointResponse>> getPoints(
             @RequestParam Long userId,
-            @RequestParam(required = false) PointStatus status,
+            @RequestParam(required = false)  String status,
             @PageableDefault(
                     size = 20,
                     sort = "createdAt",
@@ -57,21 +59,21 @@ public class PointControllerV1 {
             )
             Pageable pageable) {
 
-        Page<PointResponse> page = pointServiceV1.getPoints(userId, status, pageable);
+        PointStatus pointStatus = null;
 
-        Map<String, Object> result = Map.of(
-                "content", page.getContent(),
-                "pageInfo", Map.of(
-                        "page", page.getNumber(),
-                        "size", page.getSize(),
-                        "totalElements", page.getTotalElements(),
-                        "totalPages", page.getTotalPages(),
-                        "hasNext", page.hasNext(),
-                        "hasPrevious", page.hasPrevious(),
-                        "isFirst", page.isFirst(),
-                        "isLast", page.isLast()
-                )
-        );
+        if (status != null) {
+            if (status.isBlank()) {
+                throw new BusinessException(PointErrorCode.INVALID_STATUS);
+            }
+            try {
+                pointStatus = PointStatus.valueOf(status.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                throw new BusinessException(PointErrorCode.INVALID_STATUS);
+            }
+        }
+
+        Page<PointResponse> result =
+                pointServiceV1.getPoints(userId, pointStatus, pageable);
 
         return ApiResponse.success(result, "포인트 조회 성공");
     }

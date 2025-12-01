@@ -1,4 +1,4 @@
-package com.oneonone.pointservice.application;
+package com.oneonone.pointservice.application.service;
 
 import com.oneonone.common.exception.BusinessException;
 import com.oneonone.pointservice.domain.PointErrorCode;

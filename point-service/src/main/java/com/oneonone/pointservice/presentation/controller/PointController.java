@@ -1,7 +1,7 @@
 package com.oneonone.pointservice.presentation.controller;
 
 import com.oneonone.common.response.ApiResponse;
-import com.oneonone.pointservice.application.PointService;
+import com.oneonone.pointservice.application.service.PointService;
 import com.oneonone.pointservice.domain.entity.Point;
 import com.oneonone.pointservice.presentation.dto.CreatePointRequest;
 import com.oneonone.pointservice.presentation.dto.UpdatePointStatusRequest;

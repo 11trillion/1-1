@@ -3,6 +3,8 @@ package com.oneonone.gameservice.infrastructure.repository;
 import com.oneonone.gameservice.domain.entity.Game;
 import com.oneonone.gameservice.domain.repository.GameRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -24,7 +26,7 @@ public class GameRepositoryImpl implements GameRepository {
     }
 
     @Override
-    public List<Game> findAll() {
-        return gameJPARepository.findAll();
+    public Page<Game> findAll(Pageable pageable) {
+        return gameJPARepository.findAll(pageable);
     }
 }

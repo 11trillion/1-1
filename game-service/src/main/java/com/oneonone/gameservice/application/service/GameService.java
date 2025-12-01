@@ -2,10 +2,11 @@ package com.oneonone.gameservice.application.service;
 
 import com.oneonone.gameservice.application.dto.*;
 import com.oneonone.gameservice.domain.entity.Game;
-import com.oneonone.gameservice.domain.entity.GameStatus;
 import com.oneonone.gameservice.infrastructure.repository.GameJPARepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -33,9 +34,9 @@ public class GameService {
         return GameCreateResponse.from(game);
     }
 
-    public List<GameResponse> getAllGames() {
-        List<Game> games = gameRepository.findAll();
-        return games.stream().map(GameResponse::from).toList();
+    public Page<GameResponse> getAllGames(Pageable pageable) {
+        Page<Game> page = gameRepository.findAll(pageable);
+        return page.map(GameResponse::from);
     }
 
     public Game getGameById(@Valid @PathVariable UUID gameId) {

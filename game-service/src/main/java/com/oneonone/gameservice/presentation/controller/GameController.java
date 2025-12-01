@@ -7,6 +7,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,15 +35,22 @@ public class GameController {
 
     @Operation(summary = "전체 게임 조회" , description = "전체 게임을 조회한다.")
     @GetMapping
-    public ResponseEntity<ApiResponse<List<GameResponse>>> getAllGames() {
-        List<GameResponse> list = gameService.getAllGames();
-        return ResponseEntity.ok(ApiResponse.success(list,"게임 조회 결과입니다."));
+    public ResponseEntity<ApiResponse<Page<GameResponse>>> getAllGames(
+            @PageableDefault (
+                    size = 20,
+                    sort = "createdAt",
+                    direction = Sort.Direction.DESC
+            ) Pageable pageable
+    ) {
+        Page<GameResponse> result = gameService.getAllGames(pageable);
+        return ResponseEntity.ok(ApiResponse.success(result,"게임 조회 결과입니다."));
 
     }
 
     @Operation(summary = "게임 단건 조회" , description = "한 게임의 대한 정보를 조회한다.")
     @GetMapping("/{gameId}")
-    public ResponseEntity<ApiResponse<GameResponse>> getGameById(@Valid @PathVariable UUID gameId) {
+    public ResponseEntity<ApiResponse<GameResponse>> getGameById(
+            @Valid @PathVariable UUID gameId) {
         GameResponse result = GameResponse.from(gameService.getGameById(gameId));
         return ResponseEntity.ok(ApiResponse.success(result,"게임 단건조회 결과입니다."));
     }

@@ -8,6 +8,8 @@ spring:
     import: "configserver:"
 
 
+
+
 eureka:
   client:
     service-url:

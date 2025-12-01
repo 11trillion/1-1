@@ -95,6 +95,12 @@ public class UserService {
         return MasterUserResponse.from(userInfo);
     }
 
+    @Transactional
+    public void deleteByMaster(Long id, Long userId) {
+        User user = findUserById(userId);
+        user.softDelete(id);
+    }
+
     private User findUserById(Long userId) {
         return userRepository.findByUserIdAndDeletedAtIsNull(userId)
                 .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));

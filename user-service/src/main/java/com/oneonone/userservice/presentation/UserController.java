@@ -121,4 +121,14 @@ public class UserController {
         MasterUserResponse response = userService.updateUser(userId, command);
         return ResponseEntity.ok(ApiResponse.success(response, "사용자 정보 업데이트 성공"));
     }
+
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<ApiResponse<Void>> deleteUser(
+            @RequestHeader("X-User-Id") Long id,
+            @RequestHeader("X-User-Role") String role,
+            @PathVariable Long userId) {
+        if (!role.equals("MASTER")) throw new BusinessException(UserErrorCode.FORBIDDEN);
+        userService.deleteByMaster(id, userId);
+        return ResponseEntity.noContent().build();
+    }
 }

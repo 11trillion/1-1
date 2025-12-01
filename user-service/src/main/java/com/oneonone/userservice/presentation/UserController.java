@@ -1,5 +1,6 @@
 package com.oneonone.userservice.presentation;
 
+import com.oneonone.common.enums.UserRole;
 import com.oneonone.common.exception.BusinessException;
 import com.oneonone.common.response.ApiResponse;
 import com.oneonone.userservice.application.command.*;
@@ -82,7 +83,7 @@ public class UserController {
     public ResponseEntity<ApiResponse<Page<MasterUserResponse>>> getUserList(
             @RequestHeader("X-User-Role") String role,
             @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        if (!role.equals("MASTER")) throw new BusinessException(UserErrorCode.FORBIDDEN);
+        if (!UserRole.valueOf(role).equals(UserRole.MASTER)) throw new BusinessException(UserErrorCode.FORBIDDEN);
         Page<MasterUserResponse> response = userService.getAllUsers(pageable);
         return ResponseEntity.ok(ApiResponse.success(response, "사용자 목록 조회 성공"));
     }
@@ -91,7 +92,7 @@ public class UserController {
     public ResponseEntity<ApiResponse<MasterUserResponse>> getUserDetail(
             @RequestHeader("X-User-Role") String role,
             @PathVariable Long userId) {
-        if (!role.equals("MASTER")) throw new BusinessException(UserErrorCode.FORBIDDEN);
+        if (!UserRole.valueOf(role).equals(UserRole.MASTER)) throw new BusinessException(UserErrorCode.FORBIDDEN);
         MasterUserResponse response = userService.getUser(userId);
         return ResponseEntity.ok(ApiResponse.success(response, "사용자 조회 성공"));
     }
@@ -101,7 +102,7 @@ public class UserController {
             @RequestHeader("X-User-Role") String role,
             @RequestBody UpdateMasterRequest request,
             @PathVariable Long userId) {
-        if (!role.equals("MASTER")) throw new BusinessException(UserErrorCode.FORBIDDEN);
+        if (!UserRole.valueOf(role).equals(UserRole.MASTER)) throw new BusinessException(UserErrorCode.FORBIDDEN);
         UpdateMasterCommand command = new UpdateMasterCommand(
                 request.nickname(),
                 request.role(),
@@ -118,7 +119,7 @@ public class UserController {
             @RequestHeader("X-User-Id") Long id,
             @RequestHeader("X-User-Role") String role,
             @PathVariable Long userId) {
-        if (!role.equals("MASTER")) throw new BusinessException(UserErrorCode.FORBIDDEN);
+        if (!UserRole.valueOf(role).equals(UserRole.MASTER)) throw new BusinessException(UserErrorCode.FORBIDDEN);
         userService.deleteByMaster(id, userId);
         return ResponseEntity.noContent().build();
     }
@@ -127,7 +128,7 @@ public class UserController {
     public ResponseEntity<ApiResponse<PointResponse>> getPoint(
             @RequestHeader("X-User-Role") String role,
             @PathVariable Long userId) {
-        if (!role.equals("MASTER")) throw new BusinessException(UserErrorCode.FORBIDDEN);
+        if (!UserRole.valueOf(role).equals(UserRole.MASTER)) throw new BusinessException(UserErrorCode.FORBIDDEN);
         PointResponse response = userService.getPoint(userId);
         return ResponseEntity.ok(ApiResponse.success(response, "사용자 포인트 조회 성공"));
     }
@@ -137,7 +138,7 @@ public class UserController {
             @RequestHeader("X-User-Role") String role,
             @PathVariable Long userId,
             @RequestBody PointRequest request) {
-        if (!role.equals("MASTER")) throw new BusinessException(UserErrorCode.FORBIDDEN);
+        if (!UserRole.valueOf(role).equals(UserRole.MASTER)) throw new BusinessException(UserErrorCode.FORBIDDEN);
         UpdatePointCommand command = new UpdatePointCommand(
                 request.amount());
         PointResponse response = userService.updatePoint(userId, command);

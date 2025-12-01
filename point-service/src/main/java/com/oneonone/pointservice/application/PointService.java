@@ -1,5 +1,6 @@
 package com.oneonone.pointservice.application;
 
+import com.oneonone.common.exception.BusinessException;
 import com.oneonone.pointservice.domain.PointErrorCode;
 import com.oneonone.pointservice.domain.entity.Point;
 import com.oneonone.pointservice.domain.enums.PointStatus;
@@ -28,12 +29,12 @@ public class PointService {
     @Transactional
     public Point updatePointStatus(UUID pointId, PointStatus status) {
         Point point = pointRepository.findById(pointId)
-                .orElseThrow(() -> new IllegalArgumentException(PointErrorCode.POINT_NOT_FOUND.getMessage() + pointId));
+                .orElseThrow(() -> new BusinessException(PointErrorCode.POINT_NOT_FOUND));
 
         try {
             point.changeStatus(status);
         } catch (IllegalStateException e) {
-            throw new IllegalArgumentException(PointErrorCode.STATUS_CANNOT_CHANGE.getMessage());
+            throw new BusinessException(PointErrorCode.STATUS_CANNOT_CHANGE);
         }
         return pointRepository.save(point);
     }

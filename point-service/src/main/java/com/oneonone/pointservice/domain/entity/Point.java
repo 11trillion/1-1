@@ -1,5 +1,6 @@
 package com.oneonone.pointservice.domain.entity;
 
+import com.oneonone.common.exception.BusinessException;
 import com.oneonone.common.model.BaseEntity;
 import com.oneonone.pointservice.domain.PointErrorCode;
 import com.oneonone.pointservice.domain.enums.PointStatus;
@@ -39,7 +40,7 @@ public class Point extends BaseEntity {
     // Point 생성자 (도메인 규칙 적용)
     public Point(PointType type, int amount, String description, Long userId) {
         if (amount <= 0) {
-            throw new IllegalArgumentException(PointErrorCode.INVALID_AMOUNT.getMessage());
+            throw new BusinessException(PointErrorCode.INVALID_AMOUNT);
         }
         this.pointType = type;
         this.amount = amount;
@@ -50,7 +51,7 @@ public class Point extends BaseEntity {
 
     public void changeStatus(PointStatus newStatus) {
         if (this.status == PointStatus.SUCCESS) {
-            throw new IllegalArgumentException(PointErrorCode.STATUS_CANNOT_CHANGE.getMessage());
+            throw new BusinessException(PointErrorCode.STATUS_CANNOT_CHANGE);
         }
         this.status = newStatus;
     }

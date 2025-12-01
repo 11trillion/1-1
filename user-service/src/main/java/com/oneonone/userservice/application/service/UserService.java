@@ -2,11 +2,13 @@ package com.oneonone.userservice.application.service;
 
 import com.oneonone.common.exception.BusinessException;
 import com.oneonone.userservice.application.command.SignupCommand;
+import com.oneonone.userservice.application.command.UpdateMasterCommand;
 import com.oneonone.userservice.application.command.UpdateUserCommand;
 import com.oneonone.userservice.application.dto.UserInfo;
 import com.oneonone.userservice.domain.entity.User;
 import com.oneonone.userservice.domain.repository.UserRepository;
 import com.oneonone.userservice.exception.UserErrorCode;
+import com.oneonone.userservice.presentation.dto.request.UpdateMasterRequest;
 import com.oneonone.userservice.presentation.dto.response.MasterUserResponse;
 import com.oneonone.userservice.presentation.dto.response.UserResponse;
 import lombok.RequiredArgsConstructor;
@@ -76,9 +78,25 @@ public class UserService {
         return MasterUserResponse.from(userInfo);
     }
 
-    private User findUserById(Long userId) {
-        return userRepository.findByUserId(userId)
-                .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
+    @Transactional
+    public MasterUserResponse updateUser(Long userId, UpdateMasterCommand command) {
+        User user = findUserById(userId);
+        if (command.nickname() != null && userRepository.existsByNickname(command.nickname())) {
+            throw new BusinessException(UserErrorCode.INVALID_NICKNAME);
+        }
+        user.updateByMaster(
+                command.nickname(),
+                command.role(),
+                command.status(),
+                command.pointBalance(),
+                command.slackId()
+        );
+        UserInfo userInfo = UserInfo.from(user);
+        return MasterUserResponse.from(userInfo);
     }
 
+    private User findUserById(Long userId) {
+        return userRepository.findByUserIdAndDeletedAtIsNull(userId)
+                .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
+    }
 }

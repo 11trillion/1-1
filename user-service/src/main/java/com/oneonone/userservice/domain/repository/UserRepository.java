@@ -15,7 +15,7 @@ public interface UserRepository {
 
     Optional<User> findByUsername(String username);
 
-    Optional<User> findByUserId(Long userId);
+    Optional<User> findByUserIdAndDeletedAtIsNull(Long userId);
 
     boolean existsByNickname(String nickname);
 

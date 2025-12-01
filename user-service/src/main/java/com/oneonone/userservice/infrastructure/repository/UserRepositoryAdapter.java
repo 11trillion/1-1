@@ -32,8 +32,8 @@ public class UserRepositoryAdapter implements UserRepository {
     }
 
     @Override
-    public Optional<User> findByUserId(Long userId) {
-        return jpaUserRepository.findByUserId(userId);
+    public Optional<User> findByUserIdAndDeletedAtIsNull(Long userId) {
+        return jpaUserRepository.findByUserIdAndDeletedAtIsNull(userId);
     }
 
     @Override

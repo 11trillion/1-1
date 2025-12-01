@@ -4,6 +4,7 @@ import com.oneonone.common.exception.BusinessException;
 import com.oneonone.common.response.ApiResponse;
 import com.oneonone.userservice.application.command.LoginCommand;
 import com.oneonone.userservice.application.command.SignupCommand;
+import com.oneonone.userservice.application.command.UpdateMasterCommand;
 import com.oneonone.userservice.application.command.UpdateUserCommand;
 import com.oneonone.userservice.application.service.AuthService;
 import com.oneonone.userservice.application.service.UserService;
@@ -11,6 +12,7 @@ import com.oneonone.userservice.domain.entity.User;
 import com.oneonone.userservice.exception.UserErrorCode;
 import com.oneonone.userservice.presentation.dto.request.LoginRequest;
 import com.oneonone.userservice.presentation.dto.request.SignupRequest;
+import com.oneonone.userservice.presentation.dto.request.UpdateMasterRequest;
 import com.oneonone.userservice.presentation.dto.request.UpdateUserRequest;
 import com.oneonone.userservice.presentation.dto.response.LoginResponse;
 import com.oneonone.userservice.presentation.dto.response.SignupResponse;
@@ -101,5 +103,22 @@ public class UserController {
         if (!role.equals("MASTER")) throw new BusinessException(UserErrorCode.FORBIDDEN);
         MasterUserResponse response = userService.getUser(userId);
         return ResponseEntity.ok(ApiResponse.success(response, "사용자 조회 성공"));
+    }
+
+    @PatchMapping("/{userId}")
+    public ResponseEntity<ApiResponse<MasterUserResponse>> updateUser(
+            @RequestHeader("X-User-Role") String role,
+            @RequestBody UpdateMasterRequest request,
+            @PathVariable Long userId) {
+        if (!role.equals("MASTER")) throw new BusinessException(UserErrorCode.FORBIDDEN);
+        UpdateMasterCommand command = new UpdateMasterCommand(
+                request.nickname(),
+                request.role(),
+                request.status(),
+                request.pointBalance(),
+                request.slackId()
+        );
+        MasterUserResponse response = userService.updateUser(userId, command);
+        return ResponseEntity.ok(ApiResponse.success(response, "사용자 정보 업데이트 성공"));
     }
 }

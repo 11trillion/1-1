@@ -69,6 +69,21 @@ public class User extends BaseEntity {
         if (slackId != null) this.slackId = slackId;
     }
 
+    public void updateByMaster(String nickname,
+                               UserRole role,
+                               UserStatus status,
+                               Long pointBalance,
+                               String slackId) {
+        if (nickname != null) {
+            validate(nickname);
+            this.nickname = nickname;
+        }
+        if (role != null) this.role = role;
+        if (status != null) this.status = status;
+        if (pointBalance != null) this.pointBalance = pointBalance;
+        if (slackId != null) this.slackId = slackId;
+    }
+
     public void validate(String nickname) {
         if (nickname.length() < 2) throw new BusinessException(UserErrorCode.INVALID_NICKNAME);
         // TODO: slack ID 등 검증 필요 시 추가

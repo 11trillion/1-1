@@ -37,8 +37,8 @@ public class UserRepositoryAdapter implements UserRepository {
     }
 
     @Override
-    public boolean existsByNickname(String nickname) {
-        return jpaUserRepository.existsByNickname(nickname);
+    public boolean existsByNicknameAndDeletedAtIsNull(String nickname) {
+        return jpaUserRepository.existsByNicknameAndDeletedAtIsNull(nickname);
     }
 
     @Override

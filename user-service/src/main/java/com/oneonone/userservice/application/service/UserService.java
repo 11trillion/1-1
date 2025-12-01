@@ -49,7 +49,7 @@ public class UserService {
     @Transactional
     public UserResponse updateMyProfile(Long userId, UpdateUserCommand command) {
         User user = findUserById(userId);
-        if (command.nickname() != null && userRepository.existsByNickname(command.nickname())) {
+        if (command.nickname() != null && userRepository.existsByNicknameAndDeletedAtIsNull(command.nickname())) {
             throw new BusinessException(UserErrorCode.INVALID_NICKNAME);
         }
         String encodedPw = command.password() != null ? passwordEncoder.encode(command.password()) : null;
@@ -81,7 +81,7 @@ public class UserService {
     @Transactional
     public MasterUserResponse updateUser(Long userId, UpdateMasterCommand command) {
         User user = findUserById(userId);
-        if (command.nickname() != null && userRepository.existsByNickname(command.nickname())) {
+        if (command.nickname() != null && userRepository.existsByNicknameAndDeletedAtIsNull(command.nickname())) {
             throw new BusinessException(UserErrorCode.INVALID_NICKNAME);
         }
         user.updateByMaster(

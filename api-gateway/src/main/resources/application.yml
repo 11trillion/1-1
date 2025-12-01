@@ -21,11 +21,18 @@ spring:
               enabled: true  # ??? ?????? ?? ???? ???? ????? ??
               lower-case-service-id: true
           routes:
-            # User Service Routes
-            - id : user-service
+            - id: user-service-public
+              uri: lb://user-service
+              predicates:
+                - Path=/api/v1/users/signup, /api/v1/users/login
+
+            - id: user-service-private
               uri: lb://user-service
               predicates:
                 - Path=/api/v1/users/**
+              filters:
+                - AuthenticationFilter
+
             # Game Service Routes
             - id: game-service
               uri: lb://game-service

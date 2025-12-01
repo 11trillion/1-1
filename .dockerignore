@@ -6,6 +6,3 @@
 .git
 .mvn
 .idea
-logs
-tmp/
-*.iml

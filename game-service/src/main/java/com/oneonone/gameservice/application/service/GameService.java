@@ -62,5 +62,13 @@ public class GameService {
         );
         return GameUpdateResponse.from(game);
     }
+    @Transactional
+    public void deleteGame(UUID gameId,Long userId) {
+        Game game = gameRepository.findById(gameId)
+                .orElseThrow(() ->  new BusinessException(GameErrorCode.GAME_NOT_FOUND));
+
+        game.softDelete(userId);
+    }
+
 
 }

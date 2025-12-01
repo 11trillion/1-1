@@ -33,7 +33,7 @@ public class GameController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(result,"게임 생성이 완료되었습니다."));
     }
 
-    @Operation(summary = "전체 게임 조회" , description = "전체 게임을 조회한다.")
+    @Operation(summary = "전체 게임 조회" , description = "전체 게임을 조회한다. sort 테스트 시 [] 빼고 테스트해주세요")
     @GetMapping
     public ResponseEntity<ApiResponse<Page<GameResponse>>> getAllGames(
             @PageableDefault (
@@ -55,12 +55,19 @@ public class GameController {
         return ResponseEntity.ok(ApiResponse.success(result,"게임 단건조회 결과입니다."));
     }
 
-    @Operation(summary = "게임 정보 수정", description = "게임의 정보를 수정합니다")
+    @Operation(summary = "게임 정보 수정", description = "게임의 정보를 수정합니다.")
     @PutMapping("/{gameId}")
     public ResponseEntity<ApiResponse<GameUpdateResponse>> updateGame(
             @Valid @PathVariable UUID gameId,
             @RequestBody GameUpdateRequest gameUpdateRequest) {
         GameUpdateResponse result = gameService.updateGame(gameId,gameUpdateRequest);
         return ResponseEntity.ok(ApiResponse.success(result,"게임 정보 수정이 완료되었습니다."));
+    }
+    @Operation(summary = "게임 정보 삭제", description = "게임 정보를 삭제합니다")
+    public ResponseEntity<ApiResponse<GameResponse>> deleteGame(
+            @Valid @PathVariable UUID gameId) {
+        Long userId = 999999L;
+        gameService.deleteGame(gameId,userId);
+        return ResponseEntity.ok(ApiResponse.success(null,"게임 정보 삭제가 완료되었습니다."));
     }
 }

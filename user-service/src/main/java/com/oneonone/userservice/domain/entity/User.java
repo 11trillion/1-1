@@ -80,8 +80,16 @@ public class User extends BaseEntity {
         }
         if (role != null) this.role = role;
         if (status != null) this.status = status;
-        if (pointBalance != null) this.pointBalance = pointBalance;
+        if (pointBalance != null) {
+            if (pointBalance < 0) throw new BusinessException(UserErrorCode.INVALID_POINT);
+            this.pointBalance = pointBalance;
+        }
         if (slackId != null) this.slackId = slackId;
+    }
+
+    public void updatePoint(Long amount) {
+        if (this.pointBalance + amount < 0) throw new BusinessException(UserErrorCode.INVALID_POINT);
+        this.pointBalance += amount;
     }
 
     public void validate(String nickname) {

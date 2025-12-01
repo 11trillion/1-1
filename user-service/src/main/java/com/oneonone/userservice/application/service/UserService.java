@@ -3,6 +3,7 @@ package com.oneonone.userservice.application.service;
 import com.oneonone.common.exception.BusinessException;
 import com.oneonone.userservice.application.command.SignupCommand;
 import com.oneonone.userservice.application.command.UpdateMasterCommand;
+import com.oneonone.userservice.application.command.UpdatePointCommand;
 import com.oneonone.userservice.application.command.UpdateUserCommand;
 import com.oneonone.userservice.application.dto.UserInfo;
 import com.oneonone.userservice.domain.entity.User;
@@ -10,6 +11,7 @@ import com.oneonone.userservice.domain.repository.UserRepository;
 import com.oneonone.userservice.exception.UserErrorCode;
 import com.oneonone.userservice.presentation.dto.request.UpdateMasterRequest;
 import com.oneonone.userservice.presentation.dto.response.MasterUserResponse;
+import com.oneonone.userservice.presentation.dto.response.PointResponse;
 import com.oneonone.userservice.presentation.dto.response.UserResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -99,6 +101,20 @@ public class UserService {
     public void deleteByMaster(Long id, Long userId) {
         User user = findUserById(userId);
         user.softDelete(id);
+    }
+
+    public PointResponse getPoint(Long userId) {
+        User user = findUserById(userId);
+        UserInfo userInfo = UserInfo.from(user);
+        return PointResponse.from(userInfo);
+    }
+
+    @Transactional
+    public PointResponse updatePoint(Long userId, UpdatePointCommand command) {
+        User user = findUserById(userId);
+        user.updatePoint(command.amount());
+        UserInfo userInfo = UserInfo.from(user);
+        return PointResponse.from(userInfo);
     }
 
     private User findUserById(Long userId) {

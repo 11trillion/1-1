@@ -2,22 +2,13 @@ package com.oneonone.userservice.presentation;
 
 import com.oneonone.common.exception.BusinessException;
 import com.oneonone.common.response.ApiResponse;
-import com.oneonone.userservice.application.command.LoginCommand;
-import com.oneonone.userservice.application.command.SignupCommand;
-import com.oneonone.userservice.application.command.UpdateMasterCommand;
-import com.oneonone.userservice.application.command.UpdateUserCommand;
+import com.oneonone.userservice.application.command.*;
 import com.oneonone.userservice.application.service.AuthService;
 import com.oneonone.userservice.application.service.UserService;
 import com.oneonone.userservice.domain.entity.User;
 import com.oneonone.userservice.exception.UserErrorCode;
-import com.oneonone.userservice.presentation.dto.request.LoginRequest;
-import com.oneonone.userservice.presentation.dto.request.SignupRequest;
-import com.oneonone.userservice.presentation.dto.request.UpdateMasterRequest;
-import com.oneonone.userservice.presentation.dto.request.UpdateUserRequest;
-import com.oneonone.userservice.presentation.dto.response.LoginResponse;
-import com.oneonone.userservice.presentation.dto.response.SignupResponse;
-import com.oneonone.userservice.presentation.dto.response.MasterUserResponse;
-import com.oneonone.userservice.presentation.dto.response.UserResponse;
+import com.oneonone.userservice.presentation.dto.request.*;
+import com.oneonone.userservice.presentation.dto.response.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -130,5 +121,26 @@ public class UserController {
         if (!role.equals("MASTER")) throw new BusinessException(UserErrorCode.FORBIDDEN);
         userService.deleteByMaster(id, userId);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{userId}/points")
+    public ResponseEntity<ApiResponse<PointResponse>> getPoint(
+            @RequestHeader("X-User-Role") String role,
+            @PathVariable Long userId) {
+        if (!role.equals("MASTER")) throw new BusinessException(UserErrorCode.FORBIDDEN);
+        PointResponse response = userService.getPoint(userId);
+        return ResponseEntity.ok(ApiResponse.success(response, "사용자 포인트 조회 성공"));
+    }
+
+    @PatchMapping("/{userId}/points")
+    public ResponseEntity<ApiResponse<PointResponse>> updatePoint(
+            @RequestHeader("X-User-Role") String role,
+            @PathVariable Long userId,
+            @RequestBody PointRequest request) {
+        if (!role.equals("MASTER")) throw new BusinessException(UserErrorCode.FORBIDDEN);
+        UpdatePointCommand command = new UpdatePointCommand(
+                request.amount());
+        PointResponse response = userService.updatePoint(userId, command);
+        return ResponseEntity.ok(ApiResponse.success(response, "사용자 포인트 수정 성공"));
     }
 }

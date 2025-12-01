@@ -70,6 +70,12 @@ public class UserService {
         return users.map(MasterUserResponse::from);
     }
 
+    public MasterUserResponse getUser(Long userId) {
+        User user = findUserById(userId);
+        UserInfo userInfo = UserInfo.from(user);
+        return MasterUserResponse.from(userInfo);
+    }
+
     private User findUserById(Long userId) {
         return userRepository.findByUserId(userId)
                 .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));

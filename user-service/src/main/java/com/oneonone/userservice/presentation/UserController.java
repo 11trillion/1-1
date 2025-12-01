@@ -93,4 +93,13 @@ public class UserController {
         Page<MasterUserResponse> response = userService.getAllUsers(pageable);
         return ResponseEntity.ok(ApiResponse.success(response, "사용자 목록 조회 성공"));
     }
+
+    @GetMapping("/{userId}")
+    public ResponseEntity<ApiResponse<MasterUserResponse>> getUserDetail(
+            @RequestHeader("X-User-Role") String role,
+            @PathVariable Long userId) {
+        if (!role.equals("MASTER")) throw new BusinessException(UserErrorCode.FORBIDDEN);
+        MasterUserResponse response = userService.getUser(userId);
+        return ResponseEntity.ok(ApiResponse.success(response, "사용자 조회 성공"));
+    }
 }

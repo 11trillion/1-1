@@ -1,5 +1,6 @@
 package com.oneonone.userservice.presentation;
 
+import com.oneonone.common.exception.BusinessException;
 import com.oneonone.common.response.ApiResponse;
 import com.oneonone.userservice.application.command.LoginCommand;
 import com.oneonone.userservice.application.command.SignupCommand;
@@ -7,14 +8,20 @@ import com.oneonone.userservice.application.command.UpdateUserCommand;
 import com.oneonone.userservice.application.service.AuthService;
 import com.oneonone.userservice.application.service.UserService;
 import com.oneonone.userservice.domain.entity.User;
+import com.oneonone.userservice.exception.UserErrorCode;
 import com.oneonone.userservice.presentation.dto.request.LoginRequest;
 import com.oneonone.userservice.presentation.dto.request.SignupRequest;
 import com.oneonone.userservice.presentation.dto.request.UpdateUserRequest;
 import com.oneonone.userservice.presentation.dto.response.LoginResponse;
 import com.oneonone.userservice.presentation.dto.response.SignupResponse;
+import com.oneonone.userservice.presentation.dto.response.MasterUserResponse;
 import com.oneonone.userservice.presentation.dto.response.UserResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -76,5 +83,14 @@ public class UserController {
             @RequestHeader("X-User-Id") Long userId) {
         userService.deleteMyProfile(userId);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<Page<MasterUserResponse>>> getUserList(
+            @RequestHeader("X-User-Role") String role,
+            @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        if (!role.equals("MASTER")) throw new BusinessException(UserErrorCode.FORBIDDEN);
+        Page<MasterUserResponse> response = userService.getAllUsers(pageable);
+        return ResponseEntity.ok(ApiResponse.success(response, "사용자 목록 조회 성공"));
     }
 }

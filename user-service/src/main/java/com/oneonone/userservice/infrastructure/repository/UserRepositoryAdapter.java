@@ -1,8 +1,11 @@
 package com.oneonone.userservice.infrastructure.repository;
 
+import com.oneonone.userservice.application.dto.UserInfo;
 import com.oneonone.userservice.domain.entity.User;
 import com.oneonone.userservice.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -36,5 +39,10 @@ public class UserRepositoryAdapter implements UserRepository {
     @Override
     public boolean existsByNickname(String nickname) {
         return jpaUserRepository.existsByNickname(nickname);
+    }
+
+    @Override
+    public Page<UserInfo> findAllByDeletedAtIsNull(Pageable pageable) {
+        return jpaUserRepository.findAllByDeletedAtIsNull(pageable);
     }
 }

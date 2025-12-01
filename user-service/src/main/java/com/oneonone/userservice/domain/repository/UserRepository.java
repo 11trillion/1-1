@@ -1,6 +1,9 @@
 package com.oneonone.userservice.domain.repository;
 
+import com.oneonone.userservice.application.dto.UserInfo;
 import com.oneonone.userservice.domain.entity.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import javax.swing.text.html.Option;
 import java.util.Optional;
@@ -15,4 +18,6 @@ public interface UserRepository {
     Optional<User> findByUserId(Long userId);
 
     boolean existsByNickname(String nickname);
+
+    Page<UserInfo> findAllByDeletedAtIsNull(Pageable pageable);
 }

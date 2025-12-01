@@ -1,0 +1,11 @@
+# .dockerignore 파일 내용
+# 빌드와 관련 없는 모든 파일을 제외
+**/build/
+**/target/
+**/.gradle/
+.git
+.mvn
+.idea
+logs
+tmp/
+*.iml

@@ -1,6 +1,8 @@
 package com.oneonone.gameservice.domain.entity;
 
+import com.oneonone.common.exception.BusinessException;
 import com.oneonone.common.model.BaseEntity;
+import com.oneonone.gameservice.domain.GameErrorCode;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -48,7 +50,7 @@ public class Game extends BaseEntity {
         //팀 확인
         validateTeams(homeTeam, awayTeam);
         if (startAt == null) {
-            throw new  IllegalArgumentException("시작 시간 값은 필수입니다.");
+            throw new BusinessException(GameErrorCode.START_TIME_ERROR);
         }
 
         return Game.builder()
@@ -65,31 +67,31 @@ public class Game extends BaseEntity {
 
     private static void validateTeams(String homeTeam, String awayTeam) {
         if (homeTeam == null || homeTeam.isBlank()) {
-            throw new IllegalArgumentException("홈 팀은 필수입니다.");
+            throw new BusinessException(GameErrorCode.HOME_TEAM_ERROR);
         }
         if (awayTeam == null || awayTeam.isBlank()) {
-            throw new IllegalArgumentException("어웨이 팀은 필수입니다.");
+            throw new BusinessException(GameErrorCode.AWAY_TEAM_ERROR);
         }
         if (homeTeam.trim().equalsIgnoreCase(awayTeam.trim())) {
-            throw new IllegalArgumentException("홈/어웨이 팀은 같을 수 없습니다.");
+            throw new BusinessException(GameErrorCode.TEAM_DUPLICATED_ERROR);
         }
     }
 
     private static void validateScore(int homeScore, int awayScore) {
         if (homeScore < 0 || awayScore < 0) {
-            throw new IllegalArgumentException("점수는 무조건 0 이상이어야 합니다.");
+            throw new BusinessException(GameErrorCode.SCORE_ERROR);
         }
     }
 
     private static void validateTime(LocalDateTime startAt, LocalDateTime endAt) {
         if (endAt != null && endAt.isBefore(startAt)) {
-            throw new IllegalArgumentException("종료 시간은 시작 시간보다 이전일 수 없습니다.");
+            throw new BusinessException(GameErrorCode.END_TIME_ERROR);
         }
     }
 
     public void start() {
         if(!status.isScheduled()) {
-            throw new IllegalArgumentException("대기 중인 경기에만 시작할 수 있습니다.");
+            throw new BusinessException(GameErrorCode.GAME_START_ERROR);
         }
         this.status = GameStatus.PROGRESS;
         this.result = GameResult.WAIT; //경기 진행 중
@@ -97,7 +99,7 @@ public class Game extends BaseEntity {
 
     public void end (LocalDateTime endAt) {
         if(!status.isProgress()) {
-            throw new IllegalArgumentException("진행 중인 경기만 종료 가능합니다");
+            throw new BusinessException(GameErrorCode.GAME_END_ERROR);
         }
         validateTime(this.startAt, endAt);
         this.endAt = endAt;
@@ -135,7 +137,7 @@ public class Game extends BaseEntity {
 
         if (status == GameStatus.END) {
             if (endAt == null) {
-                throw new IllegalArgumentException("종료 상태에서는 종료 시간이 필수입니다.");
+                throw new BusinessException(GameErrorCode.ENDED_GAME_TIME_ERROR);
             }
             validateTime(startAt, endAt);
             this.endAt = endAt;

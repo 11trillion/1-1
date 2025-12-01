@@ -1,6 +1,8 @@
 package com.oneonone.gameservice.application.service;
 
+import com.oneonone.common.exception.BusinessException;
 import com.oneonone.gameservice.application.dto.*;
+import com.oneonone.gameservice.domain.GameErrorCode;
 import com.oneonone.gameservice.domain.entity.Game;
 import com.oneonone.gameservice.infrastructure.repository.GameJPARepository;
 import jakarta.validation.Valid;
@@ -41,13 +43,13 @@ public class GameService {
 
     public Game getGameById(@Valid @PathVariable UUID gameId) {
         return gameRepository.findById(gameId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 게임 id를 찾을 수 없습니다."));
+                .orElseThrow(() ->  new BusinessException(GameErrorCode.GAME_NOT_FOUND));
     }
 
     @Transactional
     public GameUpdateResponse updateGame(UUID gameId, GameUpdateRequest gameUpdateRequest) {
         Game game = gameRepository.findById(gameId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 게임 id를 찾을 수 없습니다."));
+                .orElseThrow(() ->  new BusinessException(GameErrorCode.GAME_NOT_FOUND));
 
         game.update(
                 gameUpdateRequest.homeTeam(),

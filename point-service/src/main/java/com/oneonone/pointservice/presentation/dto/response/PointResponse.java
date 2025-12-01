@@ -1,4 +1,4 @@
-package com.oneonone.pointservice.presentation.response;
+package com.oneonone.pointservice.presentation.dto.response;
 
 import com.oneonone.pointservice.domain.entity.Point;
 import com.oneonone.pointservice.domain.enums.PointStatus;

@@ -6,7 +6,7 @@ import com.oneonone.pointservice.domain.entity.Point;
 import com.oneonone.pointservice.domain.enums.PointStatus;
 import com.oneonone.pointservice.domain.enums.PointType;
 import com.oneonone.pointservice.domain.repository.PointRepository;
-import com.oneonone.pointservice.presentation.response.PointResponse;
+import com.oneonone.pointservice.presentation.dto.response.PointResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

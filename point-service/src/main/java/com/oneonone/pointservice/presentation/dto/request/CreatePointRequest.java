@@ -1,4 +1,4 @@
-package com.oneonone.pointservice.presentation.request;
+package com.oneonone.pointservice.presentation.dto.request;
 
 import com.oneonone.pointservice.domain.enums.PointType;
 import lombok.Getter;

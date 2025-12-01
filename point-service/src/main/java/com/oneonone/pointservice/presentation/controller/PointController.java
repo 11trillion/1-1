@@ -1,14 +1,11 @@
 package com.oneonone.pointservice.presentation.controller;
 
-import com.oneonone.common.exception.BusinessException;
 import com.oneonone.common.response.ApiResponse;
 import com.oneonone.pointservice.application.PointService;
-import com.oneonone.pointservice.domain.PointErrorCode;
 import com.oneonone.pointservice.domain.entity.Point;
-import com.oneonone.pointservice.domain.enums.PointStatus;
-import com.oneonone.pointservice.presentation.request.CreatePointRequest;
-import com.oneonone.pointservice.presentation.request.UpdatePointStatusRequest;
-import com.oneonone.pointservice.presentation.response.PointResponse;
+import com.oneonone.pointservice.presentation.dto.CreatePointRequest;
+import com.oneonone.pointservice.presentation.dto.UpdatePointStatusRequest;
+import com.oneonone.pointservice.presentation.dto.response.PointResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;

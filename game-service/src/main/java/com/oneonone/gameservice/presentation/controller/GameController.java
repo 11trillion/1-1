@@ -63,9 +63,11 @@ public class GameController {
         GameUpdateResponse result = gameService.updateGame(gameId,gameUpdateRequest);
         return ResponseEntity.ok(ApiResponse.success(result,"게임 정보 수정이 완료되었습니다."));
     }
+
     @Operation(summary = "게임 정보 삭제", description = "게임 정보를 삭제합니다")
-    public ResponseEntity<ApiResponse<GameResponse>> deleteGame(
-            @Valid @PathVariable UUID gameId) {
+    @DeleteMapping("/{gameId}")
+    public ResponseEntity<ApiResponse<Void>> deleteGame(
+             @PathVariable UUID gameId) {
         Long userId = 999999L;
         gameService.deleteGame(gameId,userId);
         return ResponseEntity.ok(ApiResponse.success(null,"게임 정보 삭제가 완료되었습니다."));

@@ -9,7 +9,6 @@ import com.oneonone.userservice.application.dto.UserInfo;
 import com.oneonone.userservice.domain.entity.User;
 import com.oneonone.userservice.domain.repository.UserRepository;
 import com.oneonone.userservice.exception.UserErrorCode;
-import com.oneonone.userservice.presentation.dto.request.UpdateMasterRequest;
 import com.oneonone.userservice.presentation.dto.response.MasterUserResponse;
 import com.oneonone.userservice.presentation.dto.response.PointResponse;
 import com.oneonone.userservice.presentation.dto.response.UserResponse;

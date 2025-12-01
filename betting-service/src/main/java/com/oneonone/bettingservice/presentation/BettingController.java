@@ -6,6 +6,9 @@ import com.oneonone.bettingservice.application.service.BettingService;
 import com.oneonone.common.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -21,11 +24,9 @@ public class BettingController {
     @GetMapping("/{betId}")
     public ApiResponse<Page<BettingResponseDto>> getBetListByBetId(
             @PathVariable UUID betId,
-            @RequestParam(value = "page", defaultValue = "0") int page, // 페이지 번호
-            @RequestParam(value = "size", defaultValue = "10") int size, // 조회할 항목수
-            @RequestParam(value = "sort", defaultValue = "createdAt") String sort // 정렬기준
+            @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ){
-        Page<BettingResponseDto> result = bettingService.getBetListByBetId(betId, page, size, sort);
+        Page<BettingResponseDto> result = bettingService.getBetListByBetId(betId, pageable);
         return ApiResponse.success(result, "베팅 조회 성공");
     }
 
@@ -33,11 +34,9 @@ public class BettingController {
     @GetMapping("/game/{gameId}")
     public ApiResponse<Page<BettingResponseDto>> getBetListByGameId(
             @PathVariable UUID gameId,
-            @RequestParam(value = "page", defaultValue = "0") int page, // 페이지 번호
-            @RequestParam(value = "size", defaultValue = "10") int size, // 조회할 항목수
-            @RequestParam(value = "sort", defaultValue = "createdAt") String sort // 정렬기준
+            @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ){
-        Page<BettingResponseDto> result = bettingService.getBetListByGameId(gameId, page, size, sort);
+        Page<BettingResponseDto> result = bettingService.getBetListByGameId(gameId, pageable);
         return ApiResponse.success(result, "베팅 조회 성공");
     }
 
@@ -45,11 +44,9 @@ public class BettingController {
     @GetMapping("/user/{userId}")
     public ApiResponse<Page<BettingResponseDto>> getBetListByUserId(
             @PathVariable Long userId,
-            @RequestParam(value = "page", defaultValue = "0") int page, // 페이지 번호
-            @RequestParam(value = "size", defaultValue = "10") int size, // 조회할 항목수
-            @RequestParam(value = "sort", defaultValue = "createdAt") String sort // 정렬기준
+            @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ){
-        Page<BettingResponseDto> result = bettingService.getBetListByUserId(userId, page, size, sort);
+        Page<BettingResponseDto> result = bettingService.getBetListByUserId(userId, pageable);
         return ApiResponse.success(result, "베팅 조회 성공");
     }
 

@@ -30,43 +30,34 @@ public class BettingService {
 
     // 베팅내역 조회_베팅
     public Page<BettingResponseDto> getBetListByBetId(
-            UUID betId, int page, int size, String sort
+            UUID betId, Pageable pageable
     ){
-        // 1. Pageable 객체 생성 (정렬 기준 : sort)
-        Pageable pageable = PageableUtils.createPageable(page, size, sort, Sort.Direction.DESC);
-
-        // 2. Repository에서 페이지 & 정렬하여 배달 목록 조회
+        // 1. Repository에서 페이지 & 정렬하여 배달 목록 조회
         Page<Betting> bettingPage = bettingRepository.findAllById(betId, pageable);
 
-        // 3. Entity -> DTO 반환
+        // 2. Entity -> DTO 반환
         return bettingPage.map(BettingResponseDto::from);
     }
 
     // 베팅내역 조회_게임
     public Page<BettingResponseDto> getBetListByGameId(
-            UUID gameId, int page, int size, String sort
+            UUID gameId, Pageable pageable
     ){
-        // 1. Pageable 객체 생성 (정렬 기준 : sort)
-        Pageable pageable = PageableUtils.createPageable(page, size, sort, Sort.Direction.DESC);
-
-        // 2. Repository에서 페이지 & 정렬하여 배달 목록 조회
+        // 1. Repository에서 페이지 & 정렬하여 배달 목록 조회
         Page<Betting> bettingPage = bettingRepository.findAllByGameId(gameId, pageable);
 
-        // 3. Entity -> DTO 반환
+        // 2. Entity -> DTO 반환
         return bettingPage.map(BettingResponseDto::from);
     }
 
     // 베팅내역 조회_유저
     public Page<BettingResponseDto> getBetListByUserId(
-            Long userId, int page, int size, String sort
+            Long userId, Pageable pageable
     ){
-        // 1. Pageable 객체 생성 (정렬 기준 : sort)
-        Pageable pageable = PageableUtils.createPageable(page, size, sort, Sort.Direction.DESC);
-
-        // 2. Repository에서 페이지 & 정렬하여 배달 목록 조회
+        // 1. Repository에서 페이지 & 정렬하여 배달 목록 조회
         Page<Betting> bettingPage = bettingRepository.findAllByUserId(userId, pageable);
 
-        // 3. Entity -> DTO 반환
+        // 2. Entity -> DTO 반환
         return bettingPage.map(BettingResponseDto::from);
     }
 

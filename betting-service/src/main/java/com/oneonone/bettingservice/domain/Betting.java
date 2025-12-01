@@ -11,7 +11,7 @@ import java.util.UUID;
 @Entity
 @Getter
 @Setter
-@Table(name = "p_betting")
+@Table(name = "p_bettings")
 public class Betting extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

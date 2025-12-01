@@ -9,17 +9,14 @@ import com.oneonone.pointservice.presentation.response.PointResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class PointServiceV1 {
+public class PointService {
     private final PointRepository pointRepository;
 
     @Transactional
@@ -50,5 +47,6 @@ public class PointServiceV1 {
         }
         return page.map(PointResponse::from);
     }
+
 }
 

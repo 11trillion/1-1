@@ -11,11 +11,11 @@ import java.util.Optional;
 public interface JpaUserRepository extends JpaRepository<User, Long> {
     boolean existsByUsername(String username);
 
-    Optional<User> findByUsername(String username);
-
     Page<UserInfo> findAllByDeletedAtIsNull(Pageable pageable);
 
     Optional<User> findByUserIdAndDeletedAtIsNull(Long userId);
 
     boolean existsByNicknameAndDeletedAtIsNull(String nickname);
+
+    Optional<User> findByUsernameAndDeletedAtIsNull(String username);
 }

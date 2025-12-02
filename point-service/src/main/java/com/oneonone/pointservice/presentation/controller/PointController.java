@@ -1,7 +1,10 @@
 package com.oneonone.pointservice.presentation.controller;
 
 import com.oneonone.common.response.ApiResponse;
-import com.oneonone.pointservice.application.service.PointService;
+import com.oneonone.pointservice.application.command.CreatePointCommand;
+import com.oneonone.pointservice.application.command.PointCommandService;
+import com.oneonone.pointservice.application.command.UpdatePointStatusCommand;
+import com.oneonone.pointservice.application.query.PointQueryService;
 import com.oneonone.pointservice.domain.entity.Point;
 import com.oneonone.pointservice.presentation.dto.request.CreatePointRequest;
 import com.oneonone.pointservice.presentation.dto.request.UpdatePointStatusRequest;
@@ -27,38 +30,38 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/points")
 public class PointController {
-    private final PointService pointService;
+    private final PointCommandService pointCommandService; // 쓰기
+    private final PointQueryService pointQueryService;     // 조회
 
     // ======================
     // 포인트 생성
     // ======================
-    @Operation(
-            summary = "포인트 생성",
-            description = "포인트를 생성합니다. 생성된 포인트는 기본적으로 PENDING 상태입니다."
-    )
     @PostMapping
+    @Operation(summary = "포인트 생성", description = "포인트를 생성합니다. 생성된 포인트는 기본적으로 PENDING 상태입니다.")
     public ResponseEntity<ApiResponse<PointResponse>> createPoint(
             @Parameter(description = "포인트 생성 요청 정보", required = true)
             @RequestBody CreatePointRequest request
-    ){
-        Point point = pointService.createPoint(
+    ) {
+        // CreatePointCommand 생성
+        CreatePointCommand command = new CreatePointCommand(
                 request.getPointType(),
                 request.getAmount(),
                 request.getDescription(),
                 request.getUserId()
         );
-        PointResponse pointResponse = PointResponse.from(point);
-        return ResponseEntity.ok(ApiResponse.success(pointResponse, "포인트 생성 성공"));
+
+        Point point = pointCommandService.createPoint(command);
+        return ResponseEntity.ok(ApiResponse.success(PointResponse.from(point), "포인트 생성 성공"));
     }
 
     // ======================
     // 포인트 상태 변경
     // ======================
+    @PatchMapping("/{pointId}/status")
     @Operation(
             summary = "포인트 상태 변경",
             description = "포인트의 상태를 변경합니다. SUCCESS 상태인 포인트는 변경할 수 없습니다."
     )
-    @PatchMapping("/{pointId}/status")
     public ResponseEntity<ApiResponse<PointResponse>> updatePointStatus(
             @Parameter(description = "포인트 ID", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
             @PathVariable UUID pointId,
@@ -66,19 +69,23 @@ public class PointController {
             @Parameter(description = "변경할 포인트 상태", required = true)
             @RequestBody UpdatePointStatusRequest request
     ) {
-        Point updatedPoint = pointService.updatePointStatus(pointId, request.getStatus());
-        PointResponse pointResponse = PointResponse.from(updatedPoint);
-        return ResponseEntity.ok(ApiResponse.success(pointResponse, "포인트 상태 변경 성공"));
+        UpdatePointStatusCommand command = new UpdatePointStatusCommand(
+                pointId,
+                request.getStatus()
+        );
+
+        Point updatedPoint = pointCommandService.updatePointStatus(command);
+        return ResponseEntity.ok(ApiResponse.success(PointResponse.from(updatedPoint), "포인트 상태 변경 성공"));
     }
 
     // ======================
     // 포인트 조회
     // ======================
+    @GetMapping
     @Operation(
             summary = "포인트 조회",
             description = "사용자의 포인트 내역을 조회합니다. 상태(PENDING, SUCCESS, FAILED)로 필터링할 수 있습니다."
     )
-    @GetMapping
     public ResponseEntity<ApiResponse<Page<PointResponse>>> getPoints(
             @Parameter(description = "사용자 ID", example = "1001", required = true)
             @RequestParam Long userId,
@@ -92,8 +99,9 @@ public class PointController {
                     sort = "createdAt",
                     direction = Sort.Direction.DESC
             )
-            Pageable pageable) {
-        Page<PointResponse> result = pointService.getPoints(userId, status, pageable);
-        return ResponseEntity.ok(ApiResponse.success(result, "포인트 조회 성공"));
+            Pageable pageable
+    ) {
+        Page<PointResponse> page = pointQueryService.getPoints(userId, status, pageable);
+        return ResponseEntity.ok(ApiResponse.success(page, "포인트 조회 성공"));
     }
 }

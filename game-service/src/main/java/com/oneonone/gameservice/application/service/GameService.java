@@ -36,7 +36,7 @@ public class GameService {
     }
 
     public Page<GameResponse> getAllGames(Pageable pageable) {
-        Page<Game> page = gameRepository.findAll(pageable);
+        Page<Game> page = gameRepository.findAllByDeletedAtIsNull(pageable);
         return page.map(GameResponse::from);
     }
 

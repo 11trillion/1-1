@@ -26,7 +26,7 @@ public class GameRepositoryImpl implements GameRepository {
     }
 
     @Override
-    public Page<Game> findAll(Pageable pageable) {
+    public Page<Game> findAllByDeletedAtIsNull(Pageable pageable) {
         return gameJPARepository.findAll(pageable);
     }
 }

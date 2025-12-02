@@ -4,20 +4,28 @@ import com.oneonone.common.exception.BusinessException;
 import com.oneonone.common.security.JwtTokenProvider;
 import com.oneonone.userservice.application.command.LoginCommand;
 import com.oneonone.userservice.domain.entity.User;
+import com.oneonone.userservice.domain.repository.RefreshTokenRepository;
 import com.oneonone.userservice.domain.repository.UserRepository;
 import com.oneonone.userservice.exception.UserErrorCode;
 import com.oneonone.userservice.presentation.dto.response.LoginResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+
+    @Value("${jwt.refresh.expiration}")
+    private long expiration;
 
     public LoginResponse login(LoginCommand command) {
         User user = userRepository.findByUsername(command.username())
@@ -27,6 +35,24 @@ public class AuthService {
                 user.getUserId(),
                 user.getRole().name()
         );
-        return LoginResponse.from(accessToken);
+        String refreshToken = jwtTokenProvider.createRefreshToken(user.getUserId());
+        refreshTokenRepository.save(user.getUserId(), refreshToken, expiration);
+        return LoginResponse.from(accessToken, refreshToken);
+    }
+
+    public LoginResponse reissue(String token) {
+        if (!jwtTokenProvider.validateToken(token)) throw new BusinessException(UserErrorCode.INVALID_REFRESH_TOKEN);
+        Long userId = jwtTokenProvider.getUserIdFromToken(token);
+        String refreshToken = refreshTokenRepository.findByUserId(userId);
+        log.info("token: {}", token);
+        log.info("refresh token: {}", refreshToken);
+        if (!token.equals(refreshToken.substring(7))) throw new BusinessException(UserErrorCode.INVALID_REFRESH_TOKEN);
+        User user = userRepository.findByUserIdAndDeletedAtIsNull(userId)
+                .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
+
+        String newAccessToken = jwtTokenProvider.createToken(user.getUserId(), user.getRole().name());
+        String newRefreshToken = jwtTokenProvider.createRefreshToken(user.getUserId());
+        refreshTokenRepository.save(user.getUserId(), newRefreshToken, expiration);
+        return LoginResponse.from(newAccessToken, newRefreshToken);
     }
 }

@@ -52,6 +52,14 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.success(response, "로그인 성공"));
     }
 
+    @PostMapping("/reissue")
+    public ResponseEntity<ApiResponse<LoginResponse>> reissue(
+            @RequestHeader("Authorization") String refreshToken) {
+        String token = refreshToken.replace("Bearer ", "");
+        LoginResponse response = authService.reissue(token);
+        return ResponseEntity.ok(ApiResponse.success(response, "토큰 재발급 성공"));
+    }
+
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<UserResponse>> getMyProfile(
             @RequestHeader("X-User-Id") Long userId) {

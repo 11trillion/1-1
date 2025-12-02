@@ -16,7 +16,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
 public class AuthService {
 
@@ -45,8 +44,6 @@ public class AuthService {
         if (!jwtTokenProvider.validateToken(token)) throw new BusinessException(UserErrorCode.INVALID_REFRESH_TOKEN);
         Long userId = jwtTokenProvider.getUserIdFromToken(token);
         String refreshToken = refreshTokenRepository.findByUserId(userId);
-        log.info("token: {}", token);
-        log.info("refresh token: {}", refreshToken);
         if (!token.equals(refreshToken.substring(7))) throw new BusinessException(UserErrorCode.INVALID_REFRESH_TOKEN);
         User user = userRepository.findByUserIdAndDeletedAtIsNull(userId)
                 .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));

@@ -13,19 +13,35 @@ public class RefreshTokenRepositoryImpl implements RefreshTokenRepository {
 
     private final RedisTemplate<String, String> redisTemplate;
     private static final String PREFIX = "RefreshToken: ";
+    private static final String BLACKLIST = "Blacklist: ";
+
     @Override
     public void save(Long userId, String refreshToken, Long expiration) {
-
         redisTemplate.opsForValue().set(
                 PREFIX + userId.toString(),
                 refreshToken,
                 expiration,
-                TimeUnit.MICROSECONDS
+                TimeUnit.MILLISECONDS
         );
     }
 
     @Override
     public String findByUserId(Long userId) {
-        return redisTemplate.opsForValue().get(PREFIX + userId.toString());
+        return redisTemplate.opsForValue().get(PREFIX + userId);
+    }
+
+    @Override
+    public void deleteByUserId(Long userId) {
+        redisTemplate.delete(PREFIX + userId);
+    }
+
+    @Override
+    public void addToBlacklist(String token, long time) {
+        redisTemplate.opsForValue().set(
+                BLACKLIST + token,
+                "logout",
+                time,
+                TimeUnit.MILLISECONDS
+        );
     }
 }

@@ -8,6 +8,7 @@ import com.oneonone.userservice.domain.repository.RefreshTokenRepository;
 import com.oneonone.userservice.domain.repository.UserRepository;
 import com.oneonone.userservice.exception.UserErrorCode;
 import com.oneonone.userservice.presentation.dto.response.LoginResponse;
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -49,10 +50,22 @@ public class AuthService {
         if (!token.equals(refreshToken.substring(7))) throw new BusinessException(UserErrorCode.INVALID_REFRESH_TOKEN);
         User user = userRepository.findByUserIdAndDeletedAtIsNull(userId)
                 .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
-
         String newAccessToken = jwtTokenProvider.createToken(user.getUserId(), user.getRole().name());
         String newRefreshToken = jwtTokenProvider.createRefreshToken(user.getUserId());
         refreshTokenRepository.save(user.getUserId(), newRefreshToken, expiration);
         return LoginResponse.from(newAccessToken, newRefreshToken);
+    }
+
+    public void logout(String token) {
+        Long userId = jwtTokenProvider.getUserIdFromToken(token);
+        refreshTokenRepository.deleteByUserId(userId);
+        long time = getExpiration(token);
+        refreshTokenRepository.addToBlacklist(token, time);
+    }
+
+    private long getExpiration(String token) {
+        Claims claims = jwtTokenProvider.getClaims(token);
+        long diff = claims.getExpiration().getTime() - System.currentTimeMillis();
+        return Math.max(0, diff);
     }
 }

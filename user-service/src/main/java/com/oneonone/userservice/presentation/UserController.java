@@ -60,6 +60,14 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.success(response, "토큰 재발급 성공"));
     }
 
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout(
+            @RequestHeader("Authorization") String header) {
+        String token = header.substring(7);
+        authService.logout(token);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<UserResponse>> getMyProfile(
             @RequestHeader("X-User-Id") Long userId) {

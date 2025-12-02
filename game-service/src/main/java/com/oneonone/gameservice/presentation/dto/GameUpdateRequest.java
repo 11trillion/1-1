@@ -1,6 +1,5 @@
-package com.oneonone.gameservice.application.dto;
+package com.oneonone.gameservice.presentation.dto;
 
-import com.oneonone.gameservice.domain.entity.GameResult;
 import com.oneonone.gameservice.domain.entity.GameStatus;
 
 import jakarta.validation.constraints.Min;

@@ -1,4 +1,4 @@
-package com.oneonone.gameservice.application.dto;
+package com.oneonone.gameservice.presentation.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

@@ -25,7 +25,7 @@ public class BettingController {
     @GetMapping("/{betId}")
     public ResponseEntity<ApiResponse<Page<BettingResponseDto>>> getBetListByBetId(
             @PathVariable UUID betId,
-            @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+            @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ){
         Page<BettingResponseDto> result = bettingService.getBetListByBetId(betId, pageable);
         return ResponseEntity.ok(ApiResponse.success(result, "베팅 조회 성공"));
@@ -35,7 +35,7 @@ public class BettingController {
     @GetMapping("/game/{gameId}")
     public ResponseEntity<ApiResponse<Page<BettingResponseDto>>> getBetListByGameId(
             @PathVariable UUID gameId,
-            @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+            @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ){
         Page<BettingResponseDto> result = bettingService.getBetListByGameId(gameId, pageable);
         return ResponseEntity.ok(ApiResponse.success(result, "베팅 조회 성공"));
@@ -45,7 +45,7 @@ public class BettingController {
     @GetMapping("/user/{userId}")
     public ResponseEntity<ApiResponse<Page<BettingResponseDto>>> getBetListByUserId(
             @PathVariable Long userId,
-            @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+            @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ){
         Page<BettingResponseDto> result = bettingService.getBetListByUserId(userId, pageable);
         return ResponseEntity.ok(ApiResponse.success(result, "베팅 조회 성공"));

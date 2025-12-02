@@ -14,6 +14,14 @@ services:
     volumes:
       - ./infra/init:/docker-entrypoint-initdb.d
     restart: always
+    healthcheck:
+      # pg_isready: PostgreSQL이 연결을 받을 준비가 되었는지 확인하는 명령어
+      # $$POSTGRES_USER와 $$POSTGRES_DB는 환경 변수 값을 사용합니다.
+      test: [ "CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB" ]
+      interval: 5s         # 5초마다 체크
+      timeout: 5s          # 타임아웃 5초
+      retries: 5           # 5번 실패하면 unhealthy로 간주
+      start_period: 15s    # 컨테이너 시작 후 15초 동안은 실패해도 재시도 횟수에 포함시키지 않음 (초기화 시간 확보)
 
   redis:
     image: redis:7.2
@@ -77,6 +85,136 @@ services:
     environment:
       STORAGE_TYPE: mem
     restart: always
+
+  eureka-server:
+    build:
+      context: .
+      dockerfile: ./eureka-server/Dockerfile
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    environment:
+      # 유레카는 중앙 서버이므로, 자기 자신에게는 등록하지 않도록 설정
+      EUREKA_CLIENT_REGISTER_WITH_EUREKA: "false"
+      EUREKA_CLIENT_FETCH_REGISTRY: "false"
+
+  config-server:
+    build:
+      context: .
+      dockerfile: ./config-server/Dockerfile
+    container_name: config-server
+    ports:
+      - "8888:8888"
+    environment:
+      #유레카 호스트 설정
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+    # .env 파일의 내용을 환경 변수로 컨테이너에 주입
+    env_file:
+      - .env
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8888/actuator/health" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 20s # Spring Boot가 부팅할 시간을 충분히 줍니다.
+
+
+  betting-service:
+    build:
+      context: .
+      dockerfile: ./betting-service/Dockerfile
+    container_name: betting-service
+    environment:
+      #유레카 호스트 설정
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+    # .env 파일의 내용을 환경 변수로 컨테이너에 주입
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+
+  user-service:
+    build:
+      context: .
+      dockerfile: ./user-service/Dockerfile
+    container_name: user-service
+    environment:
+      #유레카 호스트 설정
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+    # .env 파일의 내용을 환경 변수로 컨테이너에 주입
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - eureka-server
+      - config-server
+
+  game-service:
+    build:
+      context: .
+      dockerfile: ./game-service/Dockerfile
+    container_name: game-service
+    environment:
+      #유레카 호스트 설정
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+    # .env 파일의 내용을 환경 변수로 컨테이너에 주입
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+      config-server:
+        condition: service_healthy
+
+  point-service:
+    build:
+      context: .
+      dockerfile: ./point-service/Dockerfile
+    container_name: point-service
+    environment:
+      #유레카 호스트 설정
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+    # .env 파일의 내용을 환경 변수로 컨테이너에 주입
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+      config-server:
+        condition: service_healthy
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: ./api-gateway/Dockerfile
+    container_name: gateway
+    ports:
+      - "8080:8080"
+    environment:
+      #유레카 호스트 설정
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+    depends_on:
+      - config-server
+      - eureka-server
+      - betting-service
+      - user-service
+      - game-service
+      - point-service
+
 
 volumes:
   redis_data:

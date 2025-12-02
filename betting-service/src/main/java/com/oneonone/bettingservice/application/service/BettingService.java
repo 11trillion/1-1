@@ -1,17 +1,16 @@
 package com.oneonone.bettingservice.application.service;
 
-import com.oneonone.bettingservice.application.dto.BettingRequestDto;
-import com.oneonone.bettingservice.application.dto.BettingResponseDto;
+import com.oneonone.bettingservice.presentation.dto.BettingRequestDto;
+import com.oneonone.bettingservice.presentation.dto.BettingResponseDto;
 import com.oneonone.bettingservice.domain.Betting;
 import com.oneonone.bettingservice.domain.BettingErrorCode;
 import com.oneonone.bettingservice.domain.BettingRepository;
 import com.oneonone.common.exception.BusinessException;
-import com.oneonone.common.util.PageableUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -62,6 +61,7 @@ public class BettingService {
     }
 
     // 베팅 생성
+    @Transactional
     public BettingResponseDto createBetting(BettingRequestDto requestDto){
         // 생성
         Betting betting = Betting.createBetting(
@@ -80,6 +80,7 @@ public class BettingService {
     }
 
     // 베팅 수정
+    @Transactional
     public BettingResponseDto updateBetting(BettingRequestDto requestDto){
         Betting betting = betting(requestDto.bettingId());
 
@@ -100,6 +101,7 @@ public class BettingService {
     }
 
     // 베팅 삭제
+    @Transactional
     public void deleteBetting(UUID bettingId, Long userId){
         // 베팅 존재 여부 확인
         Betting betting = betting(bettingId);

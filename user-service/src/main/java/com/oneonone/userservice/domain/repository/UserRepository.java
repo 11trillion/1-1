@@ -12,7 +12,7 @@ public interface UserRepository {
 
     boolean existsByUsername(String username);
 
-    Optional<User> findByUsername(String username);
+    Optional<User> findByUsernameAndDeletedAtIsNull(String username);
 
     Optional<User> findByUserIdAndDeletedAtIsNull(Long userId);
 

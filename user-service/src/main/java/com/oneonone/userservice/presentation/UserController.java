@@ -90,8 +90,10 @@ public class UserController {
 
     @DeleteMapping("/me")
     public ResponseEntity<ApiResponse<Void>> deleteMyProfile(
-            @RequestHeader("X-User-Id") Long userId) {
+            @RequestHeader("X-User-Id") Long userId,
+            @RequestHeader("Authorization") String header) {
         userService.deleteMyProfile(userId);
+        authService.logout(header.substring(7));
         return ResponseEntity.noContent().build();
     }
 

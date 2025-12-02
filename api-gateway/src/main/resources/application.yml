@@ -48,6 +48,9 @@ spring:
               uri: lb://betting-service
               predicates:
                 - Path=/api/v1/bets/**
+  data:
+    redis:
+      port: 6379
 
 management:
   endpoints:

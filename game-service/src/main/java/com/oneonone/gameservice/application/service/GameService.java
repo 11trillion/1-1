@@ -1,8 +1,11 @@
 package com.oneonone.gameservice.application.service;
 
 import com.oneonone.common.exception.BusinessException;
+import com.oneonone.gameservice.application.event.GameCompletedEvent;
 import com.oneonone.gameservice.domain.GameErrorCode;
 import com.oneonone.gameservice.domain.entity.Game;
+import com.oneonone.gameservice.domain.entity.GameStatus;
+import com.oneonone.gameservice.infrastructure.kafka.GameEventProducer;
 import com.oneonone.gameservice.infrastructure.repository.GameJPARepository;
 import com.oneonone.gameservice.presentation.dto.*;
 import jakarta.validation.Valid;
@@ -20,6 +23,7 @@ import java.util.UUID;
 @Transactional(readOnly = true)
 public class GameService {
     private final GameJPARepository gameRepository;
+    private final GameEventProducer  gameEventProducer;
 
     @Transactional
     public GameCreateResponse createGame(GameCreateRequest gameCreateRequest) {
@@ -49,6 +53,8 @@ public class GameService {
     public GameUpdateResponse updateGame(UUID gameId, GameUpdateRequest gameUpdateRequest) {
         Game game = gameRepository.findById(gameId)
                 .orElseThrow(() ->  new BusinessException(GameErrorCode.GAME_NOT_FOUND));
+        //들어오는 게임의 이벤트 중복을 방지하기 위해
+        GameStatus prevStatus = game.getStatus();
 
         game.update(
                 gameUpdateRequest.homeTeam(),
@@ -59,6 +65,21 @@ public class GameService {
                 gameUpdateRequest.awayScore(),
                 gameUpdateRequest.status()
         );
+
+        //game이 처음 end가 되었을 때만 kafka 이벤트 실행
+        if(!prevStatus.isEnded() && game.getStatus().isEnded()) {
+            GameCompletedEvent event = new GameCompletedEvent(
+                    game.getGameId(),
+                    game.getHomeTeam(),
+                    game.getAwayTeam(),
+                    game.getHomeScore(),
+                    game.getAwayScore(),
+                    game.getResult(),
+                    game.getStartAt(),
+                    game.getEndAt()
+            );
+            gameEventProducer.publishGameCompleted(event);
+        }
         return GameUpdateResponse.from(game);
     }
     @Transactional

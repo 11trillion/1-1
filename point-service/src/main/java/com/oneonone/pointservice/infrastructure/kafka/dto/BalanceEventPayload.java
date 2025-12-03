@@ -1,11 +1,10 @@
 package com.oneonone.pointservice.infrastructure.kafka.dto;
 
-import java.util.UUID;
-
 public record BalanceEventPayload (
+        String eventId,
         Long userId,
         Long amount,
-        String type,
-        UUID eventId,
-        String description
+        String type,   // CREDIT / DEBIT
+        String betId     // nullable
 ) {}
+

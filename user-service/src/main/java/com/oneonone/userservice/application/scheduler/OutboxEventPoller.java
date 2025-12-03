@@ -29,7 +29,7 @@ public class OutboxEventPoller {
      * - Kafka 발행 성공 시에만 processed=true 처리
      * - 실패 시 재시도를 위해 processed=false 유지
      */
-    @Scheduled(fixedDelay = 1000) // 1초마다 실행
+    @Scheduled(fixedDelay = 5000) // 5초마다 실행
     @Transactional
     public void pollAndPublish() {
         List<OutboxEvent> events =

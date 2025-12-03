@@ -3,26 +3,29 @@ package com.oneonone.userservice.application.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oneonone.common.exception.BusinessException;
-import com.oneonone.userservice.application.command.*;
+import com.oneonone.userservice.application.command.SignupCommand;
+import com.oneonone.userservice.application.command.UpdateBalanceCommand;
+import com.oneonone.userservice.application.command.UpdateMasterCommand;
+import com.oneonone.userservice.application.command.UpdateUserCommand;
 import com.oneonone.userservice.application.dto.UserInfo;
 import com.oneonone.userservice.domain.entity.OutboxEvent;
 import com.oneonone.userservice.domain.entity.User;
 import com.oneonone.userservice.domain.repository.OutboxRepository;
 import com.oneonone.userservice.domain.repository.UserRepository;
 import com.oneonone.userservice.exception.UserErrorCode;
-import com.oneonone.userservice.presentation.dto.response.MasterUserResponse;
+import com.oneonone.userservice.infrastructure.kafka.dto.BalanceEventPayload;
 import com.oneonone.userservice.presentation.dto.response.BalanceResponse;
+import com.oneonone.userservice.presentation.dto.response.MasterUserResponse;
 import com.oneonone.userservice.presentation.dto.response.UserResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
-import java.util.Map;
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -135,21 +138,31 @@ public class UserService {
         // Balance 업데이트
         // 성능 개선을 위해 락 없이 먼저 구현, 나중에 낙관적/비관적 락 구현
         user.updateBalance(command.amount(), command.type());
+//
+//        // 3. Outbox payload 생성
+//        Map<String, Object> payloadMap = new HashMap<>();
+//        payloadMap.put("userId", userId);
+//        payloadMap.put("amount", command.amount());
+//        payloadMap.put("type", command.type());
+//        payloadMap.put("eventId", command.eventId());
+//        if (command.betId() != null) {
+//            payloadMap.put("betId", command.betId());
+//        }
 
-        // 3. Outbox payload 생성
-        Map<String, Object> payloadMap = new HashMap<>();
-        payloadMap.put("userId", userId);
-        payloadMap.put("amount", command.amount());
-        payloadMap.put("type", command.type());
-        payloadMap.put("eventId", command.eventId());
-        if (command.betId() != null) {
-            payloadMap.put("betId", command.betId());
-        }
+        BalanceEventPayload payloadDTO = new BalanceEventPayload(
+                command.eventId().toString(),
+                userId,
+                command.amount(),
+                command.type(),
+                command.betId().toString()
+        );
 
         String payload;
         try {
-            payload = objectMapper.writeValueAsString(payloadMap);
+            payload = objectMapper.writeValueAsString(payloadDTO);
+            log.info("[BALANCE-UPDATE] Created payload: {}", payload);
         } catch (JsonProcessingException e) {
+            log.error("[BALANCE-UPDATE] Failed to serialize payload: {}", e);
             throw new BusinessException(UserErrorCode.OUTBOX_PAYLOAD_ERROR);
         }
 

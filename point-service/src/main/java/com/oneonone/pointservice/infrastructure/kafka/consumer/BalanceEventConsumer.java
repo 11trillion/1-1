@@ -10,6 +10,8 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
+
 // class 이름은 발생한 event를 따라감
 @Component
 @RequiredArgsConstructor
@@ -29,7 +31,7 @@ public class BalanceEventConsumer {
             BalanceEventPayload payload = objectMapper.readValue(payloadJson, BalanceEventPayload.class);
 
             // 중복 이벤트 처리 방지
-            if (pointRepository.existsByEventId(payload.eventId())) {
+            if (pointRepository.existsByEventId(UUID.fromString(payload.eventId()))) {
                 return;
             }
 
@@ -49,9 +51,10 @@ public class BalanceEventConsumer {
                     payload.userId(),
                     payload.amount(),
                     pointType,
-                    payload.description()
+                    payload.betId()
             );
             pointRepository.save(point);
+            point.markSuccess();
         } catch (Exception e) {
             System.err.println("Failed to consume payload: " + e.getMessage());
         }

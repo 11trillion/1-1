@@ -6,6 +6,10 @@ import com.oneonone.userservice.domain.enums.OutboxStatus;
 import com.oneonone.userservice.infrastructure.kafka.dto.BalanceEventPayload;
 import jakarta.persistence.*;
 import lombok.Getter;
+import org.hibernate.annotations.JdbcType;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -30,6 +34,7 @@ public class OutboxEvent {
     // processed 부분 Enum으로 변경했습니다
     private OutboxStatus status = OutboxStatus.PENDING;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb", nullable = false)
     private String payload;
 

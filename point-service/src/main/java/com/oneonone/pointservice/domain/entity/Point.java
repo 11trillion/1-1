@@ -37,6 +37,8 @@ public class Point extends BaseEntity {
     @Column(name="description")
     private String description;
 
+    private String betId;
+
     @Column(name="user_id", nullable=false)
     private Long userId;
 
@@ -53,22 +55,22 @@ public class Point extends BaseEntity {
     }
 
     public static Point create(
-            UUID eventId,
+            String eventId,
             Long userId,
             Long amount,
             PointType pointType,
-            String description
+            String betId
     ) {
         if (amount <= 0) {
             throw new BusinessException(PointErrorCode.INVALID_AMOUNT);
         }
 
         Point point = new Point();
-        point.eventId = eventId;
+        point.eventId = UUID.fromString(eventId);
         point.userId = userId;
         point.amount = amount;
         point.pointType = pointType;
-        point.description = description;
+        point.betId = betId;
         point.status = PointStatus.PENDING;
 
         return point;

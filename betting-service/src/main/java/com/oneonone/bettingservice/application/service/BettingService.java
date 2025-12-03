@@ -7,18 +7,23 @@ import com.oneonone.bettingservice.domain.BettingErrorCode;
 import com.oneonone.bettingservice.domain.BettingRepository;
 import com.oneonone.common.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BettingService {
     private final BettingRepository bettingRepository;
+    private final KafkaTemplate<String, String> kafkaTemplate;
 
     // 베팅 내역 조회
     public Betting betting (UUID bettingId){
@@ -97,6 +102,12 @@ public class BettingService {
                 requestDto.betResult()
         );
 
+        // Kafka
+//        String topic = "point";
+//        String key = "test";
+//        String message = "경기 결과에 따른 포인트 업데이트";
+//        kafkaTemplate.send(topic, key, message);
+
         return BettingResponseDto.from(betting);
     }
 
@@ -108,4 +119,23 @@ public class BettingService {
 
         betting.softDelete(userId);
     }
+
+    // todo kafka 테스트 - 추후 삭제 예정
+    public String kafkaTest(){
+        // Kafka
+        System.out.println("kafka 테스트 시작");
+        String topic = "point";
+        String key = "test";
+        String message = "경기 결과에 따른 포인트 업데이트";
+        kafkaTemplate.send(topic, key, message);
+
+        return "완료";
+    }
+
+    // todo kafka 테스트 - 추후 삭제 예정
+    @KafkaListener(groupId = "betting", topics = "point")
+    public void cumsumerTest(String message){
+        log.info("Kafka 테스트: " + message);
+    }
+
 }

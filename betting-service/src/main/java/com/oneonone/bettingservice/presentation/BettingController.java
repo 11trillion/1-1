@@ -74,10 +74,16 @@ public class BettingController {
     public ResponseEntity<ApiResponse<BettingResponseDto>> deleteBetting(
             @PathVariable UUID betId
     ){
-        //임시 처리
+        //todo 임시 처리 - user정보로 변경 예정
         Long userId = 999999L;
         bettingService.deleteBetting(betId, userId);
         return ResponseEntity.ok(ApiResponse.success("베팅 삭제 성공"));
+    }
+
+    // todo kafka 테스트 - 추후 삭제 예정
+    @GetMapping("/kafkaTest")
+    public String kafkaTest(){
+        return bettingService.kafkaTest();
     }
 
 }

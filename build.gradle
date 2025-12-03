@@ -15,9 +15,9 @@ allprojects {
 
 // 공통 설정 블록: 모든 하위 모듈(subproject)에 동일하게 적용됨
 subprojects {
-    group = 'com.example.sparta'
+    group = 'com.oneonone'
     version = '0.0.1-SNAPSHOT'
-    description = 'logistics-MSA'
+    description = 'Betting-MSA'
 
     // 서브모듈별 플러그인 적용
     apply plugin: 'java'
@@ -61,5 +61,8 @@ subprojects {
         // 테스트 시에도 Lombok 사용 가능하도록
         testCompileOnly 'org.projectlombok:lombok'
         testAnnotationProcessor 'org.projectlombok:lombok'
+
+        // Kafka
+        implementation 'org.springframework.kafka:spring-kafka'
     }
 }

@@ -23,9 +23,6 @@ dependencies {
     // Eureka
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 
-    // Kafka - 루트에서 공통으로 사용
-//    implementation 'org.springframework.kafka:spring-kafka'
-
     //swagger
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'
 }

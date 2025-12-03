@@ -8,11 +8,6 @@ spring:
       discovery:
         enabled: true
         service-id: config-server
-  kafka:
-    bootstrap-servers: kafka:29092
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
 Server:
   port: 0

@@ -11,8 +11,6 @@ public record GameCompletedEvent(
         String awayTeam,
         int homeScore,
         int awayScore,
-        GameResult gameResult,
-        LocalDateTime startAt,
-        LocalDateTime endAt
+        GameResult gameResult
 ) {
 }

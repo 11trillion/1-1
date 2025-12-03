@@ -74,9 +74,7 @@ public class GameService {
                     game.getAwayTeam(),
                     game.getHomeScore(),
                     game.getAwayScore(),
-                    game.getResult(),
-                    game.getStartAt(),
-                    game.getEndAt()
+                    game.getResult()
             );
             gameEventProducer.publishGameCompleted(event);
         }

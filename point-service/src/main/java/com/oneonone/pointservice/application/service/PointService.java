@@ -21,7 +21,7 @@ public class PointService {
     private final PointRepository pointRepository;
 
     @Transactional
-    public Point createPoint(PointType type, int amount, String description, Long userId) {
+    public Point createPoint(PointType type, Long amount, String description, Long userId) {
         Point point = new Point(type, amount, description, userId);
         return pointRepository.save(point);
     }

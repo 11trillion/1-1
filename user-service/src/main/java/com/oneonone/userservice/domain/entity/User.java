@@ -87,9 +87,17 @@ public class User extends BaseEntity {
         if (slackId != null) this.slackId = slackId;
     }
 
-    public void updatePoint(Long amount) {
-        if (this.pointBalance + amount < 0) throw new BusinessException(UserErrorCode.INVALID_POINT);
-        this.pointBalance += amount;
+    public void updateBalance(Long amount, String type) {
+        if ("DEBIT".equalsIgnoreCase(type)) {
+            if (this.pointBalance - amount < 0) {
+                throw new BusinessException(UserErrorCode.INVALID_POINT);
+            }
+            this.pointBalance -= amount;
+        } else if ("CREDIT".equalsIgnoreCase(type)) {
+            this.pointBalance += amount;
+        } else {
+            throw new BusinessException(UserErrorCode.INVALID_POINT_TYPE);
+        }
     }
 
     public void validate(String nickname) {

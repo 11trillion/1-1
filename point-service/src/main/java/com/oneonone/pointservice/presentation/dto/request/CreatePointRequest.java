@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CreatePointRequest {
     private PointType pointType;
-    private int amount;
+    private Long amount;
     private String description;
     private Long userId;
 }

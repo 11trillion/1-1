@@ -1,16 +1,17 @@
 package com.oneonone.userservice.application.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oneonone.common.exception.BusinessException;
-import com.oneonone.userservice.application.command.SignupCommand;
-import com.oneonone.userservice.application.command.UpdateMasterCommand;
-import com.oneonone.userservice.application.command.UpdatePointCommand;
-import com.oneonone.userservice.application.command.UpdateUserCommand;
+import com.oneonone.userservice.application.command.*;
 import com.oneonone.userservice.application.dto.UserInfo;
+import com.oneonone.userservice.domain.entity.OutboxEvent;
 import com.oneonone.userservice.domain.entity.User;
+import com.oneonone.userservice.domain.repository.OutboxRepository;
 import com.oneonone.userservice.domain.repository.UserRepository;
 import com.oneonone.userservice.exception.UserErrorCode;
 import com.oneonone.userservice.presentation.dto.response.MasterUserResponse;
-import com.oneonone.userservice.presentation.dto.response.PointResponse;
+import com.oneonone.userservice.presentation.dto.response.BalanceResponse;
 import com.oneonone.userservice.presentation.dto.response.UserResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -19,12 +20,18 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+
+    private final OutboxRepository outboxRepository;
+    private final ObjectMapper objectMapper;
 
     @Transactional
     public User signUp(SignupCommand command) {
@@ -102,22 +109,58 @@ public class UserService {
         user.softDelete(id);
     }
 
-    public PointResponse getPoint(Long userId) {
+    public BalanceResponse getPoint(Long userId) {
         User user = findUserById(userId);
         UserInfo userInfo = UserInfo.from(user);
-        return PointResponse.from(userInfo);
+        return BalanceResponse.from(userInfo);
     }
 
-    @Transactional
-    public PointResponse updatePoint(Long userId, UpdatePointCommand command) {
-        User user = findUserById(userId);
-        user.updatePoint(command.amount());
-        UserInfo userInfo = UserInfo.from(user);
-        return PointResponse.from(userInfo);
-    }
+//    @Transactional
+//    public BalanceResponse updatePoint(Long userId, UpdatePointCommand command) {
+//        User user = findUserById(userId);
+//        user.updatePoint(command.amount());
+//        UserInfo userInfo = UserInfo.from(user);
+//        return BalanceResponse.from(userInfo);
+//    }
 
     private User findUserById(Long userId) {
         return userRepository.findByUserIdAndDeletedAtIsNull(userId)
                 .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
+    }
+
+    @Transactional // <- 이 부분 추가했어여
+    public BalanceResponse updateBalance(Long userId, UpdateBalanceCommand command) {
+        User user = findUserById(userId);
+
+        // Balance 업데이트
+        // 성능 개선을 위해 락 없이 먼저 구현, 나중에 낙관적/비관적 락 구현
+        user.updateBalance(command.amount(), command.type());
+
+        // 3. Outbox payload 생성
+        Map<String, Object> payloadMap = new HashMap<>();
+        payloadMap.put("userId", userId);
+        payloadMap.put("amount", command.amount());
+        payloadMap.put("type", command.type());
+        payloadMap.put("eventId", command.eventId());
+        if (command.betId() != null) {
+            payloadMap.put("betId", command.betId());
+        }
+
+        String payload;
+        try {
+            payload = objectMapper.writeValueAsString(payloadMap);
+        } catch (JsonProcessingException e) {
+            throw new BusinessException(UserErrorCode.OUTBOX_PAYLOAD_ERROR);
+        }
+
+        // outbox 이벤트 생성 및 저장
+        OutboxEvent outboxEvent = new OutboxEvent(
+                command.eventId(),
+                userId,
+                payload
+        );
+        outboxRepository.save(outboxEvent);
+
+        return new BalanceResponse(userId, user.getPointBalance());
     }
 }

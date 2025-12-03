@@ -8,7 +8,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public class CreatePointCommand {
     private final PointType type;
-    private final int amount;
+    private final Long amount;
     private final String description;
     private final Long userId;
 }

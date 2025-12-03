@@ -27,8 +27,8 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public Optional<User> findByUsername(String username) {
-        return jpaUserRepository.findByUsername(username);
+    public Optional<User> findByUsernameAndDeletedAtIsNull(String username) {
+        return jpaUserRepository.findByUsernameAndDeletedAtIsNull(username);
     }
 
     @Override

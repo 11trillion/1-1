@@ -1,11 +1,12 @@
-package com.oneonone.pointservice.application;
+package com.oneonone.pointservice.application.service;
 
+import com.oneonone.common.exception.BusinessException;
 import com.oneonone.pointservice.domain.PointErrorCode;
 import com.oneonone.pointservice.domain.entity.Point;
 import com.oneonone.pointservice.domain.enums.PointStatus;
 import com.oneonone.pointservice.domain.enums.PointType;
 import com.oneonone.pointservice.domain.repository.PointRepository;
-import com.oneonone.pointservice.presentation.response.PointResponse;
+import com.oneonone.pointservice.presentation.dto.response.PointResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -28,23 +29,30 @@ public class PointService {
     @Transactional
     public Point updatePointStatus(UUID pointId, PointStatus status) {
         Point point = pointRepository.findById(pointId)
-                .orElseThrow(() -> new IllegalArgumentException(PointErrorCode.POINT_NOT_FOUND.getMessage() + pointId));
+                .orElseThrow(() -> new BusinessException(PointErrorCode.POINT_NOT_FOUND));
 
         try {
             point.changeStatus(status);
         } catch (IllegalStateException e) {
-            throw new IllegalArgumentException(PointErrorCode.STATUS_CANNOT_CHANGE.getMessage());
+            throw new BusinessException(PointErrorCode.STATUS_CANNOT_CHANGE);
         }
         return pointRepository.save(point);
     }
 
-    public Page<PointResponse> getPoints(Long userId, PointStatus status, Pageable pageable) {
-        Page<Point> page;
-        if (status != null) {
-            page = pointRepository.findByUserIdAndStatus(userId, status, pageable);
-        } else {
-            page = pointRepository.findByUserId(userId, pageable);
+    public Page<PointResponse> getPoints(Long userId, String status, Pageable pageable) {
+        PointStatus pointStatus = null;
+        if (status != null && !status.isBlank()) {
+            try {
+                pointStatus = PointStatus.valueOf(status.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                throw new BusinessException(PointErrorCode.INVALID_STATUS);
+            }
         }
+
+        Page<Point> page = (pointStatus != null)
+                ? pointRepository.findByUserIdAndStatus(userId, pointStatus, pageable)
+                : pointRepository.findByUserId(userId, pageable);
+
         return page.map(PointResponse::from);
     }
 

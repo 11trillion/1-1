@@ -2,10 +2,11 @@ package com.oneonone.pointservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
-@SpringBootApplication(scanBasePackages = "com.oneonone")
-@EnableJpaAuditing
+@SpringBootApplication(scanBasePackages = {
+        "com.oneonone.pointservice",
+        "com.oneonone.common"
+})
 public class PointServiceApplication {
 
     public static void main(String[] args) {

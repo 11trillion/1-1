@@ -6,9 +6,11 @@ spring:
     name: game-service
   config:
     import: "configserver:"
-
-
-
+  cloud:
+    config:
+      discovery:
+        enabled: true
+        service-id: config-server
 
 eureka:
   client:

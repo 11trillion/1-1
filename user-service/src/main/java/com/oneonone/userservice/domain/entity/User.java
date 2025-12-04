@@ -3,6 +3,7 @@ package com.oneonone.userservice.domain.entity;
 import com.oneonone.common.enums.PointType;
 import com.oneonone.common.enums.UserRole;
 import com.oneonone.common.exception.BusinessException;
+import com.oneonone.common.infrastructure.kafka.BalanceCompensationEventPayload;
 import com.oneonone.common.model.BaseEntity;
 import com.oneonone.userservice.domain.enums.UserStatus;
 import com.oneonone.userservice.exception.UserErrorCode;
@@ -106,8 +107,8 @@ public class User extends BaseEntity {
         }
     }
 
-    public void compensateBalance(BalanceCompensationEvent event) {
-        rollbackBalance(event.amount(), event.type());
+    public void compensateBalance(BalanceCompensationEventPayload payload) {
+        rollbackBalance(payload.amount(), payload.type());
     }
 
     public void rollbackBalance(Long amount, PointType type) {
@@ -124,25 +125,6 @@ public class User extends BaseEntity {
                 this.pointBalance -= amount;  // CREDIT 롤백은 감소
             }
             default -> throw new BusinessException(UserErrorCode.INVALID_POINT_TYPE);
-        }
-    }
-
-    public void compensateBalance(BalanceCompensationEvent event) {
-        rollbackBalance(event.amount(), event.type());
-    }
-
-    public void rollbackBalance(Long amount, String type) {
-        if ("DEBIT".equalsIgnoreCase(type)) {
-            this.pointBalance += amount;
-        }
-        else if ("CREDIT".equalsIgnoreCase(type)) {
-            if (this.pointBalance - amount < 0) {
-                throw new BusinessException(UserErrorCode.INVALID_POINT);
-            }
-            this.pointBalance -= amount;
-        }
-        else {
-            throw new BusinessException(UserErrorCode.INVALID_POINT_TYPE);
         }
     }
 

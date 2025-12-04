@@ -1,19 +1,14 @@
 package com.oneonone.userservice.application.scheduler;
 
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oneonone.userservice.domain.entity.OutboxEvent;
 import com.oneonone.userservice.domain.repository.OutboxRepository;
-import com.oneonone.userservice.infrastructure.kafka.UserKafkaProducer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 
 @Slf4j
 @Component

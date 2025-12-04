@@ -1,5 +1,6 @@
 package com.oneonone.userservice.presentation.dto.request;
 
+import com.oneonone.common.enums.PointType;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.UUID;
@@ -9,7 +10,7 @@ public record UpdateBalanceRequest(
         Long amount,
 
         @NotNull(message = "타입은 필수입니다")
-        String type,  // "DEBIT" or "CREDIT"
+        PointType type,  // "DEBIT" or "CREDIT"
 
         @NotNull(message = "이벤트 ID는 필수입니다")
         UUID eventId,

@@ -1,10 +1,11 @@
 package com.oneonone.pointservice.infrastructure.kafka.producer;
 
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.oneonone.common.infrastructure.kafka.BalanceCompensationEventPayload;
 import com.oneonone.pointservice.infrastructure.kafka.event.CompensationEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Component;
@@ -18,8 +19,8 @@ public class CompensationProducer {
 
     private static final String COMPENSATION_TOPIC = "balance-compensation-event";
 
-    private final KafkaTemplate<String, String> kafkaTemplate;
-    private final ObjectMapper objectMapper;
+    // DTO 기반 KafkaTemplate 주입
+    private final @Qualifier("balanceCompensationKafkaTemplate") KafkaTemplate<String, BalanceCompensationEventPayload> kafkaTemplate;
 
     /**
      * 보상 이벤트를 동기 방식으로 발행합니다.
@@ -27,23 +28,37 @@ public class CompensationProducer {
      */
     public void sendCompensation(CompensationEvent event) {
         try {
-            String payload = objectMapper.writeValueAsString(event);
+            // CompensationEvent -> BalanceCompensationEventPayload 변환
+            BalanceCompensationEventPayload payload = mapToPayload(event);
 
-            // 동기 방식 발행 (신뢰성 중요)
-            SendResult<String, String> result = kafkaTemplate
-                    .send(COMPENSATION_TOPIC, event.eventId(), payload)
-                    .get();  // 동기 대기
+            // 동기 방식 발행
+            SendResult<String, BalanceCompensationEventPayload> result =
+                    kafkaTemplate.send(COMPENSATION_TOPIC, payload.eventId(), payload)
+                            .get(); // 동기 대기
 
             log.info("[COMPENSATION-SENT] Successfully published - eventId={}, topic={}, partition={}",
-                    event.eventId(),
+                    payload.eventId(),
                     result.getRecordMetadata().topic(),
                     result.getRecordMetadata().partition());
 
         } catch (Exception e) {
             log.error("[COMPENSATION-FAILED] Failed to publish compensation event - eventId={}, error={}",
-                    event.eventId(), e.getMessage());
+                    event.eventId(), e.getMessage(), e);
             throw new CompensationPublishException("Failed to publish compensation event", e);
         }
+    }
+
+    /**
+     * CompensationEvent -> BalanceCompensationEventPayload 변환
+     */
+    private BalanceCompensationEventPayload mapToPayload(CompensationEvent event) {
+        return new BalanceCompensationEventPayload(
+                event.eventId(),
+                event.userId(),
+                event.amount(),
+                event.type(),
+                event.betId()
+        );
     }
 
     /**
@@ -52,27 +67,26 @@ public class CompensationProducer {
      */
     public void sendCompensationAsync(CompensationEvent event) {
         try {
-            String payload = objectMapper.writeValueAsString(event);
+            BalanceCompensationEventPayload payload = mapToPayload(event);
 
-            // 비동기 방식 발행
-            CompletableFuture<SendResult<String, String>> future =
-                    kafkaTemplate.send(COMPENSATION_TOPIC, event.eventId(), payload);
+            CompletableFuture<SendResult<String, BalanceCompensationEventPayload>> future =
+                    kafkaTemplate.send(COMPENSATION_TOPIC, payload.eventId(), payload);
 
             future.whenComplete((result, ex) -> {
                 if (ex == null) {
-                    log.info("[COMPENSATION-SENT] Successfully published - eventId={}, partition={}",
-                            event.eventId(),
+                    log.info("[COMPENSATION-SENT] Successfully published async - eventId={}, partition={}",
+                            payload.eventId(),
                             result.getRecordMetadata().partition());
                 } else {
-                    log.error("[COMPENSATION-FAILED] Failed to publish - eventId={}, error={}",
-                            event.eventId(), ex.getMessage());
+                    log.error("[COMPENSATION-FAILED] Failed to publish async - eventId={}, error={}",
+                            payload.eventId(), ex.getMessage(), ex);
                 }
             });
 
         } catch (Exception e) {
-            log.error("[COMPENSATION-FAILED] Failed to serialize event - eventId={}, error={}",
-                    event.eventId(), e.getMessage());
-            throw new CompensationPublishException("Failed to serialize compensation event", e);
+            log.error("[COMPENSATION-FAILED] Failed to map event to payload - eventId={}, error={}",
+                    event.eventId(), e.getMessage(), e);
+            throw new CompensationPublishException("Failed to map event to payload", e);
         }
     }
 

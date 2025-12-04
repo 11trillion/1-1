@@ -3,9 +3,10 @@ package com.oneonone.pointservice.infrastructure.kafka.consumer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oneonone.common.exception.BusinessException;
+import com.oneonone.common.infrastructure.kafka.BalanceEventPayload;
+import com.oneonone.pointservice.domain.PointErrorCode;
 import com.oneonone.pointservice.domain.entity.Point;
 import com.oneonone.pointservice.domain.repository.PointRepository;
-import com.oneonone.pointservice.infrastructure.kafka.dto.BalanceEventPayload;
 import com.oneonone.pointservice.infrastructure.kafka.event.CompensationEvent;
 import com.oneonone.pointservice.infrastructure.kafka.producer.CompensationProducer;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,8 @@ public class BalanceEventConsumer {
     @Transactional
     public void consume(String payloadJson) {
         BalanceEventPayload payload = null;
+        log.info("[KAFKA-CONSUME] Raw payload received: {}", payloadJson);
+
         try {
             // Json 역직렬화
             payload = objectMapper.readValue(payloadJson, BalanceEventPayload.class);
@@ -54,6 +57,11 @@ public class BalanceEventConsumer {
                     payload.type(),
                     payload.betId()
             );
+
+            if (payload.amount() == 9999L) {
+                throw new BusinessException(PointErrorCode.FORCE);
+            }
+
             pointRepository.save(point);
             point.markSuccess();
 

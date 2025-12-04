@@ -3,7 +3,7 @@ package com.oneonone.userservice.application.scheduler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oneonone.userservice.domain.entity.OutboxEvent;
 import com.oneonone.userservice.domain.repository.OutboxRepository;
-import com.oneonone.userservice.infrastructure.kafka.UserKafkaProducer;
+import com.oneonone.userservice.infrastructure.kafka.producer.UserKafkaProducer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

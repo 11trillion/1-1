@@ -6,7 +6,11 @@ spring:
     name: user-service
   config:
     import: "configserver:"
-
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
 eureka:
   client:
@@ -14,3 +18,4 @@ eureka:
       defaultZone: http://localhost:8761/eureka
     register-with-eureka: true
     fetch-registry: true
+

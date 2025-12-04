@@ -2,12 +2,12 @@ package com.oneonone.userservice.presentation.dto.response;
 
 import com.oneonone.userservice.application.dto.UserInfo;
 
-public record PointResponse(
+public record BalanceResponse(
         Long userId,
         Long pointBalance
 ) {
-    public static PointResponse from(UserInfo userInfo) {
-        return new PointResponse(
+    public static BalanceResponse from(UserInfo userInfo) {
+        return new BalanceResponse(
                 userInfo.userId(),
                 userInfo.pointBalance());
     }

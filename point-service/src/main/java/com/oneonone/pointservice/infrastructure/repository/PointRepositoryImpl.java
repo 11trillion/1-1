@@ -36,4 +36,9 @@ public class PointRepositoryImpl implements PointRepository {
     public Page<Point> findByUserIdAndStatus(Long userId, PointStatus pointStatus, Pageable pageable) {
         return pointJpaRepository.findByUserIdAndStatus(userId, pointStatus, pageable);
     }
+
+    @Override
+    public boolean existsByEventId(UUID eventId) {
+        return pointJpaRepository.existsByEventId(eventId);
+    }
 }

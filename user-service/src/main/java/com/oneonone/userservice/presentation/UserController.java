@@ -23,6 +23,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @Tag(
         name = "User API",
         description = "회원가입 및 로그인을 비롯한 사용자를 담당하는 API"
@@ -206,31 +208,28 @@ public class UserController {
             summary = "사용자 포인트 잔액 조회 - 서비스 간 통신용",
             description = "관리자가 특정 사용자의 포인트 잔액을 조회합니다."
     )
-    @GetMapping("/{userId}/points")
-    public ResponseEntity<ApiResponse<PointResponse>> getPoint(
+    @GetMapping("/{userId}/balance")
+    public ResponseEntity<ApiResponse<BalanceResponse>> getBalance(
             @RequestHeader("X-User-Role") String role,
             @Parameter(description = "포인트 잔액을 조회할 사용자 ID", required = true)
             @PathVariable Long userId) {
         if (!UserRole.valueOf(role).equals(UserRole.MASTER)) throw new BusinessException(UserErrorCode.FORBIDDEN);
-        PointResponse response = userService.getPoint(userId);
+        BalanceResponse response = userService.getPoint(userId);
         return ResponseEntity.ok(ApiResponse.success(response, "사용자 포인트 조회 성공"));
     }
 
-    @Operation(
-            summary = "사용자 포인트 잔액 수정 - 서비스 간 통신용",
-            description = "관리자가 특정 사용자의 포인트를 증가/감소시킵니다."
-    )
-    @PatchMapping("/{userId}/points")
-    public ResponseEntity<ApiResponse<PointResponse>> updatePoint(
+    @PatchMapping("/{userId}/balance")
+    public ResponseEntity<ApiResponse<BalanceResponse>> updateBalance(
             @RequestHeader("X-User-Role") String role,
-            @Parameter(description = "포인트 잔액을 수정할 사용자 ID", required = true)
-            @PathVariable Long userId,
-            @Parameter(description = "포인트 증감량(증가: 양수, 감소: 음수)", required = true)
-            @RequestBody PointRequest request) {
-        if (!UserRole.valueOf(role).equals(UserRole.MASTER)) throw new BusinessException(UserErrorCode.FORBIDDEN);
-        UpdatePointCommand command = new UpdatePointCommand(
-                request.amount());
-        PointResponse response = userService.updatePoint(userId, command);
-        return ResponseEntity.ok(ApiResponse.success(response, "사용자 포인트 수정 성공"));
+            @RequestHeader("X-User-Id") Long userId,
+            @RequestBody UpdateBalanceRequest request) {
+//        if (!UserRole.valueOf(role).equals(UserRole.MASTER)) throw new BusinessException(UserErrorCode.FORBIDDEN);
+        UpdateBalanceCommand command = new UpdateBalanceCommand(
+                request.amount(),
+                request.type(),
+                request.eventId(),
+                UUID.fromString("11111111-1111-1111-1111-111111111111")); // 임의의 random UUID
+        BalanceResponse response = userService.updateBalance(userId, command);
+        return ResponseEntity.ok(ApiResponse.success(response, "사용자 포인트 밸런스 수정 성공"));
     }
 }

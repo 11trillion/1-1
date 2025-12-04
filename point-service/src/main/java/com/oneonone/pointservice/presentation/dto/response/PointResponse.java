@@ -11,7 +11,7 @@ import java.util.UUID;
 public class PointResponse {
     private UUID pointId;
     private PointType type;
-    private int amount;
+    private Long amount;
     private String description;
     private PointStatus status;
     private Long userId;

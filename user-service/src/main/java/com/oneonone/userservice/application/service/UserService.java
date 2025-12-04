@@ -133,7 +133,7 @@ public class UserService {
                 .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
     }
 
-    @Transactional // <- 이 부분 추가했어여
+    @Transactional
     public BalanceResponse updateBalance(Long userId, UpdateBalanceCommand command) {
         // 멱등성 체크 - 이미 처리된 eventId인지 확인
         Optional<OutboxEvent> existingEvent = outboxRepository.findByEventId(command.eventId());

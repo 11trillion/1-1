@@ -107,8 +107,8 @@ public class User extends BaseEntity {
         }
     }
 
-    public void compensateBalance(BalanceCompensationEventPayload payload) {
-        rollbackBalance(payload.amount(), payload.type());
+    public void compensateBalance(BalanceCompensationEvent event) {
+        rollbackBalance(event.amount(), event.type());
     }
 
     public void rollbackBalance(Long amount, PointType type) {

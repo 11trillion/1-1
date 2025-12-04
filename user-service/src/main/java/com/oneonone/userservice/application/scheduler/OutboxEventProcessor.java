@@ -1,13 +1,19 @@
 package com.oneonone.userservice.application.scheduler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.oneonone.common.infrastructure.kafka.BalanceEventPayload;
 import com.oneonone.userservice.domain.entity.OutboxEvent;
 import com.oneonone.userservice.domain.repository.OutboxRepository;
+import com.oneonone.userservice.infrastructure.kafka.event.BalanceCompensationEvent;
 import com.oneonone.userservice.infrastructure.kafka.producer.UserKafkaProducer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 @Slf4j
 @Component
@@ -29,6 +35,7 @@ public class OutboxEventProcessor {
         if (!event.canRetry()) {
             event.markAsFailed();
             outboxRepository.save(event);
+            compensateEvent(event);
             throw new MaxRetriesExceededException(
                     "Max retries exceeded for eventId: " + event.getEventId()
             );
@@ -55,6 +62,32 @@ public class OutboxEventProcessor {
 
             log.warn("[OUTBOX-FAILED] Failed to publish (retry: {}/{}) - eventId={}, reason={}",
                     event.getRetryCount(), 3, event.getEventId(), e.getMessage());
+        }
+    }
+
+    public void compensateEvent(OutboxEvent event) {
+        try {
+            BalanceEventPayload eventPayload = event.toBalanceEventPayload(objectMapper);
+            BalanceCompensationEvent balanceCompensationEvent = new BalanceCompensationEvent(
+                    UUID.randomUUID().toString(),
+                    eventPayload.userId(),
+                    eventPayload.amount(),
+                    eventPayload.type(),
+                    eventPayload.betId()
+            );
+            BalanceEventPayload payload = new BalanceEventPayload(
+                    balanceCompensationEvent.eventId(),
+                    balanceCompensationEvent.userId(),
+                    balanceCompensationEvent.amount(),
+                    balanceCompensationEvent.type(),
+                    balanceCompensationEvent.betId()
+            );
+            kafkaProducer.sendSync(payload);
+            log.info("[OUTBOX-COMPENSATE] Compensation event sent - eventId={}, userId={}",
+                    event.getEventId(), event.getUserId());
+        } catch (Exception e) {
+            log.error("[OUTBOX-COMPENSATE] Failed to send compensation event - eventId={}, error={}",
+                    event.getEventId(), e.getMessage(), e);
         }
     }
 

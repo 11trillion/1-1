@@ -1,10 +1,12 @@
-package com.oneonone.userservice.infrastructure.kafka.dto;
+package com.oneonone.common.infrastructure.kafka;
+
+import com.oneonone.common.enums.PointType;
 
 public record BalanceEventPayload(
         String eventId,
         Long userId,
         Long amount,
-        String type,   // CREDIT / DEBIT
+        PointType type,   // CREDIT / DEBIT
         String betId     // nullable
 ) {
 }

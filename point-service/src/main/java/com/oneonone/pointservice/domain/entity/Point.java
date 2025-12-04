@@ -4,7 +4,7 @@ import com.oneonone.common.exception.BusinessException;
 import com.oneonone.common.model.BaseEntity;
 import com.oneonone.pointservice.domain.PointErrorCode;
 import com.oneonone.pointservice.domain.enums.PointStatus;
-import com.oneonone.pointservice.domain.enums.PointType;
+import com.oneonone.common.enums.PointType;
 import jakarta.persistence.*;
 import lombok.*;
 

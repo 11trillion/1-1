@@ -3,7 +3,7 @@ package com.oneonone.userservice.domain.entity;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oneonone.common.enums.OutboxStatus;
-import com.oneonone.userservice.infrastructure.kafka.dto.BalanceEventPayload;
+import com.oneonone.common.infrastructure.kafka.BalanceEventPayload;
 import jakarta.persistence.*;
 import lombok.Getter;
 import org.hibernate.annotations.JdbcTypeCode;

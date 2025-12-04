@@ -1,7 +1,9 @@
 package com.oneonone.userservice.domain.entity;
 
+import com.oneonone.common.enums.PointType;
 import com.oneonone.common.enums.UserRole;
 import com.oneonone.common.exception.BusinessException;
+import com.oneonone.common.infrastructure.kafka.BalanceCompensationEventPayload;
 import com.oneonone.common.model.BaseEntity;
 import com.oneonone.userservice.domain.enums.UserStatus;
 import com.oneonone.userservice.exception.UserErrorCode;
@@ -88,35 +90,41 @@ public class User extends BaseEntity {
         if (slackId != null) this.slackId = slackId;
     }
 
-    public void updateBalance(Long amount, String type) {
-        if ("DEBIT".equalsIgnoreCase(type)) {
-            if (this.pointBalance - amount < 0) {
-                throw new BusinessException(UserErrorCode.INVALID_POINT);
+    public void updateBalance(Long amount, PointType type) {
+        if (amount <= 0) {
+            throw new BusinessException(UserErrorCode.INVALID_POINT);
+        }
+
+        switch (type) {
+            case DEBIT -> {
+                if (this.pointBalance - amount < 0) {
+                    throw new BusinessException(UserErrorCode.INVALID_POINT);
+                }
+                this.pointBalance -= amount;
             }
-            this.pointBalance -= amount;
-        } else if ("CREDIT".equalsIgnoreCase(type)) {
-            this.pointBalance += amount;
-        } else {
-            throw new BusinessException(UserErrorCode.INVALID_POINT_TYPE);
+            case CREDIT -> this.pointBalance += amount;
+            default -> throw new BusinessException(UserErrorCode.INVALID_POINT_TYPE);
         }
     }
 
-    public void compensateBalance(BalanceCompensationEvent event) {
-        rollbackBalance(event.amount(), event.type());
+    public void compensateBalance(BalanceCompensationEventPayload payload) {
+        rollbackBalance(payload.amount(), payload.type());
     }
 
-    public void rollbackBalance(Long amount, String type) {
-        if ("DEBIT".equalsIgnoreCase(type)) {
-            this.pointBalance += amount;
+    public void rollbackBalance(Long amount, PointType type) {
+        if (amount <= 0) {
+            throw new BusinessException(UserErrorCode.INVALID_POINT);
         }
-        else if ("CREDIT".equalsIgnoreCase(type)) {
-            if (this.pointBalance - amount < 0) {
-                throw new BusinessException(UserErrorCode.INVALID_POINT);
+
+        switch (type) {
+            case DEBIT -> this.pointBalance += amount;  // DEBIT 롤백은 증가
+            case CREDIT -> {
+                if (this.pointBalance - amount < 0) {
+                    throw new BusinessException(UserErrorCode.INVALID_POINT);
+                }
+                this.pointBalance -= amount;  // CREDIT 롤백은 감소
             }
-            this.pointBalance -= amount;
-        }
-        else {
-            throw new BusinessException(UserErrorCode.INVALID_POINT_TYPE);
+            default -> throw new BusinessException(UserErrorCode.INVALID_POINT_TYPE);
         }
     }
 

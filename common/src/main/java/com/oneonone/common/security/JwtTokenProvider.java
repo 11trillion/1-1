@@ -25,6 +25,9 @@ public class JwtTokenProvider {
     @Value("${jwt.token.expiration}")
     private long expiration;
 
+    @Value("${jwt.refresh.expiration}")
+    private long refreshExpiration;
+
     private SecretKey key;
     private final SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
 
@@ -45,6 +48,18 @@ public class JwtTokenProvider {
         return BEARER_PREFIX + Jwts.builder()
                 .setSubject(userId.toString())
                 .claim(AUTHORIZATION_KEY, role)
+                .setIssuedAt(now)
+                .setExpiration(validity)
+                .signWith(key, signatureAlgorithm)
+                .compact();
+    }
+
+    public String createRefreshToken(Long userId) {
+        Date now = new Date();
+        Date validity = new Date(now.getTime() + refreshExpiration);
+
+        return BEARER_PREFIX + Jwts.builder()
+                .setSubject(userId.toString())
                 .setIssuedAt(now)
                 .setExpiration(validity)
                 .signWith(key, signatureAlgorithm)

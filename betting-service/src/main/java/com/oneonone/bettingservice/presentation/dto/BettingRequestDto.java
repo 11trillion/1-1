@@ -1,4 +1,4 @@
-package com.oneonone.bettingservice.application.dto;
+package com.oneonone.bettingservice.presentation.dto;
 
 import com.oneonone.bettingservice.domain.BetResult;
 import com.oneonone.bettingservice.domain.BetType;

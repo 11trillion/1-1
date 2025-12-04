@@ -10,7 +10,7 @@ import java.util.UUID;
 public interface GameRepository {
     Game save(Game game);
     Optional<Game> findById(UUID id);
-    Page<Game> findAll(Pageable pageable);
+    Page<Game> findAllByDeletedAtIsNull(Pageable pageable);
 
 
 }

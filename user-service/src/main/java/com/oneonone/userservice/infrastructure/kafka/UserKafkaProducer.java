@@ -1,6 +1,5 @@
 package com.oneonone.userservice.infrastructure.kafka;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oneonone.userservice.infrastructure.kafka.dto.BalanceEventPayload;
 import lombok.RequiredArgsConstructor;

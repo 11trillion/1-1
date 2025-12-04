@@ -6,7 +6,6 @@ import com.oneonone.userservice.domain.enums.OutboxStatus;
 import com.oneonone.userservice.infrastructure.kafka.dto.BalanceEventPayload;
 import jakarta.persistence.*;
 import lombok.Getter;
-import org.hibernate.annotations.JdbcType;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 

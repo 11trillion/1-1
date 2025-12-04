@@ -14,43 +14,81 @@ spring:
     import: "configserver:"
   cloud:
     gateway:
-      server:
-        webflux:
-          discovery:
-            locator:
-              enabled: true  # ??? ?????? ?? ???? ???? ????? ??
-              lower-case-service-id: true
-          routes:
-            - id: user-service-public
-              uri: lb://user-service
-              predicates:
-                - Path=/api/v1/users/signup, /api/v1/users/login
-
-            - id: user-service-private
-              uri: lb://user-service
-              predicates:
-                - Path=/api/v1/users/**
-              filters:
-                - AuthenticationFilter
-
-            # Game Service Routes
-            - id: game-service
-              uri: lb://game-service
-              predicates:
-                - Path=/api/v1/games/**
-            # Point Service Routes
-            - id: point-service
-              uri: lb://point-service
-              predicates:
-                - Path=/api/v1/points/**
-            # Betting Service Routes
-            - id: betting-service
-              uri: lb://betting-service
-              predicates:
-                - Path=/api/v1/bets/**
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        # User Service Route
+        - id: user-service-public
+          uri: lb://user-service
+          predicates:
+            - Path=/api/v1/users/signup, /api/v1/users/login
+        - id: user-service-private
+          uri: lb://user-service
+          predicates:
+            - Path=/api/v1/users/**
+          filters:
+            - AuthenticationFilter
+        - id: user-service-openapi
+          uri: lb://user-service
+          predicates:
+            - Path=/v3/api-docs/user-service
+          filters:
+            - RewritePath=/v3/api-docs/user-service,/v3/api-docs
+        # Game Service Routes
+        - id: game-service
+          uri: lb://game-service
+          predicates:
+            - Path=/api/v1/games/**
+        - id: game-service-openapi
+          uri: lb://game-service
+          predicates:
+            - Path=/v3/api-docs/game-service
+          filters:
+            - RewritePath=/v3/api-docs/game-service,/v3/api-docs
+        # Point Service Routes
+        - id: point-service
+          uri: lb://point-service
+          predicates:
+            - Path=/api/v1/points/**
+        - id: point-service-openapi
+          uri: lb://point-service
+          predicates:
+            - Path=/v3/api-docs/point-service
+          filters:
+            - RewritePath=/v3/api-docs/point-service,/v3/api-docs
+        # Betting Service Routes
+        - id: betting-service
+          uri: lb://betting-service
+          predicates:
+            - Path=/api/v1/bets/**
+        - id: betting-service-openapi
+          uri: lb://betting-service
+          predicates:
+            - Path=/v3/api-docs/betting-service
+          filters:
+            # /v3/api-docs/betting-service -> /v3/api-docs
+            - RewritePath=/v3/api-docs/betting-service,/v3/api-docs
   data:
     redis:
       port: 6379
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    urls:
+      - name: betting-service
+        url: /v3/api-docs/betting-service
+      - name: game-service
+        url: /v3/api-docs/game-service
+      - name: point-service
+        url: /v3/api-docs/point-service
+      - name: user-service
+        url: /v3/api-docs/user-service
 
 management:
   endpoints:

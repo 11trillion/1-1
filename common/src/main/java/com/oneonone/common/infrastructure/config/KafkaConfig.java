@@ -1,12 +1,14 @@
 package com.oneonone.common.infrastructure.config;
 
-import com.oneonone.common.infrastructure.kafka.BalanceCompensationEvent;
+import com.oneonone.common.infrastructure.kafka.BalanceCompensationEventPayload;
+import com.oneonone.common.infrastructure.kafka.BalanceEventPayload;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafka;
@@ -17,6 +19,7 @@ import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.support.ExponentialBackOffWithMaxRetries;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
+import org.springframework.kafka.support.serializer.JsonSerializer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -69,52 +72,73 @@ public class KafkaConfig {
     }
 
     // ---------------------------
-    // Listener Container Factory + ErrorHandler + DLQ
+    // BalanceEventPayload
+    // Template & Producer
     // ---------------------------
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory(
-            KafkaTemplate<String, String> kafkaTemplate
-    ) {
-        ConcurrentKafkaListenerContainerFactory<String, String> factory =
-                new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(consumerFactory());
-        factory.setConcurrency(3); // 동시 처리 스레드 수
-        factory.setCommonErrorHandler(kafkaErrorHandler(kafkaTemplate));
-        return factory;
+    @Qualifier("balanceKafkaTemplate")
+    public KafkaTemplate<String, BalanceEventPayload> balanceKafkaTemplate() {
+        return new KafkaTemplate<>(balanceProducerFactory());
     }
 
     @Bean
-    public ConsumerFactory<String, BalanceCompensationEvent> balanceConsumerFactory() {
-        JsonDeserializer<BalanceCompensationEvent> deserializer =
-                new JsonDeserializer<>(BalanceCompensationEvent.class);
+    public ProducerFactory<String, BalanceEventPayload> balanceProducerFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "kafka:29092");
+        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        return new DefaultKafkaProducerFactory<String, BalanceEventPayload>(configProps);
+    }
+
+    // ---------------------------
+    // BalanceCompensationEventPayload
+    // Template & Consumer & Listener Factory & ErrorHandler + DLQ + 재시도
+    // ---------------------------
+    @Bean
+    @Qualifier("balanceCompensationKafkaTemplate")
+    public KafkaTemplate<String, BalanceCompensationEventPayload> balanceCompensationKafkaTemplate() {
+        return new KafkaTemplate<>(balanceCompensationProducerFactory());
+    }
+
+    @Bean
+    public ProducerFactory<String, BalanceCompensationEventPayload> balanceCompensationProducerFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "kafka:29092");
+        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class); // DTO 직렬화
+        return new DefaultKafkaProducerFactory<>(configProps);
+    }
+
+    @Bean
+    public ConsumerFactory<String, BalanceCompensationEventPayload> balanceConsumerFactory() {
+        JsonDeserializer<BalanceCompensationEventPayload> deserializer =
+                new JsonDeserializer<>(BalanceCompensationEventPayload.class);
         deserializer.addTrustedPackages("*");
 
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "kafka:29092");
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, "user-service");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, deserializer);
 
         return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), deserializer);
     }
 
+
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, BalanceCompensationEvent> balanceEventKafkaListenerContainerFactory(KafkaTemplate<String, String> kafkaTemplate) {
-        ConcurrentKafkaListenerContainerFactory<String, BalanceCompensationEvent> factory =
+    public ConcurrentKafkaListenerContainerFactory<String, BalanceCompensationEventPayload> balanceEventKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, BalanceCompensationEventPayload> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(balanceConsumerFactory());
         factory.setConcurrency(3);
-        factory.setCommonErrorHandler(kafkaErrorHandler(kafkaTemplate));
+        factory.setCommonErrorHandler(kafkaErrorHandler(balanceCompensationKafkaTemplate()));
         return factory;
     }
 
-
-    // ---------------------------
-    // ErrorHandler + DLQ + 재시도
-    // ---------------------------
     @Bean
-    public CommonErrorHandler kafkaErrorHandler(KafkaTemplate<String, String> kafkaTemplate) {
+    public CommonErrorHandler kafkaErrorHandler(
+            @Qualifier("balanceCompensationKafkaTemplate") KafkaTemplate<String, BalanceCompensationEventPayload> kafkaTemplate) {
         // DLQ 전송 설정
+
         DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(
                 kafkaTemplate,
                 (ConsumerRecord<?, ?> record, Exception ex) -> {
@@ -146,4 +170,19 @@ public class KafkaConfig {
         });
         return errorHandler;
     }
+
+    // ---------------------------
+    // Listener Container Factory + ErrorHandler + DLQ
+    // ---------------------------
+//    @Bean(name = "stringKafkaListenerContainerFactoryWithErrorHandler")
+//    public ConcurrentKafkaListenerContainerFactory<String, String> stringKafkaListenerContainerFactoryWithErrorHandler(
+//            KafkaTemplate<String, String> kafkaTemplate
+//    ) {
+//        ConcurrentKafkaListenerContainerFactory<String, String> factory =
+//                new ConcurrentKafkaListenerContainerFactory<>();
+//        factory.setConsumerFactory(consumerFactory());
+//        factory.setConcurrency(3);
+//        factory.setCommonErrorHandler(kafkaErrorHandler(kafkaTemplate));
+//        return factory;
+//    }
 }

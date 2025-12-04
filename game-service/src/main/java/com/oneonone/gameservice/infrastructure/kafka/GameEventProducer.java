@@ -21,7 +21,7 @@ public class GameEventProducer {
     private String topicName;
 
     public void publishGameCompleted(GameCompletedEvent gameCompletedEvent) {
-        log.info("Publishing game completed event to kafka, gamdId = {}", gameCompletedEvent.gameId());
+        log.info("Publishing game completed event to kafka, gameId = {}", gameCompletedEvent.gameId());
 
         try{
             String payload = objectMapper.writeValueAsString(gameCompletedEvent);

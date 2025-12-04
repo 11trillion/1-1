@@ -6,6 +6,7 @@ import com.oneonone.gameservice.application.event.GameCompletedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.KafkaException;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
@@ -38,6 +39,8 @@ public class GameEventProducer {
                     });
         } catch (JsonProcessingException e) {
             log.error("gameCompletedEvent failed to serialize",e);
+        } catch (KafkaException e) {
+            log.error("KafKa의 send() 호출이 실패했습니다", e);
         }
     }
 }

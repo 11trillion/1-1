@@ -2,7 +2,7 @@ package com.oneonone.userservice.domain.entity;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.oneonone.userservice.domain.enums.OutboxStatus;
+import com.oneonone.common.enums.OutboxStatus;
 import com.oneonone.userservice.infrastructure.kafka.dto.BalanceEventPayload;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -11,7 +11,6 @@ import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
-
 
 @Entity
 @Table(name = "p_outboxes")

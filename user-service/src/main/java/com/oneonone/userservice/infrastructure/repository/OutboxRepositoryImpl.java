@@ -1,7 +1,7 @@
 package com.oneonone.userservice.infrastructure.repository;
 
 import com.oneonone.userservice.domain.entity.OutboxEvent;
-import com.oneonone.userservice.domain.enums.OutboxStatus;
+import com.oneonone.common.enums.OutboxStatus;
 import com.oneonone.userservice.domain.repository.OutboxRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;

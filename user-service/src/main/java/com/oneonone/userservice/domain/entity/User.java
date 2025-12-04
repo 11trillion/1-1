@@ -5,6 +5,7 @@ import com.oneonone.common.exception.BusinessException;
 import com.oneonone.common.model.BaseEntity;
 import com.oneonone.userservice.domain.enums.UserStatus;
 import com.oneonone.userservice.exception.UserErrorCode;
+import com.oneonone.userservice.infrastructure.kafka.event.BalanceCompensationEvent;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -96,6 +97,25 @@ public class User extends BaseEntity {
         } else if ("CREDIT".equalsIgnoreCase(type)) {
             this.pointBalance += amount;
         } else {
+            throw new BusinessException(UserErrorCode.INVALID_POINT_TYPE);
+        }
+    }
+
+    public void compensateBalance(BalanceCompensationEvent event) {
+        rollbackBalance(event.amount(), event.type());
+    }
+
+    public void rollbackBalance(Long amount, String type) {
+        if ("DEBIT".equalsIgnoreCase(type)) {
+            this.pointBalance += amount;
+        }
+        else if ("CREDIT".equalsIgnoreCase(type)) {
+            if (this.pointBalance - amount < 0) {
+                throw new BusinessException(UserErrorCode.INVALID_POINT);
+            }
+            this.pointBalance -= amount;
+        }
+        else {
             throw new BusinessException(UserErrorCode.INVALID_POINT_TYPE);
         }
     }

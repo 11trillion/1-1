@@ -228,7 +228,7 @@ public class UserController {
                 request.amount(),
                 request.type(),
                 request.eventId(),
-                UUID.fromString("11111111-1111-1111-1111-111111111111")); // 임의의 random UUID
+                request.betId());
         BalanceResponse response = userService.updateBalance(userId, command);
         return ResponseEntity.ok(ApiResponse.success(response, "사용자 포인트 밸런스 수정 성공"));
     }

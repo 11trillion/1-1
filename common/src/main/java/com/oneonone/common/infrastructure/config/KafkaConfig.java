@@ -1,18 +1,27 @@
 package com.oneonone.common.infrastructure.config;
 
+import com.oneonone.common.infrastructure.kafka.BalanceCompensationEvent;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.apache.kafka.clients.producer.ProducerConfig;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.*;
+import org.springframework.kafka.listener.CommonErrorHandler;
+import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
+import org.springframework.kafka.listener.DefaultErrorHandler;
+import org.springframework.kafka.support.ExponentialBackOffWithMaxRetries;
+import org.springframework.kafka.support.serializer.JsonDeserializer;
 
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @EnableKafka
 @Configuration
 public class KafkaConfig {
@@ -57,5 +66,84 @@ public class KafkaConfig {
         factory.setConsumerFactory(consumerFactory());
         // 설정된 리스너 컨테이너 팩토리를 반환합니다.
         return factory;
+    }
+
+    // ---------------------------
+    // Listener Container Factory + ErrorHandler + DLQ
+    // ---------------------------
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory(
+            KafkaTemplate<String, String> kafkaTemplate
+    ) {
+        ConcurrentKafkaListenerContainerFactory<String, String> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(consumerFactory());
+        factory.setConcurrency(3); // 동시 처리 스레드 수
+        factory.setCommonErrorHandler(kafkaErrorHandler(kafkaTemplate));
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, BalanceCompensationEvent> balanceConsumerFactory() {
+        JsonDeserializer<BalanceCompensationEvent> deserializer =
+                new JsonDeserializer<>(BalanceCompensationEvent.class);
+        deserializer.addTrustedPackages("*");
+
+        Map<String, Object> props = new HashMap<>();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "kafka:29092");
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "user-service");
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, deserializer);
+
+        return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), deserializer);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, BalanceCompensationEvent> balanceEventKafkaListenerContainerFactory(KafkaTemplate<String, String> kafkaTemplate) {
+        ConcurrentKafkaListenerContainerFactory<String, BalanceCompensationEvent> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(balanceConsumerFactory());
+        factory.setConcurrency(3);
+        factory.setCommonErrorHandler(kafkaErrorHandler(kafkaTemplate));
+        return factory;
+    }
+
+
+    // ---------------------------
+    // ErrorHandler + DLQ + 재시도
+    // ---------------------------
+    @Bean
+    public CommonErrorHandler kafkaErrorHandler(KafkaTemplate<String, String> kafkaTemplate) {
+        // DLQ 전송 설정
+        DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(
+                kafkaTemplate,
+                (ConsumerRecord<?, ?> record, Exception ex) -> {
+                    String dlqTopic = record.topic() + ".DLQ";
+                    log.error("[DLQ] Sending message to DLQ - topic={}, offset={}, error={}",
+                            dlqTopic, record.offset(), ex.getMessage());
+                    return new org.apache.kafka.common.TopicPartition(dlqTopic, record.partition());
+                }
+        );
+
+        // Exponential Backoff 재시도 설정 (1s → 2s → 4s)
+        DefaultErrorHandler errorHandler = getDefaultErrorHandler(recoverer);
+
+        return errorHandler;
+    }
+
+    private static DefaultErrorHandler getDefaultErrorHandler(DeadLetterPublishingRecoverer recoverer) {
+        ExponentialBackOffWithMaxRetries backOff = new ExponentialBackOffWithMaxRetries(3);
+        backOff.setInitialInterval(1000L);
+        backOff.setMultiplier(2.0);
+        backOff.setMaxInterval(10000L);
+
+        DefaultErrorHandler errorHandler = new DefaultErrorHandler(recoverer, backOff);
+
+        // 재시도 시 로깅
+        errorHandler.setRetryListeners((record, ex, deliveryAttempt) -> {
+            log.warn("[KAFKA-RETRY] Retry attempt {}/3 - topic={}, offset={}, error={}",
+                    deliveryAttempt, record.topic(), record.offset(), ex.getMessage());
+        });
+        return errorHandler;
     }
 }

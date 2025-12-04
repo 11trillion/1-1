@@ -13,7 +13,7 @@ import com.oneonone.userservice.domain.entity.User;
 import com.oneonone.userservice.domain.repository.OutboxRepository;
 import com.oneonone.userservice.domain.repository.UserRepository;
 import com.oneonone.userservice.exception.UserErrorCode;
-import com.oneonone.userservice.infrastructure.kafka.event.BalanceEvent;
+import com.oneonone.userservice.infrastructure.kafka.dto.BalanceEventPayload;
 import com.oneonone.userservice.presentation.dto.response.BalanceResponse;
 import com.oneonone.userservice.presentation.dto.response.MasterUserResponse;
 import com.oneonone.userservice.presentation.dto.response.UserResponse;
@@ -133,7 +133,7 @@ public class UserService {
                 .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
     }
 
-    @Transactional
+    @Transactional // <- 이 부분 추가했어여
     public BalanceResponse updateBalance(Long userId, UpdateBalanceCommand command) {
         // 멱등성 체크 - 이미 처리된 eventId인지 확인
         Optional<OutboxEvent> existingEvent = outboxRepository.findByEventId(command.eventId());
@@ -151,8 +151,7 @@ public class UserService {
         user.updateBalance(command.amount(), command.type());
 
         // Outbox payload 생성
-        BalanceEvent event = new BalanceEvent(
-                command.sagaId().toString(),     // ✅ sagaId
+        BalanceEventPayload payloadDTO = new BalanceEventPayload(
                 command.eventId().toString(),
                 userId,
                 command.amount(),
@@ -162,7 +161,7 @@ public class UserService {
 
         String payload;
         try {
-            payload = objectMapper.writeValueAsString(event);
+            payload = objectMapper.writeValueAsString(payloadDTO);
             log.info("[BALANCE-UPDATE] Created payload: {}", payload);
         } catch (JsonProcessingException e) {
             log.error("[BALANCE-UPDATE] Failed to serialize payload: {}", e);
@@ -171,7 +170,6 @@ public class UserService {
 
         // outbox 이벤트 생성 및 저장
         OutboxEvent outboxEvent = new OutboxEvent(
-                command.sagaId(),
                 command.eventId(),
                 userId,
                 payload

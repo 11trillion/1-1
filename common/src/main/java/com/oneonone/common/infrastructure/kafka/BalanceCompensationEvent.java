@@ -1,5 +1,6 @@
-package com.oneonone.userservice.infrastructure.kafka.event;
+package com.oneonone.common.infrastructure.kafka;
 
+// Kafka message payload용
 public record BalanceCompensationEvent(
         String eventId,
         Long userId,

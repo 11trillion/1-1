@@ -1,9 +1,8 @@
 package com.oneonone.pointservice.infrastructure.kafka.event;
 
-import com.oneonone.common.enums.PointType;
+import com.oneonone.pointservice.domain.enums.PointType;
 
 public record CompensationEvent(
-        String sagaId,
         String eventId,
         Long userId,
         Long amount,

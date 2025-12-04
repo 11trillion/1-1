@@ -127,6 +127,25 @@ public class User extends BaseEntity {
         }
     }
 
+    public void compensateBalance(BalanceCompensationEvent event) {
+        rollbackBalance(event.amount(), event.type());
+    }
+
+    public void rollbackBalance(Long amount, String type) {
+        if ("DEBIT".equalsIgnoreCase(type)) {
+            this.pointBalance += amount;
+        }
+        else if ("CREDIT".equalsIgnoreCase(type)) {
+            if (this.pointBalance - amount < 0) {
+                throw new BusinessException(UserErrorCode.INVALID_POINT);
+            }
+            this.pointBalance -= amount;
+        }
+        else {
+            throw new BusinessException(UserErrorCode.INVALID_POINT_TYPE);
+        }
+    }
+
     public void validate(String nickname) {
         if (nickname.length() < 2) throw new BusinessException(UserErrorCode.INVALID_NICKNAME);
         // TODO: slack ID 등 검증 필요 시 추가

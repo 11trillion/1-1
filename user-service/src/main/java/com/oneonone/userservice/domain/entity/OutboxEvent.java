@@ -3,8 +3,7 @@ package com.oneonone.userservice.domain.entity;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oneonone.common.enums.OutboxStatus;
-import com.oneonone.common.model.BaseEntity;
-import com.oneonone.userservice.infrastructure.kafka.event.BalanceEvent;
+import com.oneonone.userservice.infrastructure.kafka.dto.BalanceEventPayload;
 import jakarta.persistence.*;
 import lombok.Getter;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -16,28 +15,29 @@ import java.util.UUID;
 @Entity
 @Table(name = "p_outboxes")
 @Getter
-public class OutboxEvent extends BaseEntity {
+public class OutboxEvent {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID outboxId;
 
-    @Column(nullable = false)
-    private UUID sagaId;      // Saga 전체 흐름 추적
-
     @Column(nullable = false, unique = true)
-    private UUID eventId;     // 개별 메시지 중복 방지
+    private UUID eventId;
 
     @Column(nullable = false)
     private Long userId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    // processed 부분 Enum으로 변경했습니다
     private OutboxStatus status = OutboxStatus.PENDING;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb", nullable = false)
     private String payload;
+
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
     private LocalDateTime publishedAt;
 
@@ -46,19 +46,16 @@ public class OutboxEvent extends BaseEntity {
 
     protected OutboxEvent() {}
 
-    public OutboxEvent(UUID sagaId, UUID eventId, Long userId, String payload) {
-        this.sagaId = sagaId;
+    public OutboxEvent(UUID eventId, Long userId, String payload) {
         this.eventId = eventId;
         this.userId = userId;
         this.payload = payload;
-        this.status = OutboxStatus.PENDING;
-        this.retryCount = 0;
     }
 
-//    @PrePersist
-//    protected void create() {
-//        this.createdAt = LocalDateTime.now();
-//    }
+    @PrePersist
+    protected void create() {
+        this.createdAt = LocalDateTime.now();
+    }
 
     public void markAsSuccess() {
         this.status = OutboxStatus.SUCCESS;
@@ -81,9 +78,9 @@ public class OutboxEvent extends BaseEntity {
     /**
      * JSON payload를 BalanceEventPayload DTO로 변환
      */
-    public BalanceEvent toBalanceEventPayload(ObjectMapper objectMapper) {
+    public BalanceEventPayload toBalanceEventPayload(ObjectMapper objectMapper) {
         try {
-            return objectMapper.readValue(this.payload, BalanceEvent.class);
+            return objectMapper.readValue(this.payload, BalanceEventPayload.class);
         } catch (JsonProcessingException e) {
             throw new RuntimeException("OutboxEvent JSON -> DTO 변환 실패", e);
         }

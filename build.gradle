@@ -1,8 +1,14 @@
 // 루트 빌드 스크립트: 모든 서브모듈의 공통 설정을 관리함
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.5.0'
+    id 'org.springframework.boot' version '3.2.0'
     id 'io.spring.dependency-management' version '1.1.7'
+}
+
+// 버전 관리용 변수 선언
+ext {
+    springCloudVersion = "2023.0.0"
+    springdocVersion   = "2.6.0"
 }
 
 // 중앙 저장소: 모든 모듈이 mavenCentral()에서 의존성을 다운로드함
@@ -12,6 +18,9 @@ allprojects {
     }
 }
 
+bootJar {
+    enabled = false
+}
 
 // 공통 설정 블록: 모든 하위 모듈(subproject)에 동일하게 적용됨
 subprojects {
@@ -33,11 +42,6 @@ subprojects {
 
     repositories {
         mavenCentral()
-    }
-
-    // Spring Cloud BOM (Bill of Materials) 버전 관리용 변수 선언
-    ext {
-        set('springCloudVersion', "2025.0.0")
     }
 
     // Spring Cloud 의존성 관리: 모든 서브모듈에서 동일 버전 유지

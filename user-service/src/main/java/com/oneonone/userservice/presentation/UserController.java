@@ -218,10 +218,16 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.success(response, "사용자 포인트 조회 성공"));
     }
 
+    @Operation(
+            summary = "사용자 포인트 잔액 수정 - 서비스 간 통신용",
+            description = "관리자가 특정 사용자의 포인트를 증가/감소시킵니다."
+    )
     @PatchMapping("/{userId}/balance")
     public ResponseEntity<ApiResponse<BalanceResponse>> updateBalance(
             @RequestHeader("X-User-Role") String role,
-            @RequestHeader("X-User-Id") Long userId,
+            @Parameter(description = "포인트 잔액을 수정할 사용자 ID", required = true)
+            @PathVariable Long userId,
+            @Parameter(description = "포인트 증감량(증가: 양수, 감소: 음수)", required = true)
             @RequestBody UpdateBalanceRequest request) {
 //        if (!UserRole.valueOf(role).equals(UserRole.MASTER)) throw new BusinessException(UserErrorCode.FORBIDDEN);
         UpdateBalanceCommand command = new UpdateBalanceCommand(

@@ -96,7 +96,7 @@ public class Point extends BaseEntity {
             throw new BusinessException(PointErrorCode.ONLY_SUCCESS_CAN_BE_COMPENSATED);
         }
 
-        this.status = PointStatus.COMPENSATING;
+        this.status = PointStatus.COMPENSATED;
         this.description = reason;
     }
 

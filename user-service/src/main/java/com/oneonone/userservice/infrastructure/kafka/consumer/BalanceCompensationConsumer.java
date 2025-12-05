@@ -3,12 +3,13 @@ package com.oneonone.userservice.infrastructure.kafka.consumer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oneonone.common.exception.BusinessException;
-import com.oneonone.userservice.domain.entity.OutboxEvent;
 import com.oneonone.userservice.domain.entity.User;
 import com.oneonone.userservice.domain.repository.OutboxRepository;
 import com.oneonone.userservice.domain.repository.UserRepository;
 import com.oneonone.userservice.exception.UserErrorCode;
 import com.oneonone.userservice.infrastructure.kafka.event.BalanceCompensationEvent;
+import com.oneonone.userservice.infrastructure.kafka.event.CompensationResultEvent;
+import com.oneonone.userservice.infrastructure.kafka.producer.CompensationResultProducer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -24,41 +25,7 @@ public class BalanceCompensationConsumer {
     private final UserRepository userRepository;
     private final OutboxRepository outboxRepository;
     private final ObjectMapper objectMapper;
-
-//    @KafkaListener(
-//            topics = "balance-compensation-event",
-//            groupId = "user-service",
-//            containerFactory = "balanceEventKafkaListenerContainerFactory"
-//    )
-//    @Transactional
-//    public void consume(BalanceCompensationEventPayload payload) {
-//        log.info("[KAFKA-CONSUME] BalanceCompensationConsumer Raw payload received: {}", payload);
-//
-//        try {
-//            if (outboxRepository.existsByEventId(UUID.fromString(payload.eventId()))) {
-//                log.warn("[KAFKA-CONSUME] [Balance Compensation] Duplicate event - eventId={}", payload.eventId());
-//                return;
-//            }
-//
-//            // 사용자 조회
-//            User user = userRepository.findByUserIdAndDeletedAtIsNull(payload.userId())
-//                    .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
-//            user.compensateBalance(payload);
-//            log.info("[KAFKA-CONSUME] [Balance Compensation] Rollback balance for userId={}", payload.userId());
-//            OutboxEvent outboxEvent = new OutboxEvent(
-//                    UUID.fromString(payload.eventId()),
-//                    payload.userId(),
-//                    payload.toString()
-//            );
-//            outboxRepository.save(outboxEvent);
-//            log.info("[KAFKA-CONSUME] [Balance Compensation] Outbox saved for eventId={}", payload.eventId());
-//        } catch (BusinessException e) {
-//            log.error("[KAFKA-CONSUME] Business error. eventId={}", payload.eventId(), e);
-//        } catch (Exception e) {
-//            log.error("[KAFKA-CONSUME] [Balance Compensation] Error processing payload={}", payload, e);
-//            throw new RuntimeException(e);
-//        }
-//    }
+    private final CompensationResultProducer compensationResultProducer;
 
     @KafkaListener(
             topics = "balance-compensation-event",
@@ -66,8 +33,9 @@ public class BalanceCompensationConsumer {
     )
     @Transactional
     public void consume(String payloadJson) {
+        BalanceCompensationEvent event = null;
         try {
-            BalanceCompensationEvent event = objectMapper.readValue(payloadJson, BalanceCompensationEvent.class);
+            event = objectMapper.readValue(payloadJson, BalanceCompensationEvent.class);
             log.info("[KAFKA-CONSUME] [Balance Compensation] Received eventId={}, userId={}, amount={}",
                     event.eventId(), event.userId(), event.amount());
 
@@ -75,6 +43,10 @@ public class BalanceCompensationConsumer {
             if (outboxRepository.existsByEventId(UUID.fromString(event.eventId()))) {
                 log.warn("[KAFKA-CONSUME] [Balance Compensation] Duplicate compensation event - eventId={}",
                         event.eventId());
+
+                compensationResultProducer.sendCompensationResult(
+                        new CompensationResultEvent(event.eventId(), true, null)
+                );
                 return;
             }
 
@@ -83,14 +55,44 @@ public class BalanceCompensationConsumer {
                     .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
             user.compensateBalance(event);
             log.info("[KAFKA-CONSUME] [Balance Compensation] Rollback balance for userId={}", event.userId());
+
+            compensationResultProducer.sendCompensationResult(
+                    new CompensationResultEvent(event.eventId(), true, null)
+            );
         } catch (JsonProcessingException e) {
-            log.error("[KAFKA-CONSUME] [Balance Compensation] Json serialize error.", e);
+            log.error("[KAFKA-CONSUME] [Balance Compensation] Json serialize error - eventId={}",
+                    event != null ? event.eventId() : "unknown", e);
+
+            // 추가: JSON 파싱 실패 시 실패 신호 전송
+            if (event != null) {
+                compensationResultProducer.sendCompensationResult(
+                        new CompensationResultEvent(event.eventId(), false, "JSON parsing error: " + e.getMessage())
+                );
+            }
+            // 재시도하지 않음 (파싱 오류는 재시도해도 실패)
+
             throw new RuntimeException("Failed to serialize event", e);
         } catch (BusinessException e) {
-            log.error("[KAFKA-CONSUME] [Balance Compensation] Business error.", e);
+            log.error("[KAFKA-CONSUME] [Balance Compensation] Business error - eventId={}",
+                    event != null ? event.eventId() : "unknown", e);
+
+            // 비즈니스 로직 실패 시 실패 신호 전송
+            if (event != null) {
+                compensationResultProducer.sendCompensationResult(
+                        new CompensationResultEvent(event.eventId(), false, e.getMessage())
+                );
+            }
             throw e;
         } catch (Exception e) {
-            log.error("[KAFKA-CONSUME] [Balance Compensation] Unexpected error processing.", e);
+            log.error("[KAFKA-CONSUME] [Balance Compensation] Unexpected error - eventId={}",
+                    event != null ? event.eventId() : "unknown", e);
+
+            if (event != null) {
+                compensationResultProducer.sendCompensationResult(
+                        new CompensationResultEvent(event.eventId(), false, "Unexpected error: " + e.getMessage())
+                );
+            }
+
             throw new RuntimeException("Failed to process balance compensation event", e);
         }
     }

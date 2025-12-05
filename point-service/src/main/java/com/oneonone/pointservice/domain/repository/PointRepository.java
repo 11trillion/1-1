@@ -14,4 +14,6 @@ public interface PointRepository {
     Page<Point> findByUserId(Long userId, Pageable pageable);
     Page<Point> findByUserIdAndStatus(Long userId, PointStatus status, Pageable pageable);
     boolean existsByEventId(UUID eventId);
+
+    Optional<Point> findByEventId(UUID eventId);
 }

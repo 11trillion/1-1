@@ -8,6 +8,7 @@ import com.oneonone.common.enums.PointType;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -41,6 +42,9 @@ public class Point extends BaseEntity {
 
     @Column(name="user_id", nullable=false)
     private Long userId;
+
+    @Column(name="compensated_at")
+    private LocalDateTime compensatedAt;
 
     // Point 생성자 (도메인 규칙 적용)
     public Point(PointType type, Long amount, String description, Long userId) {
@@ -84,6 +88,37 @@ public class Point extends BaseEntity {
     public void markFailed() {
         validateUpdatable();
         this.status = PointStatus.FAILED;
+    }
+
+    // 보상 시작
+    public void startCompensation(String reason) {
+        if (this.status == PointStatus.SUCCESS) {
+            throw new BusinessException(PointErrorCode.ONLY_SUCCESS_CAN_BE_COMPENSATED);
+        }
+
+        this.status = PointStatus.COMPENSATING;
+        this.description = reason;
+    }
+
+    // 보상 완료
+    public void markCompensated() {
+        if (this.status != PointStatus.COMPENSATING) {
+            throw new BusinessException(PointErrorCode.NOT_IN_COMPENSATING_STATUS);
+        }
+
+        this.status = PointStatus.COMPENSATED;
+        this.compensatedAt = LocalDateTime.now();
+    }
+
+    // 보상 실패 처리 (필요시)
+    public void failCompensation() {
+        if (this.status != PointStatus.COMPENSATING) {
+            throw new BusinessException(PointErrorCode.NOT_IN_COMPENSATING_STATUS);
+        }
+
+        // COMPENSATING 상태에서 실패 시 원래 SUCCESS로 복구
+        this.status = PointStatus.SUCCESS;
+        this.description = null;
     }
 
     private void validateUpdatable(){

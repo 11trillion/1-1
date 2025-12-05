@@ -41,4 +41,9 @@ public class PointRepositoryImpl implements PointRepository {
     public boolean existsByEventId(UUID eventId) {
         return pointJpaRepository.existsByEventId(eventId);
     }
+
+    @Override
+    public Optional<Point> findByEventId(UUID eventId) {
+        return pointJpaRepository.findByEventId(eventId);
+    }
 }

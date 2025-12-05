@@ -1,6 +1,4 @@
 package com.oneonone.pointservice.infrastructure.kafka.producer;
-
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oneonone.common.infrastructure.kafka.BalanceCompensationEventPayload;
 import com.oneonone.pointservice.infrastructure.kafka.event.CompensationEvent;
@@ -30,27 +28,6 @@ public class CompensationProducer {
      * 보상 이벤트를 동기 방식으로 발행합니다.
      * 발행 실패 시 예외가 발생하여 호출자가 처리할 수 있습니다.
      */
-//    public void sendCompensation(CompensationEvent event) {
-//        try {
-//            // CompensationEvent -> BalanceCompensationEventPayload 변환
-//            BalanceCompensationEventPayload payload = mapToPayload(event);
-//
-//            // 동기 방식 발행
-//            SendResult<String, BalanceCompensationEventPayload> result =
-//                    kafkaTemplate.send(COMPENSATION_TOPIC, payload.eventId(), payload)
-//                            .get(); // 동기 대기
-//
-//            log.info("[COMPENSATION-SENT] Successfully published - eventId={}, topic={}, partition={}",
-//                    payload.eventId(),
-//                    result.getRecordMetadata().topic(),
-//                    result.getRecordMetadata().partition());
-//
-//        } catch (Exception e) {
-//            log.error("[COMPENSATION-FAILED] Failed to publish compensation event - eventId={}, error={}",
-//                    event.eventId(), e.getMessage(), e);
-//            throw new CompensationPublishException("Failed to publish compensation event", e);
-//        }
-//    }
     public void sendCompensation(CompensationEvent event) {
         try {
             CompensationEvent compensationEvent = new CompensationEvent(
@@ -96,30 +73,6 @@ public class CompensationProducer {
      * 보상 이벤트를 비동기 방식으로 발행합니다.
      * 성능이 중요한 경우 사용할 수 있습니다.
      */
-//    public void sendCompensationAsync(CompensationEvent event) {
-//        try {
-//            BalanceCompensationEventPayload payload = mapToPayload(event);
-//
-//            CompletableFuture<SendResult<String, BalanceCompensationEventPayload>> future =
-//                    kafkaTemplate.send(COMPENSATION_TOPIC, payload.eventId(), payload);
-//
-//            future.whenComplete((result, ex) -> {
-//                if (ex == null) {
-//                    log.info("[COMPENSATION-SENT] Successfully published async - eventId={}, partition={}",
-//                            payload.eventId(),
-//                            result.getRecordMetadata().partition());
-//                } else {
-//                    log.error("[COMPENSATION-FAILED] Failed to publish async - eventId={}, error={}",
-//                            payload.eventId(), ex.getMessage(), ex);
-//                }
-//            });
-//
-//        } catch (Exception e) {
-//            log.error("[COMPENSATION-FAILED] Failed to map event to payload - eventId={}, error={}",
-//                    event.eventId(), e.getMessage(), e);
-//            throw new CompensationPublishException("Failed to map event to payload", e);
-//        }
-//    }
     public void sendCompensationAsync(CompensationEvent event) {
         try {
             String payload = objectMapper.writeValueAsString(event);

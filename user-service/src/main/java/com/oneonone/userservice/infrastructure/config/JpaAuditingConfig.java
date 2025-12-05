@@ -1,4 +1,4 @@
-package com.oneonone.userservice.infrastructure.configuration;
+package com.oneonone.userservice.infrastructure.config;
 
 import com.oneonone.common.util.HeaderAuditorAware;
 import org.springframework.context.annotation.Configuration;

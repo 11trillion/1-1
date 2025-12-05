@@ -3,6 +3,26 @@
 **/build/
 **/target/
 **/.gradle/
-.git
 .mvn
-.idea
+
+# IDE / 툴 설정
+.idea/
+*.ipr
+*.iws
+.vscode/
+*.log
+
+# VCS / 메타
+.git
+.gitignore
+.gitlab-ci.yml
+.github/
+
+# OS / 기타 불필요 파일
+.DS_Store
+Thumbs.db
+
+# 테스트/문서 (이미지 빌드에 필요 없다면)
+**/src/test/
+docs/
+*.md

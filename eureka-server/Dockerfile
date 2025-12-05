@@ -16,31 +16,29 @@ COPY gradle ./gradle
 
 # 2. 모든 모듈의 build.gradle 파일 복사
 COPY common/build.gradle common/
-COPY api-gateway/build.gradle api-gateway/
-COPY eureka-server/build.gradle eureka-server/
 COPY config-server/build.gradle config-server/
-COPY user-service/build.gradle user-service/
-COPY point-service/build.gradle point-service/
+COPY eureka-server/build.gradle eureka-server/
 COPY betting-service/build.gradle betting-service/
+COPY user-service/build.gradle user-service/
 COPY game-service/build.gradle game-service/
+COPY point-service/build.gradle point-service/
+COPY api-gateway/build.gradle api-gateway/
 
-# 3. 종속성 다운로드 및 캐시 생성
-RUN ./gradlew dependencies
+RUN chmod +x ./gradlew \
+    && ./gradlew :eureka-server:classes -x test -no-daemon
 
 # 4. 소스 코드 복사 (핵심 최적화: 'src' 디렉토리만 복사)
 COPY common/src common/src
-COPY api-gateway/src api-gateway/src
-COPY eureka-server/src eureka-server/src
 COPY config-server/src config-server/src
-COPY user-service/src user-service/src
-COPY point-service/src point-service/src
+COPY eureka-server/src eureka-server/src
 COPY betting-service/src betting-service/src
+COPY user-service/src user-service/src
 COPY game-service/src game-service/src
+COPY point-service/src point-service/src
+COPY api-gateway/src api-gateway/src
 
 # 유레카 서버 JAR 파일 빌드 실행
-# -x test: 테스트 실행 건너뛰기
-RUN chmod +x ./gradlew \
-    && ./gradlew :eureka-server:bootJar -x test
+RUN ./gradlew :eureka-server:bootJar -x test --no-daemon
 
 # ----------------------------------------------------
 # 2. 최종 실행 스테이지 (Final Run Stage)
@@ -52,8 +50,7 @@ FROM eclipse-temurin:17-jdk-jammy
 WORKDIR /app
 
 # 빌드된 JAR 파일을 복사
-ARG JAR_FILE=eureka-server/build/libs/eureka-server-*.jar
-COPY --from=build /app/${JAR_FILE} app.jar
+COPY --from=build /app/eureka-server/build/libs/eureka-server-*.jar app.jar
 
 # 유레카 서버의 기본 포트(8761) 노출
 EXPOSE 8761

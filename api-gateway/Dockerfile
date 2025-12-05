@@ -13,20 +13,32 @@ COPY gradle gradle
 COPY settings.gradle .
 COPY build.gradle .
 
-# settings.gradle에 명시된 모든 모듈 디렉토리 복사
-COPY common common
-COPY api-gateway api-gateway
-COPY eureka-server eureka-server
-COPY config-server config-server
-COPY user-service user-service
-COPY point-service point-service
-COPY betting-service betting-service
-COPY game-service game-service
+# 모든 모듈의 build.gradle 파일 복사 (캐시 키)
+COPY common/build.gradle common/
+COPY config-server/build.gradle config-server/
+COPY eureka-server/build.gradle eureka-server/
+COPY betting-service/build.gradle betting-service/
+COPY user-service/build.gradle user-service/
+COPY game-service/build.gradle game-service/
+COPY point-service/build.gradle point-service/
+COPY api-gateway/build.gradle api-gateway/
 
 # Gradle 빌드 실행
-# Context가 모듈 디렉토리이므로, 모듈 이름 없이 bootJar 명령을 실행합니다.
 RUN chmod +x ./gradlew \
-    && ./gradlew :api-gateway:bootJar -x test
+    && ./gradlew :api-gateway:classes -x test --no-daemon
+
+# 소스 코드 복사 (변경 잦은 레이어)
+COPY common/src common/src
+COPY config-server/src config-server/src
+COPY eureka-server/src eureka-server/src
+COPY betting-service/src betting-service/src
+COPY user-service/src user-service/src
+COPY game-service/src game-service/src
+COPY point-service/src point-service/src
+COPY api-gateway/src api-gateway/src
+
+# Gradle 빌드 및 JAR 파일 이름 통일
+RUN ./gradlew :api-gateway:bootJar -x test --no-daemon
 
 # ----------------------------------------------------
 # 2. 최종 실행 스테이지 (Final Run Stage)
@@ -38,8 +50,7 @@ FROM eclipse-temurin:17-jdk-jammy
 WORKDIR /app
 
 # 빌드된 JAR 파일을 복사
-ARG JAR_FILE=api-gateway/build/libs/api-gateway-*.jar
-COPY --from=build /app/${JAR_FILE} app.jar
+COPY --from=build /app/api-gateway/build/libs/api-gateway-*.jar app.jar
 
 # API Gateway의 기본 포트(일반적으로 8080 또는 8000번대) 노출
 # 이미지에서 확인된 것처럼 8080 포트를 사용하도록 설정합니다.

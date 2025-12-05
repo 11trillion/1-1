@@ -14,8 +14,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class GameEventProducer {
-    private final KafkaTemplate<String, String> kafkaTemplate;
-    private final ObjectMapper objectMapper;
+    private final KafkaTemplate<String, GameCompletedEvent> kafkaTemplate;
 
     //betting의 주소
     @Value("${kafka.topics.game-completed:game-completed-events}")
@@ -25,9 +24,8 @@ public class GameEventProducer {
         log.info("Publishing game completed event to kafka, gameId = {}", gameCompletedEvent.gameId());
 
         try{
-            String payload = objectMapper.writeValueAsString(gameCompletedEvent);
             kafkaTemplate
-                    .send(topicName, gameCompletedEvent.gameId().toString(), payload)
+                    .send(topicName, gameCompletedEvent.gameId().toString(), gameCompletedEvent)
                     .whenComplete( (result,error) -> {
                         if(error != null) {
                             log.error("Publishing game completed event to kafka failed", error);
@@ -37,8 +35,6 @@ public class GameEventProducer {
                                     result.getRecordMetadata().offset());
                         }
                     });
-        } catch (JsonProcessingException e) {
-            log.error("gameCompletedEvent failed to serialize",e);
         } catch (KafkaException e) {
             log.error("KafKa의 send() 호출이 실패했습니다", e);
         }

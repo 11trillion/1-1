@@ -16,26 +16,26 @@ COPY gradle ./gradle
 
 # 2. 모든 모듈의 build.gradle 파일 복사
 COPY common/build.gradle common/
-COPY config-server/build.gradle config-server/
-COPY eureka-server/build.gradle eureka-server/
-COPY betting-service/build.gradle betting-service/
-COPY user-service/build.gradle user-service/
-COPY game-service/build.gradle game-service/
-COPY point-service/build.gradle point-service/
 COPY api-gateway/build.gradle api-gateway/
+COPY eureka-server/build.gradle eureka-server/
+COPY config-server/build.gradle config-server/
+COPY user-service/build.gradle user-service/
+COPY point-service/build.gradle point-service/
+COPY betting-service/build.gradle betting-service/
+COPY game-service/build.gradle game-service/
 
 # 3. 종속성 다운로드 및 캐시 생성
 RUN ./gradlew dependencies
 
 # 4. 소스 코드 복사 (핵심 최적화: 'src' 디렉토리만 복사)
 COPY common/src common/src
-COPY config-server/src config-server/src
-COPY eureka-server/src eureka-server/src
-COPY betting-service/src betting-service/src
-COPY user-service/src user-service/src
-COPY game-service/src game-service/src
-COPY point-service/src point-service/src
 COPY api-gateway/src api-gateway/src
+COPY eureka-server/src eureka-server/src
+COPY config-server/src config-server/src
+COPY user-service/src user-service/src
+COPY point-service/src point-service/src
+COPY betting-service/src betting-service/src
+COPY game-service/src game-service/src
 
 # Gradle 빌드 실행
 # Context가 모듈 디렉토리이므로, 모듈 이름 없이 bootJar 명령을 실행합니다.

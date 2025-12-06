@@ -1,6 +1,5 @@
 package com.oneonone.userservice.infrastructure.kafka.producer;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oneonone.userservice.infrastructure.kafka.event.CompensationResultEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,18 +14,15 @@ public class CompensationResultProducer {
 
     private static final String TOPIC = "balance-compensation-result";
 
-    private final KafkaTemplate<String, String> kafkaTemplate;
-    private final ObjectMapper objectMapper;
+    private final KafkaTemplate<String, CompensationResultEvent> kafkaTemplate;
 
     /**
      * 보상 완료 결과를 PointService에 알림
      */
     public void sendCompensationResult(CompensationResultEvent event) {
         try {
-            String payload = objectMapper.writeValueAsString(event);
-
-            SendResult<String, String> result = kafkaTemplate
-                    .send(TOPIC, event.eventId(), payload)
+            SendResult<String, CompensationResultEvent> result = kafkaTemplate
+                    .send(TOPIC, event.eventId(), event)
                     .get(); // 동기 방식 (신뢰성 중요)
 
             log.info("[COMPENSATION-RESULT-SENT] Successfully published - eventId={}, success={}, partition={}",

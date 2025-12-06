@@ -1,9 +1,8 @@
-package com.oneonone.common.infrastructure.kafka;
+package com.oneonone.pointservice.infrastructure.kafka.event;
 
 import com.oneonone.common.enums.PointType;
 
-// Kafka message payload용
-public record BalanceCompensationEventPayload(
+public record BalanceCompensationEvent(
         String eventId,
         Long userId,
         Long amount,

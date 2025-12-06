@@ -1,7 +1,5 @@
 package com.oneonone.userservice.infrastructure.kafka.consumer;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oneonone.common.exception.BusinessException;
 import com.oneonone.userservice.domain.entity.User;
 import com.oneonone.userservice.domain.repository.OutboxRepository;
@@ -24,18 +22,16 @@ import java.util.UUID;
 public class BalanceCompensationConsumer {
     private final UserRepository userRepository;
     private final OutboxRepository outboxRepository;
-    private final ObjectMapper objectMapper;
     private final CompensationResultProducer compensationResultProducer;
 
     @KafkaListener(
             topics = "balance-compensation-event",
-            groupId = "user-service"
+            groupId = "user-service",
+            containerFactory = "balanceCompensationEventKafkaListenerContainerFactory"
     )
     @Transactional
-    public void consume(String payloadJson) {
-        BalanceCompensationEvent event = null;
+    public void consume(BalanceCompensationEvent event) {
         try {
-            event = objectMapper.readValue(payloadJson, BalanceCompensationEvent.class);
             log.info("[KAFKA-CONSUME] [Balance Compensation] Received eventId={}, userId={}, amount={}",
                     event.eventId(), event.userId(), event.amount());
 
@@ -59,19 +55,6 @@ public class BalanceCompensationConsumer {
             compensationResultProducer.sendCompensationResult(
                     new CompensationResultEvent(event.eventId(), true, null)
             );
-        } catch (JsonProcessingException e) {
-            log.error("[KAFKA-CONSUME] [Balance Compensation] Json serialize error - eventId={}",
-                    event != null ? event.eventId() : "unknown", e);
-
-            // 추가: JSON 파싱 실패 시 실패 신호 전송
-            if (event != null) {
-                compensationResultProducer.sendCompensationResult(
-                        new CompensationResultEvent(event.eventId(), false, "JSON parsing error: " + e.getMessage())
-                );
-            }
-            // 재시도하지 않음 (파싱 오류는 재시도해도 실패)
-
-            throw new RuntimeException("Failed to serialize event", e);
         } catch (BusinessException e) {
             log.error("[KAFKA-CONSUME] [Balance Compensation] Business error - eventId={}",
                     event != null ? event.eventId() : "unknown", e);

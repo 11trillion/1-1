@@ -3,7 +3,7 @@ package com.oneonone.userservice.domain.entity;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oneonone.common.enums.OutboxStatus;
-import com.oneonone.common.infrastructure.kafka.BalanceEventPayload;
+import com.oneonone.userservice.infrastructure.kafka.event.BalanceEvent;
 import jakarta.persistence.*;
 import lombok.Getter;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -29,7 +29,6 @@ public class OutboxEvent {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    // processed 부분 Enum으로 변경했습니다
     private OutboxStatus status = OutboxStatus.PENDING;
 
     @JdbcTypeCode(SqlTypes.JSON)
@@ -78,9 +77,9 @@ public class OutboxEvent {
     /**
      * JSON payload를 BalanceEventPayload DTO로 변환
      */
-    public BalanceEventPayload toBalanceEventPayload(ObjectMapper objectMapper) {
+    public BalanceEvent toBalanceEventPayload(ObjectMapper objectMapper) {
         try {
-            return objectMapper.readValue(this.payload, BalanceEventPayload.class);
+            return objectMapper.readValue(this.payload, BalanceEvent.class);
         } catch (JsonProcessingException e) {
             throw new RuntimeException("OutboxEvent JSON -> DTO 변환 실패", e);
         }

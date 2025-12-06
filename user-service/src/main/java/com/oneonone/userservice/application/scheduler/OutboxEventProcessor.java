@@ -1,10 +1,10 @@
 package com.oneonone.userservice.application.scheduler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.oneonone.common.infrastructure.kafka.BalanceEventPayload;
 import com.oneonone.userservice.domain.entity.OutboxEvent;
 import com.oneonone.userservice.domain.repository.OutboxRepository;
 import com.oneonone.userservice.infrastructure.kafka.event.BalanceCompensationEvent;
+import com.oneonone.userservice.infrastructure.kafka.event.BalanceEvent;
 import com.oneonone.userservice.infrastructure.kafka.producer.UserKafkaProducer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,8 +12,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 
 @Slf4j
 @Component
@@ -67,7 +65,7 @@ public class OutboxEventProcessor {
 
     public void compensateEvent(OutboxEvent event) {
         try {
-            BalanceEventPayload eventPayload = event.toBalanceEventPayload(objectMapper);
+            BalanceEvent eventPayload = event.toBalanceEventPayload(objectMapper);
             BalanceCompensationEvent balanceCompensationEvent = new BalanceCompensationEvent(
                     UUID.randomUUID().toString(),
                     eventPayload.userId(),
@@ -75,7 +73,7 @@ public class OutboxEventProcessor {
                     eventPayload.type(),
                     eventPayload.betId()
             );
-            BalanceEventPayload payload = new BalanceEventPayload(
+            BalanceEvent payload = new BalanceEvent(
                     balanceCompensationEvent.eventId(),
                     balanceCompensationEvent.userId(),
                     balanceCompensationEvent.amount(),

@@ -1,4 +1,4 @@
-package com.oneonone.pointservice.infrastructure.configuration;
+package com.oneonone.pointservice.infrastructure.config;
 
 import com.oneonone.common.util.SwaggerHelper;
 import org.springframework.context.annotation.Bean;

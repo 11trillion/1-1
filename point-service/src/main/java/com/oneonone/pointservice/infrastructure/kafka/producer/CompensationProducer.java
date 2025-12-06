@@ -1,6 +1,6 @@
 package com.oneonone.pointservice.infrastructure.kafka.producer;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.oneonone.common.infrastructure.kafka.BalanceCompensationEventPayload;
+
+import com.oneonone.pointservice.infrastructure.kafka.event.BalanceCompensationEvent;
 import com.oneonone.pointservice.infrastructure.kafka.event.CompensationEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,11 +18,7 @@ public class CompensationProducer {
 
     private static final String COMPENSATION_TOPIC = "balance-compensation-event";
 
-    // DTO 기반 KafkaTemplate 주입
-//    private final @Qualifier("balanceCompensationKafkaTemplate") KafkaTemplate<String, BalanceCompensationEventPayload> kafkaTemplate;
-
-    private final KafkaTemplate<String, String> kafkaTemplate;
-    private final ObjectMapper objectMapper;
+    private final KafkaTemplate<String, BalanceCompensationEvent> kafkaTemplate;
 
     /**
      * 보상 이벤트를 동기 방식으로 발행합니다.
@@ -30,21 +26,19 @@ public class CompensationProducer {
      */
     public void sendCompensation(CompensationEvent event) {
         try {
-            CompensationEvent compensationEvent = new CompensationEvent(
+            BalanceCompensationEvent payload = new BalanceCompensationEvent(
                     UUID.randomUUID().toString(),
                     event.userId(),
                     event.amount(),
                     event.type(),
-                    event.betId(),
-                    "Compensation for original event " + event.eventId() + " - " + event.reason()
+                    event.betId()
             );
-            String payload = objectMapper.writeValueAsString(compensationEvent); // 동기 방식 발행 (신뢰성 중요)
-            SendResult<String, String> result = kafkaTemplate
-                    .send(COMPENSATION_TOPIC, compensationEvent.eventId(), payload)
+            SendResult<String, BalanceCompensationEvent> result = kafkaTemplate
+                    .send(COMPENSATION_TOPIC, payload.eventId(), payload)
                     .get(); // 동기 대기
 
             log.info("[COMPENSATION-SENT] Successfully published - eventId={}, topic={}, partition={}",
-                    event.eventId(),
+                    payload.eventId(),
                     result.getRecordMetadata().topic(),
                     result.getRecordMetadata().partition());
 
@@ -59,8 +53,8 @@ public class CompensationProducer {
     /**
      * CompensationEvent -> BalanceCompensationEventPayload 변환
      */
-    private BalanceCompensationEventPayload mapToPayload(CompensationEvent event) {
-        return new BalanceCompensationEventPayload(
+    private BalanceCompensationEvent mapToPayload(CompensationEvent event) {
+        return new BalanceCompensationEvent(
                 event.eventId(),
                 event.userId(),
                 event.amount(),
@@ -75,15 +69,15 @@ public class CompensationProducer {
      */
     public void sendCompensationAsync(CompensationEvent event) {
         try {
-            String payload = objectMapper.writeValueAsString(event);
+            BalanceCompensationEvent payload = mapToPayload(event);
 
             // 비동기 방식 발행
-            CompletableFuture<SendResult<String, String>> future = kafkaTemplate.send(COMPENSATION_TOPIC, event.eventId(), payload);
+            CompletableFuture<SendResult<String, BalanceCompensationEvent>> future = kafkaTemplate.send(COMPENSATION_TOPIC, payload.eventId(), payload);
             future.whenComplete((result, ex) -> {
                 if (ex == null) {
-                    log.info("[COMPENSATION-SENT] Successfully published - eventId={}, partition={}", event.eventId(), result.getRecordMetadata().partition());
+                    log.info("[COMPENSATION-SENT] Successfully published - eventId={}, partition={}", payload.eventId(), result.getRecordMetadata().partition());
                 } else {
-                    log.error("[COMPENSATION-FAILED] Failed to publish - eventId={}, error={}", event.eventId(), ex.getMessage());
+                    log.error("[COMPENSATION-FAILED] Failed to publish - eventId={}, error={}", payload.eventId(), ex.getMessage());
                 }
             });
         } catch (Exception e) {

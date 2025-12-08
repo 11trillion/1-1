@@ -17,7 +17,7 @@ public class GameEventProducer {
     private final KafkaTemplate<String, GameCompletedEvent> kafkaTemplate;
 
     //betting의 주소
-    @Value("${kafka.topics.game-completed:game-completed-events}")
+    @Value("${kafka.topics.game-completed:gameResult}")
     private String topicName;
 
     public void publishGameCompleted(GameCompletedEvent gameCompletedEvent) {

@@ -66,6 +66,12 @@ public class GameService {
                 gameUpdateRequest.status()
         );
 
+        //END 가 된 게임은 Status 변경 불가능
+        if (prevStatus.isEnded() && game.getStatus() != prevStatus) {
+            throw new BusinessException(GameErrorCode.GAME_ALREADY_ENDED);
+
+        }
+
         //game이 처음 end가 되었을 때만 kafka 이벤트 실행
         if(!prevStatus.isEnded() && game.getStatus().isEnded()) {
             GameCompletedEvent event = new GameCompletedEvent(

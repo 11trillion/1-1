@@ -13,8 +13,7 @@ import org.springframework.kafka.core.*;
 import java.util.HashMap;
 import java.util.Map;
 
-@EnableKafka
-@Configuration
+
 public class KafkaConfig {
     // Producer 설정
     @Bean

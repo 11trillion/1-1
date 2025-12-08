@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: game-service
+    name: user-service
   datasource:
     #url: jdbc:postgresql://localhost:5432/oneonone?currentSchema=users(dev)
     url: jdbc:postgresql://postgres:5432/oneonone
@@ -39,6 +39,7 @@ spring:
       balance-compensation-event: balance-compensation-event
       balance-compensation-result: balance-compensation-result
       point-update-event: point-update-event
+      point-reward: point-reward
 
   jpa:
     # 1. JPA Database Type 명시

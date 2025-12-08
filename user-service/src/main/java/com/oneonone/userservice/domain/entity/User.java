@@ -3,7 +3,6 @@ package com.oneonone.userservice.domain.entity;
 import com.oneonone.common.enums.PointType;
 import com.oneonone.common.enums.UserRole;
 import com.oneonone.common.exception.BusinessException;
-import com.oneonone.common.infrastructure.kafka.BalanceCompensationEventPayload;
 import com.oneonone.common.model.BaseEntity;
 import com.oneonone.userservice.domain.enums.UserStatus;
 import com.oneonone.userservice.exception.UserErrorCode;
@@ -107,8 +106,8 @@ public class User extends BaseEntity {
         }
     }
 
-    public void compensateBalance(BalanceCompensationEventPayload payload) {
-        rollbackBalance(payload.amount(), payload.type());
+    public void compensateBalance(BalanceCompensationEvent event) {
+        rollbackBalance(event.amount(), event.type());
     }
 
     public void rollbackBalance(Long amount, PointType type) {

@@ -9,17 +9,17 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class OutboxEventPoller {
-
     private static final int BATCH_SIZE = 100;
 
     private final OutboxRepository outboxRepository;
     private final OutboxEventProcessor processor;
-
 
     /**
      * 일정 주기로 처리되지 않은 Outbox 이벤트를 조회하여 Kafka로 발행한다.
@@ -35,7 +35,6 @@ public class OutboxEventPoller {
         if (events.isEmpty()) {
             return;
         }
-
         log.info("[OUTBOX-POLLER] Found {} unprocessed events", events.size());
 
         int successCount = 0;
@@ -44,16 +43,14 @@ public class OutboxEventPoller {
 
         for (OutboxEvent event : events) {
             try {
-                processor.processEvent(event);
-                successCount++;
+                processor.processEvent(event); successCount++;
             } catch (OutboxEventProcessor.MaxRetriesExceededException e) {
                 maxRetriesCount++;
-                log.error("[OUTBOX-POLLER] Max retries exceeded: eventId={}, userId={}",
-                        event.getEventId(), event.getUserId());
+                log.error("[OUTBOX-POLLER] Max retries exceeded: eventId={}, userId={}", event.getEventId(), event.getUserId());
+                processor.compensateEvent(event);
             }
         }
 
-        log.info("[OUTBOX-POLLER] Completed - Success: {}, Failed: {}, MaxRetries: {}",
-                successCount, failedCount, maxRetriesCount);
+        log.info("[OUTBOX-POLLER] Completed - Success: {}, Failed: {}, MaxRetries: {}", successCount, failedCount, maxRetriesCount);
     }
 }

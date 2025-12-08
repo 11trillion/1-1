@@ -39,7 +39,7 @@ spring:
       balance-compensation-event: balance-compensation-event
       balance-compensation-result: balance-compensation-result
       point-update-event: point-update-event
-      point-reward: point-reward
+      betting-reward: betting-reward
 
   jpa:
     # 1. JPA Database Type 명시

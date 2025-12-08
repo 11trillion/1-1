@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -26,6 +27,7 @@ public class BettingController {
 
     // 베팅 내역 조회_베팅ID
     @Operation(summary = "베팅 내역 조회_베팅Id" , description = "베팅내역을 베팅ID로 조회합니다.")
+    @PreAuthorize("hasAnyRole('USER', 'MASTER')")
     @GetMapping("/{betId}")
     public ResponseEntity<ApiResponse<Page<BettingResponseDto>>> getBetListByBetId(
             @PathVariable UUID betId,
@@ -37,6 +39,7 @@ public class BettingController {
 
     // 베팅 내역 조회_게임ID
     @Operation(summary = "베팅 내역 조회_게임Id" , description = "베팅내역을 게임ID로 조회합니다.")
+    @PreAuthorize("hasAnyRole('USER', 'MASTER')")
     @GetMapping("/game/{gameId}")
     public ResponseEntity<ApiResponse<Page<BettingResponseDto>>> getBetListByGameId(
             @PathVariable UUID gameId,
@@ -48,6 +51,7 @@ public class BettingController {
 
     // 베팅 내역 조회_사용자ID
     @Operation(summary = "베팅 내역 조회_사용자Id" , description = "베팅내역을 사용자ID로 조회합니다.")
+    @PreAuthorize("hasAnyRole('USER', 'MASTER')")
     @GetMapping("/user/{userId}")
     public ResponseEntity<ApiResponse<Page<BettingResponseDto>>> getBetListByUserId(
             @PathVariable Long userId,
@@ -59,6 +63,7 @@ public class BettingController {
 
     // 베팅 생성
     @Operation(summary = "베팅 생성." , description = "베팅을 생성합니다.")
+    @PreAuthorize("hasAnyRole('USER', 'MASTER')")
     @PostMapping
     public ResponseEntity<ApiResponse<BettingResponseDto>> createBetting(
             @RequestBody BettingRequestDto requestDto
@@ -69,6 +74,7 @@ public class BettingController {
 
     // 베팅 수정
     @Operation(summary = "베팅 수정" , description = "베팅을 수정합니다.")
+    @PreAuthorize("hasAnyRole('USER', 'MASTER')")
     @PatchMapping("/{betId}")
     public ResponseEntity<ApiResponse<BettingResponseDto>> updateBetting(
             @RequestBody BettingRequestDto requestDto
@@ -79,12 +85,12 @@ public class BettingController {
 
     // 베팅 삭제
     @Operation(summary = "베팅 삭제" , description = "베팅을 삭제합니다.")
+    @PreAuthorize("hasAnyRole('USER', 'MASTER')")
     @DeleteMapping("/{betId}")
     public ResponseEntity<ApiResponse<BettingResponseDto>> deleteBetting(
+            @RequestHeader("X-User-Id") Long userId,
             @PathVariable UUID betId
     ){
-        //todo 임시 처리 - user정보로 변경 예정
-        Long userId = 999999L;
         bettingService.deleteBetting(betId, userId);
         return ResponseEntity.ok(ApiResponse.success("베팅 삭제 성공"));
     }

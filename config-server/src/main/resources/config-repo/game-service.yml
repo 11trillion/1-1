@@ -36,7 +36,7 @@ spring:
       spring.json.trusted.packages: "*"
 
     topics:
-      game-completed: game-completed-events
+      game-completed: gameResult
 
   jpa:
     # 1. JPA Database Type 명시

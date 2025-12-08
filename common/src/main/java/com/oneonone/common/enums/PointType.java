@@ -1,4 +1,4 @@
-package com.oneonone.pointservice.domain.enums;
+package com.oneonone.common.enums;
 
 public enum PointType {
     DEBIT,

@@ -4,12 +4,15 @@ import com.oneonone.common.exception.BusinessException;
 import com.oneonone.common.model.BaseEntity;
 import com.oneonone.pointservice.domain.PointErrorCode;
 import com.oneonone.pointservice.domain.enums.PointStatus;
-import com.oneonone.pointservice.domain.enums.PointType;
+import com.oneonone.common.enums.PointType;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.extern.slf4j.Slf4j;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
+@Slf4j
 @Entity
 @Getter
 @Table(name = "p_points")
@@ -20,8 +23,11 @@ public class Point extends BaseEntity {
     @Column(name="point_id")
     private UUID id;
 
-    @Column(name = "event_id", nullable = false, updatable = false)
-    private UUID eventId;   // Saga / Kafka 멱등성 키
+    @Column(name = "saga_id", nullable = false, updatable = false)
+    private UUID sagaId;    // Saga 전체 흐름 추적
+
+    @Column(name = "event_id", nullable = false, updatable = false, unique = true)
+    private UUID eventId;   // 개별 메시지 멱등성
 
     @Enumerated(EnumType.STRING)
     @Column(name="point_type", nullable=false)
@@ -42,6 +48,9 @@ public class Point extends BaseEntity {
     @Column(name="user_id", nullable=false)
     private Long userId;
 
+    @Column(name="compensated_at")
+    private LocalDateTime compensatedAt;
+
     // Point 생성자 (도메인 규칙 적용)
     public Point(PointType type, Long amount, String description, Long userId) {
         if (amount <= 0) {
@@ -55,6 +64,7 @@ public class Point extends BaseEntity {
     }
 
     public static Point create(
+            String sagaId,
             String eventId,
             Long userId,
             Long amount,
@@ -66,6 +76,7 @@ public class Point extends BaseEntity {
         }
 
         Point point = new Point();
+        point.sagaId = UUID.fromString(sagaId);
         point.eventId = UUID.fromString(eventId);
         point.userId = userId;
         point.amount = amount;
@@ -84,6 +95,55 @@ public class Point extends BaseEntity {
     public void markFailed() {
         validateUpdatable();
         this.status = PointStatus.FAILED;
+    }
+
+    // 보상 시작
+    public void startCompensation(String reason) {
+        log.info("[POINT] startCompensation called - pointId={}, currentStatus={}, reason={}",
+                this.id, this.status, reason);
+        if (this.status == PointStatus.SUCCESS) {
+            throw new BusinessException(PointErrorCode.ONLY_SUCCESS_CAN_BE_COMPENSATED);
+        }
+
+        this.status = PointStatus.COMPENSATING;
+        this.description = reason;
+
+        log.info("[POINT] status changed to COMPENSATING - pointId={}", this.id);
+    }
+
+    // 보상 완료
+    public void markCompensated() {
+        log.info(
+                "[POINT] markCompensated called - pointId={}, currentStatus={}",
+                this.id, this.status
+        );
+
+        if (this.status != PointStatus.COMPENSATING) {
+            log.warn(
+                    "[POINT] markCompensated rejected - pointId={}, status={}, expectedStatus=COMPENSATING",
+                    this.id, this.status
+            );
+            throw new BusinessException(PointErrorCode.NOT_IN_COMPENSATING_STATUS);
+        }
+
+        this.status = PointStatus.COMPENSATED;
+        this.compensatedAt = LocalDateTime.now();
+
+        log.info(
+                "[POINT] status changed - pointId={}, newStatus={}, compensatedAt={}",
+                this.id, this.status, this.compensatedAt
+        );
+    }
+
+    // 보상 실패 처리 (필요시)
+    public void failCompensation() {
+        if (this.status != PointStatus.COMPENSATING) {
+            throw new BusinessException(PointErrorCode.NOT_IN_COMPENSATING_STATUS);
+        }
+
+        // COMPENSATING 상태에서 실패 시 원래 SUCCESS로 복구
+        this.status = PointStatus.SUCCESS;
+        this.description = null;
     }
 
     private void validateUpdatable(){

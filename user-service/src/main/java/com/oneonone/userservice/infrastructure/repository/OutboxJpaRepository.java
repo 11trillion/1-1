@@ -1,7 +1,7 @@
 package com.oneonone.userservice.infrastructure.repository;
 
 import com.oneonone.userservice.domain.entity.OutboxEvent;
-import com.oneonone.userservice.domain.enums.OutboxStatus;
+import com.oneonone.common.enums.OutboxStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -15,4 +15,5 @@ public interface OutboxJpaRepository extends JpaRepository<OutboxEvent, UUID> {
     Optional<OutboxEvent> findByEventId(UUID eventId);
 
     List<OutboxEvent> findTop100ByStatusOrderByOutboxIdAsc(OutboxStatus status);
+    List<OutboxEvent> findBySagaId(UUID sagaId);
 }

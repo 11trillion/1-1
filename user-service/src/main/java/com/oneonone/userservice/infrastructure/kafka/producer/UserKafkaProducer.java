@@ -1,9 +1,8 @@
-package com.oneonone.userservice.infrastructure.kafka;
+package com.oneonone.userservice.infrastructure.kafka.producer;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.oneonone.userservice.infrastructure.kafka.dto.BalanceEventPayload;
-import lombok.RequiredArgsConstructor;
+import com.oneonone.common.infrastructure.kafka.BalanceEventPayload;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
@@ -13,13 +12,17 @@ import java.util.concurrent.TimeoutException;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class UserKafkaProducer {
 
     private static final String TOPIC = "point-update-event";
 
     private final KafkaTemplate<String, BalanceEventPayload> kafkaTemplate;
-    private final ObjectMapper objectMapper;
+
+    // 생성자에서 @Qualifier 지정
+    @Autowired
+    public UserKafkaProducer( KafkaTemplate<String, BalanceEventPayload> kafkaTemplate) {
+        this.kafkaTemplate = kafkaTemplate;
+    }
 
     // 비동기 전송
     public void send(BalanceEventPayload payload) {

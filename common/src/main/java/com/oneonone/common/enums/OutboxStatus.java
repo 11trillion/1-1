@@ -1,4 +1,4 @@
-package com.oneonone.userservice.domain.enums;
+package com.oneonone.common.enums;
 
 public enum OutboxStatus {
     PENDING, SUCCESS, FAILED

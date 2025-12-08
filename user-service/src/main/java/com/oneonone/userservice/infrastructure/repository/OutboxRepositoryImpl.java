@@ -1,7 +1,7 @@
 package com.oneonone.userservice.infrastructure.repository;
 
 import com.oneonone.userservice.domain.entity.OutboxEvent;
-import com.oneonone.userservice.domain.enums.OutboxStatus;
+import com.oneonone.common.enums.OutboxStatus;
 import com.oneonone.userservice.domain.repository.OutboxRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -35,5 +35,9 @@ public class OutboxRepositoryImpl implements OutboxRepository {
     public List<OutboxEvent> findUnprocessedEvents(int limit) {
         // limit은 일단 100으로 고정 (추후 파라미터화 가능)
         return outboxJpaRepository.findTop100ByStatusOrderByOutboxIdAsc(OutboxStatus.PENDING);
+    }
+    @Override
+    public List<OutboxEvent> findBySagaId(UUID sagaId) {
+        return outboxJpaRepository.findBySagaId(sagaId);
     }
 }

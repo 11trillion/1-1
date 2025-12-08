@@ -3,6 +3,7 @@ package com.oneonone.userservice.application.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oneonone.common.exception.BusinessException;
+import com.oneonone.common.infrastructure.kafka.BalanceEventPayload;
 import com.oneonone.userservice.application.command.SignupCommand;
 import com.oneonone.userservice.application.command.UpdateBalanceCommand;
 import com.oneonone.userservice.application.command.UpdateMasterCommand;
@@ -13,7 +14,6 @@ import com.oneonone.userservice.domain.entity.User;
 import com.oneonone.userservice.domain.repository.OutboxRepository;
 import com.oneonone.userservice.domain.repository.UserRepository;
 import com.oneonone.userservice.exception.UserErrorCode;
-import com.oneonone.userservice.infrastructure.kafka.dto.BalanceEventPayload;
 import com.oneonone.userservice.presentation.dto.response.BalanceResponse;
 import com.oneonone.userservice.presentation.dto.response.MasterUserResponse;
 import com.oneonone.userservice.presentation.dto.response.UserResponse;
@@ -24,6 +24,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -133,28 +135,28 @@ public class UserService {
 
     @Transactional // <- 이 부분 추가했어여
     public BalanceResponse updateBalance(Long userId, UpdateBalanceCommand command) {
+        // 멱등성 체크 - 이미 처리된 eventId인지 확인
+        Optional<OutboxEvent> existingEvent = outboxRepository.findByEventId(command.eventId());
+        if (existingEvent.isPresent()) {
+            log.info("[BALANCE-UPDATE] Duplicate eventId detected: {}, returning existing result", command.eventId());
+            User user = findUserById(userId);
+            return new BalanceResponse(userId, user.getPointBalance());
+        }
+
         User user = findUserById(userId);
 
         // Balance 업데이트
         // 성능 개선을 위해 락 없이 먼저 구현, 나중에 낙관적/비관적 락 구현
+        // User 조회 및 Balance 업데이트
         user.updateBalance(command.amount(), command.type());
-//
-//        // 3. Outbox payload 생성
-//        Map<String, Object> payloadMap = new HashMap<>();
-//        payloadMap.put("userId", userId);
-//        payloadMap.put("amount", command.amount());
-//        payloadMap.put("type", command.type());
-//        payloadMap.put("eventId", command.eventId());
-//        if (command.betId() != null) {
-//            payloadMap.put("betId", command.betId());
-//        }
 
+        // Outbox payload 생성
         BalanceEventPayload payloadDTO = new BalanceEventPayload(
                 command.eventId().toString(),
                 userId,
                 command.amount(),
                 command.type(),
-                command.betId().toString()
+                command.betId() != null ? command.betId().toString() : null
         );
 
         String payload;
@@ -173,6 +175,9 @@ public class UserService {
                 payload
         );
         outboxRepository.save(outboxEvent);
+
+        log.info("[BALANCE-UPDATE] Successfully updated balance for userId: {}, new balance: {}",
+                userId, user.getPointBalance());
 
         return new BalanceResponse(userId, user.getPointBalance());
     }

@@ -4,7 +4,7 @@ import com.oneonone.common.exception.BusinessException;
 import com.oneonone.pointservice.domain.PointErrorCode;
 import com.oneonone.pointservice.domain.entity.Point;
 import com.oneonone.pointservice.domain.enums.PointStatus;
-import com.oneonone.pointservice.domain.enums.PointType;
+import com.oneonone.common.enums.PointType;
 import com.oneonone.pointservice.domain.repository.PointRepository;
 import com.oneonone.pointservice.presentation.dto.response.PointResponse;
 import jakarta.transaction.Transactional;

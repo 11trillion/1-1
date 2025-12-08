@@ -1,18 +1,6 @@
-
-
 group = 'com.one-on-one'
 version = '0.0.1-SNAPSHOT'
 description = 'game-service'
-
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
-}
-
-repositories {
-    mavenCentral()
-}
 
 dependencies {
     // common

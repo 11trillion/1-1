@@ -4,7 +4,6 @@ import com.oneonone.common.exception.BusinessException;
 import com.oneonone.userservice.domain.entity.CompensationEvent;
 import com.oneonone.userservice.domain.entity.User;
 import com.oneonone.userservice.domain.repository.CompensationEventRepository;
-import com.oneonone.userservice.domain.repository.OutboxRepository;
 import com.oneonone.userservice.domain.repository.UserRepository;
 import com.oneonone.userservice.exception.UserErrorCode;
 import com.oneonone.userservice.infrastructure.kafka.event.BalanceCompensationEvent;
@@ -27,7 +26,7 @@ public class BalanceCompensationConsumer {
     private final CompensationResultProducer compensationResultProducer;
 
     @KafkaListener(
-            topics = "balance-compensation-event",
+            topics = "${spring.kafka.topics.balance-compensation-event}",
             groupId = "user-service",
             containerFactory = "balanceCompensationEventKafkaListenerContainerFactory"
     )

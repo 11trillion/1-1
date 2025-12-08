@@ -152,6 +152,7 @@ public class UserService {
 
         // Outbox payload 생성
         BalanceEvent event = new BalanceEvent(
+                command.sagaId().toString(),     // ✅ sagaId
                 command.eventId().toString(),
                 userId,
                 command.amount(),
@@ -170,6 +171,7 @@ public class UserService {
 
         // outbox 이벤트 생성 및 저장
         OutboxEvent outboxEvent = new OutboxEvent(
+                command.sagaId(),
                 command.eventId(),
                 userId,
                 payload

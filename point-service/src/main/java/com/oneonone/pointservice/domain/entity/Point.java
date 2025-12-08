@@ -21,8 +21,11 @@ public class Point extends BaseEntity {
     @Column(name="point_id")
     private UUID id;
 
-    @Column(name = "event_id", nullable = false, updatable = false)
-    private UUID eventId;   // Saga / Kafka 멱등성 키
+    @Column(name = "saga_id", nullable = false, updatable = false)
+    private UUID sagaId;    // Saga 전체 흐름 추적
+
+    @Column(name = "event_id", nullable = false, updatable = false, unique = true)
+    private UUID eventId;   // 개별 메시지 멱등성
 
     @Enumerated(EnumType.STRING)
     @Column(name="point_type", nullable=false)
@@ -59,6 +62,7 @@ public class Point extends BaseEntity {
     }
 
     public static Point create(
+            String sagaId,
             String eventId,
             Long userId,
             Long amount,
@@ -70,6 +74,7 @@ public class Point extends BaseEntity {
         }
 
         Point point = new Point();
+        point.sagaId = UUID.fromString(sagaId);
         point.eventId = UUID.fromString(eventId);
         point.userId = userId;
         point.amount = amount;
@@ -96,7 +101,7 @@ public class Point extends BaseEntity {
             throw new BusinessException(PointErrorCode.ONLY_SUCCESS_CAN_BE_COMPENSATED);
         }
 
-        this.status = PointStatus.COMPENSATED;
+        this.status = PointStatus.COMPENSATING;
         this.description = reason;
     }
 

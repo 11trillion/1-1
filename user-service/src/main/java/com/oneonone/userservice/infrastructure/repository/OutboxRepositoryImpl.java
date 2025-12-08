@@ -36,4 +36,8 @@ public class OutboxRepositoryImpl implements OutboxRepository {
         // limit은 일단 100으로 고정 (추후 파라미터화 가능)
         return outboxJpaRepository.findTop100ByStatusOrderByOutboxIdAsc(OutboxStatus.PENDING);
     }
+    @Override
+    public List<OutboxEvent> findBySagaId(UUID sagaId) {
+        return outboxJpaRepository.findBySagaId(sagaId);
+    }
 }

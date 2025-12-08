@@ -25,14 +25,15 @@ public class CompensationResultProducer {
                     .send(TOPIC, event.eventId(), event)
                     .get(); // 동기 방식 (신뢰성 중요)
 
-            log.info("[COMPENSATION-RESULT-SENT] Successfully published - eventId={}, success={}, partition={}",
+            log.info("[COMPENSATION-RESULT-SENT] Successfully published - sagaId={}, eventId={}, success={}, partition={}",
+                    event.sagaId(),
                     event.eventId(),
                     event.success(),
                     result.getRecordMetadata().partition());
 
         } catch (Exception e) {
-            log.error("[COMPENSATION-RESULT-FAILED] Failed to publish - eventId={}, error={}",
-                    event.eventId(), e.getMessage(), e);
+            log.error("[COMPENSATION-RESULT-FAILED] Failed to publish - sagaId={}, eventId={}, error={}",
+                    event.sagaId(), event.eventId(), e.getMessage(), e);
             // 실패 시 재시도 또는 알림 로직 추가 가능
             throw new RuntimeException("Failed to publish compensation result", e);
         }

@@ -44,6 +44,7 @@ public class BalanceEventConsumer {
 
             // 포인트 생성 후 저장
             Point point = Point.create(
+                    event.sagaId(),
                     event.eventId(),
                     event.userId(),
                     event.amount(),
@@ -100,6 +101,7 @@ public class BalanceEventConsumer {
             Point point = pointRepository.findByEventId(UUID.fromString(event.eventId()))
                     .orElseGet(() -> {
                         Point newPoint = Point.create(
+                                event.sagaId(),
                                 event.eventId(),
                                 event.userId(),
                                 event.amount(),
@@ -116,6 +118,7 @@ public class BalanceEventConsumer {
                     point.getId(), event.eventId());
 
             CompensationEvent compensationEvent = new CompensationEvent(
+                    event.sagaId(),
                     event.eventId(),
                     event.userId(),
                     event.amount(),

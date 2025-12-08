@@ -46,4 +46,9 @@ public class PointRepositoryImpl implements PointRepository {
     public Optional<Point> findByEventId(UUID eventId) {
         return pointJpaRepository.findByEventId(eventId);
     }
+
+    @Override
+    public List<Point> findBySagaId(UUID sagaId) {
+        return pointJpaRepository.findBySagaId(sagaId);
+    }
 }

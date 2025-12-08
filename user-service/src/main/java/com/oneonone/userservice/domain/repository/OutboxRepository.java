@@ -14,4 +14,7 @@ public interface OutboxRepository {
     List<OutboxEvent> findUnprocessedEvents(int limit);
 
     Optional<OutboxEvent> findByEventId(UUID eventId);
+
+    // Saga 추적용
+    List<OutboxEvent> findBySagaId(UUID sagaId);
 }

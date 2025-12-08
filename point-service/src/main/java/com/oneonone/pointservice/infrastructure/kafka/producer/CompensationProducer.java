@@ -27,7 +27,8 @@ public class CompensationProducer {
     public void sendCompensation(CompensationEvent event) {
         try {
             BalanceCompensationEvent payload = new BalanceCompensationEvent(
-                    UUID.randomUUID().toString(),
+                    event.sagaId(),    // 동일한 sagaId
+                    event.eventId(),
                     event.userId(),
                     event.amount(),
                     event.type(),
@@ -43,7 +44,8 @@ public class CompensationProducer {
                     result.getRecordMetadata().partition());
 
         } catch (Exception e) {
-            log.error("[COMPENSATION-FAILED] Failed to publish compensation event - eventId={}, error={}",
+            log.error("[COMPENSATION-FAILED] Failed to publish compensation event - sagaId={}, eventId={}, error={}",
+                    event.sagaId(),
                     event.eventId(),
                     e.getMessage());
             throw new CompensationPublishException("Failed to publish compensation event", e);
@@ -55,6 +57,7 @@ public class CompensationProducer {
      */
     private BalanceCompensationEvent mapToPayload(CompensationEvent event) {
         return new BalanceCompensationEvent(
+                event.sagaId(),
                 event.eventId(),
                 event.userId(),
                 event.amount(),

@@ -15,4 +15,5 @@ public interface OutboxJpaRepository extends JpaRepository<OutboxEvent, UUID> {
     Optional<OutboxEvent> findByEventId(UUID eventId);
 
     List<OutboxEvent> findTop100ByStatusOrderByOutboxIdAsc(OutboxStatus status);
+    List<OutboxEvent> findBySagaId(UUID sagaId);
 }

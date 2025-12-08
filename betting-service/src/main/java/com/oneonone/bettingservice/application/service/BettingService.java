@@ -1,20 +1,23 @@
 package com.oneonone.bettingservice.application.service;
 
-import com.oneonone.bettingservice.presentation.dto.BettingRequestDto;
-import com.oneonone.bettingservice.presentation.dto.BettingResponseDto;
+import com.oneonone.bettingservice.domain.BetResult;
 import com.oneonone.bettingservice.domain.Betting;
 import com.oneonone.bettingservice.domain.BettingErrorCode;
 import com.oneonone.bettingservice.domain.BettingRepository;
+import com.oneonone.bettingservice.presentation.dto.BettingKafkaRequestDto;
+import com.oneonone.bettingservice.presentation.dto.BettingRequestDto;
+import com.oneonone.bettingservice.presentation.dto.BettingResponseDto;
+import com.oneonone.bettingservice.presentation.dto.PointRewardEventDto;
 import com.oneonone.common.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -23,7 +26,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class BettingService {
     private final BettingRepository bettingRepository;
-    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final KafkaTemplate<String, PointRewardEventDto> kafkaPointReward;
 
     // 베팅 내역 조회
     public Betting betting (UUID bettingId){
@@ -102,12 +105,6 @@ public class BettingService {
                 requestDto.betResult()
         );
 
-        // Kafka
-//        String topic = "point";
-//        String key = "test";
-//        String message = "경기 결과에 따른 포인트 업데이트";
-//        kafkaTemplate.send(topic, key, message);
-
         return BettingResponseDto.from(betting);
     }
 
@@ -120,22 +117,41 @@ public class BettingService {
         betting.softDelete(userId);
     }
 
-    // todo kafka 테스트 - 추후 삭제 예정
-    public String kafkaTest(){
-        // Kafka
-        System.out.println("kafka 테스트 시작");
-        String topic = "point";
-        String key = "test";
-        String message = "경기 결과에 따른 포인트 업데이트";
-        kafkaTemplate.send(topic, key, message);
+    // Kafka로 게임 결과를 받고 베팅금액 * 배당률을 계산 후 회원 서비스에 보내서 포인트를 업데이트 한다.
+    @Transactional
+    public void updateGameResult(BettingKafkaRequestDto requestDto){
+        log.info("updateGameResult");
+        // 게임 아이디를 받아서 경기결과를 업데이트 해준다.
+        List<Betting> bets = bettingRepository
+                .findAllByGameId(requestDto.gameId())
+                .orElseThrow(()-> new BusinessException(BettingErrorCode.BETTING_NOT_FOUND));
 
-        return "완료";
+        for (Betting tempBetting : bets) {
+            if (tempBetting.getBetType().equals(requestDto.gameResult())) {
+                tempBetting.updateResult(BetResult.WIN);               // 승부예측이 맞을 경우
+            } else {
+                tempBetting.updateResult(BetResult.LOSE);              // 승부예측이 틀린 경우
+            }
+        }
+
+        // 정산 계산 후 회원 모듈에게 포인트를 수정하도록 요청한다.
+        List<PointRewardEventDto> rewards = bets.stream()
+                .filter(Betting::isWin)
+                .map(b -> new PointRewardEventDto(b.getUserId(),  b.calculateReward()))
+                .toList();
+
+        // 포인트 서비스 이벤트 발행
+        rewards.forEach(event ->
+                kafkaPointReward.send("point-reward",
+                        event.userId().toString(),  // key: userId
+                        event                       // value : Long balance
+                ).whenComplete((result, ex) -> {
+                    if (ex == null) {
+                        log.info("sent pointReward for user {}", event.userId());
+                    } else {
+                        log.error("failed to send pointReward for user {}", event.userId(), ex);
+                    }
+                })
+        );
     }
-
-    // todo kafka 테스트 - 추후 삭제 예정
-    @KafkaListener(groupId = "betting", topics = "point")
-    public void cumsumerTest(String message){
-        log.info("Kafka 테스트: " + message);
-    }
-
 }

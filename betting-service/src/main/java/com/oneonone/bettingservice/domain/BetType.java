@@ -4,14 +4,15 @@ import lombok.Getter;
 
 @Getter
 public enum BetType {
-    WIN("승"),
-    LOSE("패"),
-    DRAW("무승부")
+    HOME_WIN("홈 팀 승리"),
+    AWAY_WIN( "어웨이 팀 승리"),
+    DRAW("비김"),
+    WAIT("경기 시작 전");
     ;
 
-    private final String betResult;
+    private final String betType;
 
     BetType(String betType) {
-        this.betResult = betType;
+        this.betType = betType;
     }
 }

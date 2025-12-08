@@ -11,7 +11,7 @@ public record BettingResponseDto (
         UUID bettingId,
         Long userId,
         UUID gameId,
-        Integer betAmount,
+        BigDecimal betAmount,
         BigDecimal odds,
         BetType betType,
         BetResult betResult

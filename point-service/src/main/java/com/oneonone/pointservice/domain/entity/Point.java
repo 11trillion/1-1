@@ -7,10 +7,12 @@ import com.oneonone.pointservice.domain.enums.PointStatus;
 import com.oneonone.common.enums.PointType;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+@Slf4j
 @Entity
 @Getter
 @Table(name = "p_points")
@@ -97,22 +99,40 @@ public class Point extends BaseEntity {
 
     // 보상 시작
     public void startCompensation(String reason) {
+        log.info("[POINT] startCompensation called - pointId={}, currentStatus={}, reason={}",
+                this.id, this.status, reason);
         if (this.status == PointStatus.SUCCESS) {
             throw new BusinessException(PointErrorCode.ONLY_SUCCESS_CAN_BE_COMPENSATED);
         }
 
         this.status = PointStatus.COMPENSATING;
         this.description = reason;
+
+        log.info("[POINT] status changed to COMPENSATING - pointId={}", this.id);
     }
 
     // 보상 완료
     public void markCompensated() {
+        log.info(
+                "[POINT] markCompensated called - pointId={}, currentStatus={}",
+                this.id, this.status
+        );
+
         if (this.status != PointStatus.COMPENSATING) {
+            log.warn(
+                    "[POINT] markCompensated rejected - pointId={}, status={}, expectedStatus=COMPENSATING",
+                    this.id, this.status
+            );
             throw new BusinessException(PointErrorCode.NOT_IN_COMPENSATING_STATUS);
         }
 
         this.status = PointStatus.COMPENSATED;
         this.compensatedAt = LocalDateTime.now();
+
+        log.info(
+                "[POINT] status changed - pointId={}, newStatus={}, compensatedAt={}",
+                this.id, this.status, this.compensatedAt
+        );
     }
 
     // 보상 실패 처리 (필요시)

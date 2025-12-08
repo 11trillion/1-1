@@ -13,6 +13,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -25,6 +27,7 @@ public class GameController {
     private final GameService gameService;
 
     @Operation(summary = "게임 생성", description = "게임 생성 API")
+    @PreAuthorize("hasRole('MASTER')")
     @PostMapping
     public ResponseEntity<ApiResponse<GameCreateResponse>> createGame
             (@Valid @RequestBody GameCreateRequest gameCreateRequest) {
@@ -33,6 +36,7 @@ public class GameController {
     }
 
     @Operation(summary = "전체 게임 조회" , description = "전체 게임을 조회한다. sort 테스트 시 [] 빼고 테스트해주세요")
+    @PreAuthorize("hasAnyRole('USER', 'MASTER')")
     @GetMapping
     public ResponseEntity<ApiResponse<Page<GameResponse>>> getAllGames(
             @PageableDefault (
@@ -47,6 +51,7 @@ public class GameController {
     }
 
     @Operation(summary = "게임 단건 조회" , description = "한 게임의 대한 정보를 조회한다.")
+    @PreAuthorize("hasAnyRole('USER', 'MASTER')")
     @GetMapping("/{gameId}")
     public ResponseEntity<ApiResponse<GameResponse>> getGameById(
             @Valid @PathVariable UUID gameId) {
@@ -55,19 +60,21 @@ public class GameController {
     }
 
     @Operation(summary = "게임 정보 수정", description = "게임의 정보를 수정합니다.")
+    @PreAuthorize("hasRole('MASTER')")
     @PutMapping("/{gameId}")
     public ResponseEntity<ApiResponse<GameUpdateResponse>> updateGame(
-            @Valid @PathVariable UUID gameId,
+            @PathVariable UUID gameId,
             @RequestBody GameUpdateRequest gameUpdateRequest) {
         GameUpdateResponse result = gameService.updateGame(gameId,gameUpdateRequest);
         return ResponseEntity.ok(ApiResponse.success(result,"게임 정보 수정이 완료되었습니다."));
     }
 
     @Operation(summary = "게임 정보 삭제", description = "게임 정보를 삭제합니다")
+    @PreAuthorize("hasRole('MASTER')")
     @DeleteMapping("/{gameId}")
     public ResponseEntity<ApiResponse<Void>> deleteGame(
-             @PathVariable UUID gameId) {
-        Long userId = 999999L;
+            @RequestHeader("X-User-Id") Long userId,
+            @PathVariable UUID gameId) {
         gameService.deleteGame(gameId,userId);
         return ResponseEntity.ok(ApiResponse.success(null,"게임 정보 삭제가 완료되었습니다."));
     }

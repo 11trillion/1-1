@@ -1,13 +1,10 @@
 package com.oneonone.userservice.presentation;
 
-import com.oneonone.common.enums.UserRole;
-import com.oneonone.common.exception.BusinessException;
 import com.oneonone.common.response.ApiResponse;
 import com.oneonone.userservice.application.command.*;
 import com.oneonone.userservice.application.service.AuthService;
 import com.oneonone.userservice.application.service.UserService;
 import com.oneonone.userservice.domain.entity.User;
-import com.oneonone.userservice.exception.UserErrorCode;
 import com.oneonone.userservice.presentation.dto.request.*;
 import com.oneonone.userservice.presentation.dto.response.*;
 import io.swagger.v3.oas.annotations.Operation;

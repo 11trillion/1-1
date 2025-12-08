@@ -20,7 +20,7 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
 
-    implementation "org.springdoc:springdoc-openapi-starter-webflux-ui:${springdocVersion}"
+    implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springdocVersion}"
 
     // Redis + Session
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'

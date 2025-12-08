@@ -1,8 +1,8 @@
 package com.oneonone.bettingservice.presentation;
 
+import com.oneonone.bettingservice.application.service.BettingService;
 import com.oneonone.bettingservice.presentation.dto.BettingRequestDto;
 import com.oneonone.bettingservice.presentation.dto.BettingResponseDto;
-import com.oneonone.bettingservice.application.service.BettingService;
 import com.oneonone.common.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -100,5 +100,4 @@ public class BettingController {
     public String kafkaTest(){
         return bettingService.kafkaTest();
     }
-
 }

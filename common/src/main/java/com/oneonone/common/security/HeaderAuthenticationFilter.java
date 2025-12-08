@@ -1,4 +1,4 @@
-package com.oneonone.userservice.infrastructure.security;
+package com.oneonone.common.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -29,19 +29,11 @@ public class HeaderAuthenticationFilter extends OncePerRequestFilter {
             List<GrantedAuthority> authorities = new ArrayList<>();
             authorities.add(new SimpleGrantedAuthority("ROLE_" + userRole));
             UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                    userRole, null, authorities
+                    userId, null, authorities
             );
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             log.debug("Authentication - principal: {}, authorities: {}", authenticationToken.getPrincipal(), authenticationToken.getAuthorities());
         }
         filterChain.doFilter(request, response);
-    }
-
-    @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-        String path = request.getRequestURI();
-        return path.equals("/api/v1/users/signup")
-                || path.equals("/api/v1/users/login")
-                || path.equals("/api/v1/users/reissue");
     }
 }

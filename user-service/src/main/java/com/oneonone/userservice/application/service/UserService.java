@@ -184,9 +184,4 @@ public class UserService {
 
         return new BalanceResponse(userId, user.getPointBalance());
     }
-
-    @Transactional(propagation = Propagation.REQUIRED)
-    public void saveOutboxEvent(UpdateBalanceCommand command, User user, String payload) {
-
-    }
 }

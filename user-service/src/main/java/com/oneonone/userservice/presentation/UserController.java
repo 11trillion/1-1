@@ -229,11 +229,13 @@ public class UserController {
             @PathVariable Long userId,
             @Parameter(description = "포인트 증감량(증가: 양수, 감소: 음수)", required = true)
             @RequestBody UpdateBalanceRequest request) {
+        UUID sagaId = UUID.randomUUID();
 //        if (!UserRole.valueOf(role).equals(UserRole.MASTER)) throw new BusinessException(UserErrorCode.FORBIDDEN);
         UpdateBalanceCommand command = new UpdateBalanceCommand(
+                sagaId,
                 request.amount(),
                 request.type(),
-                request.eventId(),
+                UUID.randomUUID(),   // ✅ 여기서 생성
                 request.betId());
         BalanceResponse response = userService.updateBalance(userId, command);
         return ResponseEntity.ok(ApiResponse.success(response, "사용자 포인트 밸런스 수정 성공"));

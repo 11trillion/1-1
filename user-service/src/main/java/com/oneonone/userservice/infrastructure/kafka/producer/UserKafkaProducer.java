@@ -3,6 +3,7 @@ package com.oneonone.userservice.infrastructure.kafka.producer;
 import com.oneonone.userservice.infrastructure.kafka.event.BalanceEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
@@ -15,7 +16,8 @@ import java.util.concurrent.TimeoutException;
 @RequiredArgsConstructor
 public class UserKafkaProducer {
 
-    private static final String TOPIC = "point-update-event";
+    @Value("${spring.kafka.topics.point-update-event}")
+    private String TOPIC;
 
     private final KafkaTemplate<String, BalanceEvent> kafkaTemplate;
 

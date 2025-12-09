@@ -25,7 +25,7 @@ public class Betting extends BaseEntity {
     private UUID gameId;
 
     @Column(name = "bet_amount", nullable = false)
-    private Integer betAmount;
+    private BigDecimal betAmount;
 
     @Column(name = "odds", nullable = false)
     private BigDecimal odds;
@@ -42,7 +42,7 @@ public class Betting extends BaseEntity {
     public static  Betting createBetting(
             Long userId,
             UUID gameId,
-            Integer betAmount,
+            BigDecimal betAmount,
             BigDecimal odds,
             BetType betType,
             BetResult betResult
@@ -59,7 +59,7 @@ public class Betting extends BaseEntity {
 
     // 수정
     public void updateBetting(
-            Integer betAmount,
+            BigDecimal betAmount,
             BigDecimal odds,
             BetType betType,
             BetResult betResult
@@ -68,5 +68,24 @@ public class Betting extends BaseEntity {
         if(odds != null) this.odds = odds;
         if(betType != null) this.betType = betType;
         if(betResult != null) this.betResult = betResult;
+    }
+
+    // 경기결과 업데이트
+    public void updateResult(
+            BetResult betResult
+    ){
+        if(betResult != null) this.betResult = betResult;
+    }
+
+    // 승리 여부
+    public boolean isWin() {
+        return this.betResult == BetResult.WIN;
+    }
+
+    // 정산
+    public Long calculateReward(){
+        return betAmount
+                .multiply(odds)
+                .longValue();
     }
 }

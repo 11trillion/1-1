@@ -1,6 +1,8 @@
 package com.oneonone.bettingservice.presentation;
 
 import com.oneonone.bettingservice.application.service.BettingService;
+import com.oneonone.bettingservice.domain.BetType;
+import com.oneonone.bettingservice.presentation.dto.BettingKafkaRequestDto;
 import com.oneonone.bettingservice.presentation.dto.BettingRequestDto;
 import com.oneonone.bettingservice.presentation.dto.BettingResponseDto;
 import com.oneonone.common.response.ApiResponse;
@@ -97,7 +99,13 @@ public class BettingController {
 
     // todo kafka 테스트 - 추후 삭제 예정
     @GetMapping("/kafkaTest")
-    public String kafkaTest(){
-        return bettingService.kafkaTest();
+    public void kafkaTest(){
+        UUID uuid = UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        BetType result = BetType.HOME_WIN;
+
+        BettingKafkaRequestDto requestDto =
+                new BettingKafkaRequestDto(uuid, result);
+
+        bettingService.updateGameResult(requestDto);
     }
 }

@@ -73,9 +73,10 @@ public class BettingController {
     @Operation(summary = "베팅 수정" , description = "베팅을 수정합니다.")
     @PatchMapping("/{betId}")
     public ResponseEntity<ApiResponse<BettingResponseDto>> updateBetting(
+            @PathVariable UUID betId,
             @RequestBody BettingRequestDto requestDto
     ){
-        BettingResponseDto result = bettingService.updateBetting(requestDto);
+        BettingResponseDto result = bettingService.updateBetting(betId, requestDto);
         return ResponseEntity.ok(ApiResponse.success(result, "베팅 수정 성공"));
     }
 

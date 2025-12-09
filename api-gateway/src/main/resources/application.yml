@@ -78,6 +78,7 @@ spring:
             - RewritePath=/v3/api-docs/betting-service,/v3/api-docs
   data:
     redis:
+      host: redis
       port: 6379
 
 springdoc:

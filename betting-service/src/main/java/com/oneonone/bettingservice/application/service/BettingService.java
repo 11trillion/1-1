@@ -70,15 +70,20 @@ public class BettingService {
 
     // 베팅 생성
     @Transactional
-    public BettingResponseDto createBetting(BettingRequestDto requestDto){
+    public BettingResponseDto createBetting(Long userId ,BettingRequestDto requestDto){
+        // todo 회원에서 현재 포인트 받아와서 정보 가지고 있기
+
         // 생성
         Betting betting = Betting.createBetting(
-                requestDto.userId(),
+                userId,
                 requestDto.gameId(),
                 requestDto.betAmount(),
                 requestDto.odds(),
                 requestDto.betType()
         );
+
+        // todo Redis에 베팅 내역 저장
+        // todo 베팅 저장되면서 포인트 차감 처리
 
         // 저장
         bettingRepository.save(betting);
@@ -88,19 +93,18 @@ public class BettingService {
 
     // 베팅 수정
     @Transactional
-    public BettingResponseDto updateBetting(UUID betId, BettingRequestDto requestDto){
+    public BettingResponseDto updateBetting(UUID betId, Long userId, BettingRequestDto requestDto){
         Betting betting = betting(betId);
 
         // todo 조건에 대해서 좀 더 고민하기
-        // todo userId는 로그인 정보에서 가지고오도록 수정 예정
-        if(!Objects.equals(betting.getUserId(), requestDto.userId())){          // 사용자 정보 다를 경우
+        if(!Objects.equals(betting.getUserId(), userId)){          // 사용자 정보 다를 경우
             throw new BusinessException(BettingErrorCode.BETTING_UPDATE_ERROR);
         }
 
         betting.updateBetting(
                 requestDto.betAmount(),
                 requestDto.odds(),
-                requestDto.betType()
+                requestDto.betType()            // HOME_WIN, AWAY_WIN, DRAW
         );
 
         return BettingResponseDto.from(betting);

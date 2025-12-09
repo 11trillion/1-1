@@ -7,9 +7,9 @@ import com.oneonone.bettingservice.presentation.dto.BettingRequestDto;
 import com.oneonone.bettingservice.presentation.dto.BettingResponseDto;
 import com.oneonone.common.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -34,6 +34,7 @@ public class BettingController {
     @GetMapping("/{betId}")
     public ResponseEntity<ApiResponse<Page<BettingResponseDto>>> getBetListByBetId(
             @PathVariable UUID betId,
+            @ParameterObject
             @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ){
         Page<BettingResponseDto> result = bettingService.getBetListByBetId(betId, pageable);
@@ -46,6 +47,7 @@ public class BettingController {
     @GetMapping("/game/{gameId}")
     public ResponseEntity<ApiResponse<Page<BettingResponseDto>>> getBetListByGameId(
             @PathVariable UUID gameId,
+            @ParameterObject
             @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ){
         Page<BettingResponseDto> result = bettingService.getBetListByGameId(gameId, pageable);
@@ -58,6 +60,7 @@ public class BettingController {
     @GetMapping("/user/{userId}")
     public ResponseEntity<ApiResponse<Page<BettingResponseDto>>> getBetListByUserId(
             @PathVariable Long userId,
+            @ParameterObject
             @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ){
         Page<BettingResponseDto> result = bettingService.getBetListByUserId(userId, pageable);
@@ -65,33 +68,32 @@ public class BettingController {
     }
 
     // 베팅 생성
-    @Operation(summary = "베팅 생성." , description = "베팅을 생성합니다."
-             , security = @SecurityRequirement(name = "BearerAuth"))
+    @Operation(summary = "베팅 생성." , description = "베팅을 생성합니다.")
     @PreAuthorize("hasAnyRole('USER', 'MASTER')")
     @PostMapping
     public ResponseEntity<ApiResponse<BettingResponseDto>> createBetting(
+            @RequestHeader("X-User-Id") Long userId,
             @RequestBody BettingRequestDto requestDto
     ){
-        BettingResponseDto result = bettingService.createBetting(requestDto);
+        BettingResponseDto result = bettingService.createBetting(userId, requestDto);
         return ResponseEntity.ok(ApiResponse.success(result, "베팅 생성 성공"));
     }
 
     // 베팅 수정
-    @Operation(summary = "베팅 수정" , description = "베팅을 수정합니다."
-            , security = @SecurityRequirement(name = "BearerAuth"))
+    @Operation(summary = "베팅 수정" , description = "베팅을 수정합니다.")
     @PreAuthorize("hasAnyRole('USER', 'MASTER')")
     @PatchMapping("/{betId}")
     public ResponseEntity<ApiResponse<BettingResponseDto>> updateBetting(
             @PathVariable UUID betId,
+            @RequestHeader("X-User-Id") Long userId,
             @RequestBody BettingRequestDto requestDto
     ){
-        BettingResponseDto result = bettingService.updateBetting(betId, requestDto);
+        BettingResponseDto result = bettingService.updateBetting(betId, userId, requestDto);
         return ResponseEntity.ok(ApiResponse.success(result, "베팅 수정 성공"));
     }
 
     // 베팅 삭제
-    @Operation(summary = "베팅 삭제" , description = "베팅을 삭제합니다."
-            , security = @SecurityRequirement(name = "BearerAuth"))
+    @Operation(summary = "베팅 삭제" , description = "베팅을 삭제합니다.")
     @PreAuthorize("hasAnyRole('USER', 'MASTER')")
     @DeleteMapping("/{betId}")
     public ResponseEntity<ApiResponse<BettingResponseDto>> deleteBetting(

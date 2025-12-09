@@ -8,7 +8,6 @@ import java.util.UUID;
 
 
 public record  BettingRequestDto(
-        UUID bettingId,
         Long userId,
         UUID gameId,
         BigDecimal betAmount,

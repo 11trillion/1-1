@@ -140,7 +140,7 @@ public class BettingService {
 
         // 포인트 서비스 이벤트 발행
         rewards.forEach(event ->
-                kafkaPointReward.send("point-reward",
+                kafkaPointReward.send("betting-reward",
                         event.userId().toString(),  // key: userId
                         event                       // value : Long balance
                 ).whenComplete((result, ex) -> {

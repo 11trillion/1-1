@@ -16,4 +16,5 @@ public interface PointJpaRepository extends JpaRepository<Point, UUID> {
     boolean existsByEventId(UUID eventId);
     Optional<Point> findByEventId(UUID eventId);
     List<Point> findBySagaId(UUID sagaId);
+    boolean existsByBetId(String betId);
 }

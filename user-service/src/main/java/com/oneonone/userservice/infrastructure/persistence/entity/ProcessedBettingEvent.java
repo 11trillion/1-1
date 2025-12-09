@@ -24,16 +24,20 @@ public class ProcessedBettingEvent {
     @Column(nullable = false)
     private Long userId;
 
+    @Column(nullable = false, unique = true)
+    private UUID betId;
+
     @Column(nullable = false)
     private Long amount;
 
     @Column(nullable = false)
     private LocalDateTime processedAt;
 
-    public static ProcessedBettingEvent of(UUID eventId, Long userId, Long amount) {
+    public static ProcessedBettingEvent of(UUID eventId, Long userId, UUID betId, Long amount) {
         ProcessedBettingEvent event = new ProcessedBettingEvent();
         event.eventId = eventId;
         event.userId = userId;
+        event.betId = betId;
         event.amount = amount;
         event.processedAt = LocalDateTime.now();
         return event;

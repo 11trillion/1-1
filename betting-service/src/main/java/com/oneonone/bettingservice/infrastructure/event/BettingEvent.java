@@ -1,4 +1,4 @@
-package com.oneonone.userservice.infrastructure.kafka.event;
+package com.oneonone.bettingservice.infrastructure.event;
 
 public record BettingEvent(
         String eventId,

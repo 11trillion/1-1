@@ -7,4 +7,6 @@ import java.util.UUID;
 
 public interface ProcessedBettingEventRepository extends JpaRepository<ProcessedBettingEvent, UUID> {
     boolean existsByEventId(UUID eventId);
+
+    boolean existsByBetId(UUID betId);
 }

@@ -78,11 +78,13 @@ spring:
             - RewritePath=/v3/api-docs/betting-service,/v3/api-docs
   data:
     redis:
+      host: redis      # docker-compose 서비스 이름
       port: 6379
 
 springdoc:
   api-docs:
     enabled: true
+  enable-spring-security: true
   swagger-ui:
     enabled: true
     path: /swagger-ui.html

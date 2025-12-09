@@ -93,6 +93,7 @@ services:
     build:
       context: .
       dockerfile: ./eureka-server/Dockerfile
+    platform: linux/x86_64
     container_name: eureka-server
     ports:
       - "8761:8761"
@@ -111,6 +112,7 @@ services:
     build:
       context: .
       dockerfile: ./config-server/Dockerfile
+    platform: linux/x86_64
     container_name: config-server
     ports:
       - "8888:8888"
@@ -137,6 +139,7 @@ services:
     build:
       context: .
       dockerfile: ./betting-service/Dockerfile
+    platform: linux/x86_64
     container_name: betting-service
     environment:
       #유레카 호스트 설정
@@ -157,6 +160,7 @@ services:
     build:
       context: .
       dockerfile: ./user-service/Dockerfile
+    platform: linux/x86_64
     container_name: user-service
     environment:
       #유레카 호스트 설정
@@ -177,6 +181,7 @@ services:
     build:
       context: .
       dockerfile: ./game-service/Dockerfile
+    platform: linux/x86_64
     container_name: game-service
     environment:
       #유레카 호스트 설정
@@ -197,6 +202,7 @@ services:
     build:
       context: .
       dockerfile: ./point-service/Dockerfile
+    platform: linux/x86_64
     container_name: point-service
     environment:
       #유레카 호스트 설정
@@ -217,6 +223,7 @@ services:
     build:
       context: .
       dockerfile: ./api-gateway/Dockerfile
+    platform: linux/x86_64
     container_name: gateway
     ports:
       - "8080:8080"

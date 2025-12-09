@@ -9,7 +9,6 @@ import com.oneonone.userservice.presentation.dto.request.*;
 import com.oneonone.userservice.presentation.dto.response.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -98,26 +97,24 @@ public class UserController {
 
     @Operation(
             summary = "내 정보 조회",
-            description = "현재 로그인한 사용자의 정보를 조회합니다.",
-            security = @SecurityRequirement(name = "BearerAuth")
+            description = "현재 로그인한 사용자의 정보를 조회합니다."
     )
     @PreAuthorize("hasAnyRole('USER', 'MASTER')")
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<UserResponse>> getMyProfile(
-            @RequestHeader("X-User-Id") Long userId) {
+            @Parameter(hidden = true) @RequestHeader("X-User-Id") Long userId) {
         UserResponse response = userService.getMyProfile(userId);
         return ResponseEntity.ok(ApiResponse.success(response, "내 정보 조회 성공"));
     }
 
     @Operation(
             summary = "내 정보 수정",
-            description = "현재 로그인한 사용자의 정보(비밀번호, 닉네임, 슬랙 ID)를 수정합니다.",
-            security = @SecurityRequirement(name = "BearerAuth")
+            description = "현재 로그인한 사용자의 정보(비밀번호, 닉네임, 슬랙 ID)를 수정합니다."
     )
     @PatchMapping("/me")
     @PreAuthorize("hasAnyRole('USER', 'MASTER')")
     public ResponseEntity<ApiResponse<UserResponse>> updateMyProfile(
-            @RequestHeader("X-User-Id") Long userId,
+            @Parameter(hidden = true) @RequestHeader("X-User-Id") Long userId,
             @Parameter(description = "수정하고자 하는 정보", required = true)
             @Valid @RequestBody UpdateUserRequest request) {
         UpdateUserCommand command = new UpdateUserCommand(
@@ -131,13 +128,12 @@ public class UserController {
 
     @Operation(
             summary = "회원 탈퇴",
-            description = "현재 로그인한 사용자의 정보를 삭제함으로써(soft delete) 회원 탈퇴를 진행하며, 로그아웃 처리 됩니다.",
-            security = @SecurityRequirement(name = "BearerAuth")
+            description = "현재 로그인한 사용자의 정보를 삭제함으로써(soft delete) 회원 탈퇴를 진행하며, 로그아웃 처리 됩니다."
     )
     @PreAuthorize("hasAnyRole('USER', 'MASTER')")
     @DeleteMapping("/me")
     public ResponseEntity<ApiResponse<Void>> deleteMyProfile(
-            @RequestHeader("X-User-Id") Long userId,
+            @Parameter(hidden = true) @RequestHeader("X-User-Id") Long userId,
             @RequestHeader("Authorization") String header) {
         userService.deleteMyProfile(userId);
         authService.logout(header.substring(7));
@@ -146,8 +142,7 @@ public class UserController {
 
     @Operation(
             summary = "사용자 목록 조회",
-            description = "관리자가 모든 사용자의 목록을 조회합니다.",
-            security = @SecurityRequirement(name = "BearerAuth")
+            description = "관리자가 모든 사용자의 목록을 조회합니다."
     )
     @PreAuthorize("hasRole('MASTER')")
     @GetMapping
@@ -159,8 +154,7 @@ public class UserController {
 
     @Operation(
             summary = "사용자 정보 조회",
-            description = "관리자가 특정 사용자의 정보를 조회합니다.",
-            security = @SecurityRequirement(name = "BearerAuth")
+            description = "관리자가 특정 사용자의 정보를 조회합니다."
     )
     @PreAuthorize("hasRole('MASTER')")
     @GetMapping("/{userId}")
@@ -173,9 +167,7 @@ public class UserController {
 
     @Operation(
             summary = "사용자 정보 수정",
-            description = "관리자가 특정 사용자의 정보(닉네임, 역할, 상태, 포인트 잔액, 슬랙 ID)를 수정합니다.",
-            security = @SecurityRequirement(name = "BearerAuth")
-    )
+            description = "관리자가 특정 사용자의 정보(닉네임, 역할, 상태, 포인트 잔액, 슬랙 ID)를 수정합니다.")
     @PreAuthorize("hasRole('MASTER')")
     @PatchMapping("/{userId}")
     public ResponseEntity<ApiResponse<MasterUserResponse>> updateUser(
@@ -196,13 +188,12 @@ public class UserController {
 
     @Operation(
             summary = "사용자 삭제",
-            description = "관리자가 특정 사용자를 삭제합니다.",
-            security = @SecurityRequirement(name = "BearerAuth")
+            description = "관리자가 특정 사용자를 삭제합니다."
     )
     @PreAuthorize("hasRole('MASTER')")
     @DeleteMapping("/{userId}")
     public ResponseEntity<ApiResponse<Void>> deleteUser(
-            @RequestHeader("X-User-Id") Long id,
+            @Parameter(hidden = true) @RequestHeader("X-User-Id") Long id,
             @Parameter(description = "삭제할 사용자 ID", required = true)
             @PathVariable Long userId) {
         userService.deleteByMaster(id, userId);
@@ -211,8 +202,7 @@ public class UserController {
 
     @Operation(
             summary = "사용자 포인트 잔액 조회 - 서비스 간 통신용",
-            description = "관리자가 특정 사용자의 포인트 잔액을 조회합니다.",
-            security = @SecurityRequirement(name = "BearerAuth")
+            description = "관리자가 특정 사용자의 포인트 잔액을 조회합니다."
     )
     // TODO: 통신용은 Internal로 분리하면 좋을 듯
     @PreAuthorize("hasRole('MASTER')")
@@ -226,8 +216,7 @@ public class UserController {
 
     @Operation(
             summary = "사용자 포인트 잔액 수정 - 서비스 간 통신용",
-            description = "관리자가 특정 사용자의 포인트를 증가/감소시킵니다.",
-            security = @SecurityRequirement(name = "BearerAuth")
+            description = "관리자가 특정 사용자의 포인트를 증가/감소시킵니다."
     )
     @PreAuthorize("hasRole('MASTER')")
     @PatchMapping("/{userId}/balance")

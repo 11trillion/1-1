@@ -9,6 +9,7 @@ import com.oneonone.userservice.presentation.dto.request.*;
 import com.oneonone.userservice.presentation.dto.response.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -97,7 +98,8 @@ public class UserController {
 
     @Operation(
             summary = "내 정보 조회",
-            description = "현재 로그인한 사용자의 정보를 조회합니다."
+            description = "현재 로그인한 사용자의 정보를 조회합니다.",
+            security = @SecurityRequirement(name = "BearerAuth")
     )
     @PreAuthorize("hasAnyRole('USER', 'MASTER')")
     @GetMapping("/me")
@@ -109,7 +111,8 @@ public class UserController {
 
     @Operation(
             summary = "내 정보 수정",
-            description = "현재 로그인한 사용자의 정보(비밀번호, 닉네임, 슬랙 ID)를 수정합니다."
+            description = "현재 로그인한 사용자의 정보(비밀번호, 닉네임, 슬랙 ID)를 수정합니다.",
+            security = @SecurityRequirement(name = "BearerAuth")
     )
     @PatchMapping("/me")
     @PreAuthorize("hasAnyRole('USER', 'MASTER')")
@@ -128,7 +131,8 @@ public class UserController {
 
     @Operation(
             summary = "회원 탈퇴",
-            description = "현재 로그인한 사용자의 정보를 삭제함으로써(soft delete) 회원 탈퇴를 진행하며, 로그아웃 처리 됩니다."
+            description = "현재 로그인한 사용자의 정보를 삭제함으로써(soft delete) 회원 탈퇴를 진행하며, 로그아웃 처리 됩니다.",
+            security = @SecurityRequirement(name = "BearerAuth")
     )
     @PreAuthorize("hasAnyRole('USER', 'MASTER')")
     @DeleteMapping("/me")
@@ -142,7 +146,8 @@ public class UserController {
 
     @Operation(
             summary = "사용자 목록 조회",
-            description = "관리자가 모든 사용자의 목록을 조회합니다."
+            description = "관리자가 모든 사용자의 목록을 조회합니다.",
+            security = @SecurityRequirement(name = "BearerAuth")
     )
     @PreAuthorize("hasRole('MASTER')")
     @GetMapping
@@ -154,7 +159,8 @@ public class UserController {
 
     @Operation(
             summary = "사용자 정보 조회",
-            description = "관리자가 특정 사용자의 정보를 조회합니다."
+            description = "관리자가 특정 사용자의 정보를 조회합니다.",
+            security = @SecurityRequirement(name = "BearerAuth")
     )
     @PreAuthorize("hasRole('MASTER')")
     @GetMapping("/{userId}")
@@ -167,7 +173,8 @@ public class UserController {
 
     @Operation(
             summary = "사용자 정보 수정",
-            description = "관리자가 특정 사용자의 정보(닉네임, 역할, 상태, 포인트 잔액, 슬랙 ID)를 수정합니다."
+            description = "관리자가 특정 사용자의 정보(닉네임, 역할, 상태, 포인트 잔액, 슬랙 ID)를 수정합니다.",
+            security = @SecurityRequirement(name = "BearerAuth")
     )
     @PreAuthorize("hasRole('MASTER')")
     @PatchMapping("/{userId}")
@@ -189,7 +196,8 @@ public class UserController {
 
     @Operation(
             summary = "사용자 삭제",
-            description = "관리자가 특정 사용자를 삭제합니다."
+            description = "관리자가 특정 사용자를 삭제합니다.",
+            security = @SecurityRequirement(name = "BearerAuth")
     )
     @PreAuthorize("hasRole('MASTER')")
     @DeleteMapping("/{userId}")
@@ -203,7 +211,8 @@ public class UserController {
 
     @Operation(
             summary = "사용자 포인트 잔액 조회 - 서비스 간 통신용",
-            description = "관리자가 특정 사용자의 포인트 잔액을 조회합니다."
+            description = "관리자가 특정 사용자의 포인트 잔액을 조회합니다.",
+            security = @SecurityRequirement(name = "BearerAuth")
     )
     // TODO: 통신용은 Internal로 분리하면 좋을 듯
     @PreAuthorize("hasRole('MASTER')")
@@ -217,7 +226,8 @@ public class UserController {
 
     @Operation(
             summary = "사용자 포인트 잔액 수정 - 서비스 간 통신용",
-            description = "관리자가 특정 사용자의 포인트를 증가/감소시킵니다."
+            description = "관리자가 특정 사용자의 포인트를 증가/감소시킵니다.",
+            security = @SecurityRequirement(name = "BearerAuth")
     )
     @PreAuthorize("hasRole('MASTER')")
     @PatchMapping("/{userId}/balance")

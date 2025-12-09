@@ -26,7 +26,7 @@ public class BettingConsumer {
     private final ProcessedBettingEventRepository processedBettingEventRepository;
 
     @KafkaListener(
-            topics = "point-reward",
+            topics = "betting-reward",
             groupId = "user-service",
             containerFactory = "bettingEventConcurrentKafkaListenerContainerFactory"
     )

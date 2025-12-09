@@ -14,8 +14,8 @@ public enum UserErrorCode implements ErrorCode {
     INVALID_PASSWORD(HttpStatus.FORBIDDEN, "U003", "비밀번호가 일치하지 않습니다."),
     INVALID_NICKNAME(HttpStatus.BAD_REQUEST, "U004", "사용할 수 없는 닉네임입니다."),
     FORBIDDEN(HttpStatus.FORBIDDEN, "U005", "접근 권한이 없습니다."),
-    INVALID_REFRESH_TOKEN(HttpStatus.FORBIDDEN, "U006", "유효하지 않은 토큰입니다."),
-    INVALID_POINT(HttpStatus.BAD_REQUEST, "U007", "포인트는 음수가 될 수 없습니다."),
+    INVALID_POINT(HttpStatus.BAD_REQUEST, "U006", "포인트는 음수가 될 수 없습니다."),
+    INVALID_REFRESH_TOKEN(HttpStatus.FORBIDDEN, "U007", "유효하지 않은 토큰입니다."),
     INVALID_POINT_TYPE(HttpStatus.BAD_REQUEST, "U008", "포인트 타입은 DEBIT 또는 CREDIT이어야 합니다."),
     OUTBOX_PAYLOAD_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "U009", "Outbox payload 생성에 실패했습니다.")
     ;

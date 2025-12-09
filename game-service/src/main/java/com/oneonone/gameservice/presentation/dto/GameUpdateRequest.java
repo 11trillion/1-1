@@ -17,9 +17,9 @@ public record GameUpdateRequest (
         LocalDateTime startAt,
         LocalDateTime endAt,
         @Min(value = 0, message = "홈팀 점수는 0 이상이어야 합니다.")
-        int homeScore,
+        Integer homeScore,
         @Min(value = 0, message = "어웨이 팀 점수는 0 이상이어야 합니다.")
-        int awayScore,
+        Integer awayScore,
         @NotNull(message = "경기 상태는 필수입니다.")
         GameStatus status
 ) {

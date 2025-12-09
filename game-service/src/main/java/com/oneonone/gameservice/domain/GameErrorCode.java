@@ -17,7 +17,8 @@ public enum GameErrorCode implements ErrorCode {
     END_TIME_ERROR(HttpStatus.BAD_REQUEST,"G006","종료 시간은 시작 시간보다 이전일 수 없습니다."),
     GAME_START_ERROR(HttpStatus.BAD_REQUEST,"G007","대기 중인 경기에만 시작할 수 있습니다."),
     GAME_END_ERROR(HttpStatus.BAD_REQUEST,"G008","진행 중인 경기만 종료 가능합니다."),
-    ENDED_GAME_TIME_ERROR(HttpStatus.BAD_REQUEST,"G009", "종료 상태에서는 종료 시간이 필수값입니다" )
+    ENDED_GAME_TIME_ERROR(HttpStatus.BAD_REQUEST,"G009", "종료 상태에서는 종료 시간이 필수값입니다" ),
+    GAME_ALREADY_ENDED(HttpStatus.BAD_REQUEST, "G010", "이미 종료된 게임입니다.")
     ;
 
 

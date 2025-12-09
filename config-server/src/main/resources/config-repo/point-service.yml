@@ -6,20 +6,58 @@ spring:
     name: point-service
   datasource:
     url: jdbc:postgresql://localhost:5432/oneonone
+    #docker setting (얘도 docker 주소에요)
+#    url: jdbc:postgresql://postgres:5432/oneonone
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
+    #일단 docker 연결하실때 밑에 풀어주세요
+    # DB 연결 지연 활성화
+    initialization-mode: always
+    continue-on-error: true
+#       DataSource 초기화 지연 설정
+      # DB 컨테이너가 준비될 때까지 애플리케이션 시작을 지연시킵니다.
+    hikari:
+       maximum-pool-size: 10
+#       연결이 성공할 때까지 무한히 재시도
+    initialization-fail-timeout: -1
 
   jpa:
+    # 1. JPA Database Type 명시
+    database: postgresql
+    # 2. JPA Database Platform 명시 (Hibernate Dialect의 최신 표준)
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: update
-    show-sql: true
+      show-sql: true
     properties:
       hibernate:
         format_sql: true
-        show_sql: true
-        dialect:
         default_schema: points
+  cloud:
+    service-bindings:
+      # DB 연결이 준비 상태(up)가 될 때까지 기다립니다.
+      enabled: true
+
+  kafka:
+    bootstrap-servers: localhost:9092
+#    bootstrap-servers: kafka:29092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+    consumer:
+      group-id: point-service
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+
+    properties:
+      spring.json.trusted.packages: "*"
+
+    topics:
+      game-completed: game-completed-events
+
+
 
 management:
   endpoints:

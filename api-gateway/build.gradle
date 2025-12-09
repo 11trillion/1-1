@@ -7,7 +7,7 @@ dependencies {
     }
 
     implementation 'org.springframework.boot:spring-boot-starter-data-redis-reactive'
-
+    implementation 'org.springframework.boot:spring-boot-starter-security'
     // Spring Cloud Config Client (Config 서버에서 설정 받아오기)
     implementation 'org.springframework.cloud:spring-cloud-starter-config'
 

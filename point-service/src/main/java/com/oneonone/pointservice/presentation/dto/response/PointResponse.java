@@ -2,7 +2,7 @@ package com.oneonone.pointservice.presentation.dto.response;
 
 import com.oneonone.pointservice.domain.entity.Point;
 import com.oneonone.pointservice.domain.enums.PointStatus;
-import com.oneonone.pointservice.domain.enums.PointType;
+import com.oneonone.common.enums.PointType;
 import lombok.Getter;
 
 import java.util.UUID;

@@ -40,7 +40,7 @@ COPY game-service/src game-service/src
 # Gradle 빌드 실행
 # Context가 모듈 디렉토리이므로, 모듈 이름 없이 bootJar 명령을 실행합니다.
 RUN chmod +x ./gradlew \
-    && ./gradlew :user-service:bootJar -x test
+    && ./gradlew :point-service:bootJar -x test
 
 # ----------------------------------------------------
 # 2. 최종 실행 스테이지 (Final Run Stage)
@@ -52,7 +52,7 @@ WORKDIR /app
 
 # 빌드된 JAR 파일을 최종 이미지로 복사
 # Context 내에서 빌드되므로 경로는 build/libs/ 입니다.
-ARG JAR_FILE=user-service/build/libs/user-service-*.jar
+ARG JAR_FILE=point-service/build/libs/point-service-*.jar
 COPY --from=build /app/${JAR_FILE} app.jar
 
 # 포트 노출

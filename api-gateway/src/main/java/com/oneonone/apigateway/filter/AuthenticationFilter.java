@@ -31,31 +31,67 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
     @Override
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
-            String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-            if (authHeader == null || !authHeader.startsWith(JwtTokenProvider.BEARER_PREFIX)) return onError(exchange, "Missing or invalid Authorization Header", HttpStatus.UNAUTHORIZED);
+
+            String path = exchange.getRequest().getURI().getPath();
+
+            // Swagger / 공개 API 화이트리스트
+            if (isWhitelist(path)) {
+                return chain.filter(exchange);
+            }
+
+            String authHeader = exchange.getRequest().getHeaders()
+                    .getFirst(HttpHeaders.AUTHORIZATION);
+
+            if (authHeader == null || !authHeader.startsWith(JwtTokenProvider.BEARER_PREFIX)) {
+                return onError(exchange,
+                        "Missing or invalid Authorization Header",
+                        HttpStatus.UNAUTHORIZED);
+            }
+
             try {
                 String token = jwtTokenProvider.substringToken(authHeader);
-                if (!jwtTokenProvider.validateToken(token))
+
+                if (!jwtTokenProvider.validateToken(token)) {
                     return onError(exchange, "Invalid JWT token", HttpStatus.UNAUTHORIZED);
+                }
+
                 return redisTemplate.hasKey(BLACKLIST + token)
                         .flatMap(isBlacklist -> {
-                            if (isBlacklist.equals(Boolean.TRUE))
+                            if (Boolean.TRUE.equals(isBlacklist)) {
                                 return onError(exchange, "Logged out token", HttpStatus.UNAUTHORIZED);
+                            }
+
                             Claims claims = jwtTokenProvider.getClaims(token);
                             String userId = claims.getSubject();
                             String role = claims.get(JwtTokenProvider.AUTHORIZATION_KEY, String.class);
+
                             ServerHttpRequest newRequest = exchange.getRequest().mutate()
                                     .header("X-User-Id", userId)
                                     .header("X-User-Role", role)
                                     .build();
-                            ServerWebExchange newExchange = exchange.mutate().request(newRequest).build();
+
+                            ServerWebExchange newExchange = exchange.mutate()
+                                    .request(newRequest)
+                                    .build();
+
                             return chain.filter(newExchange);
                         });
-            }catch (Exception e) {
+            } catch (Exception e) {
                 log.error("JWT processing error: {}", e.getMessage());
                 return onError(exchange, "JWT processing failed", HttpStatus.UNAUTHORIZED);
             }
         };
+    }
+
+    private boolean isWhitelist(String path) {
+        // 필요하면 여기 더 추가하면 됨
+        return path.startsWith("/v3/api-docs")
+                || path.startsWith("/swagger-ui")
+                || path.startsWith("/swagger-resources")
+                || path.startsWith("/webjars")
+                || path.startsWith("/actuator")
+                || path.startsWith("/api/v1/users/signup")
+                || path.startsWith("/api/v1/users/login");
     }
 
     private Mono<Void> onError(ServerWebExchange exchange, String message, HttpStatus status) {

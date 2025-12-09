@@ -7,6 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.UUID;
 
-public interface GameJPARepository extends JpaRepository<Game, UUID> {
+public interface GameJpaRepository extends JpaRepository<Game, UUID> {
     Page<Game>findAllByDeletedAtIsNull(Pageable pageable);
 }

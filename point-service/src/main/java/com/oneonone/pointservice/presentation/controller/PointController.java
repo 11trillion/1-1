@@ -18,6 +18,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -38,6 +39,7 @@ public class PointController {
     // ======================
     @PostMapping
     @Operation(summary = "포인트 생성", description = "포인트를 생성합니다. 생성된 포인트는 기본적으로 PENDING 상태입니다.")
+    @PreAuthorize("hasRole('MASTER')")
     public ResponseEntity<ApiResponse<PointResponse>> createPoint(
             @Parameter(description = "포인트 생성 요청 정보", required = true)
             @RequestBody CreatePointRequest request
@@ -62,6 +64,7 @@ public class PointController {
             summary = "포인트 상태 변경",
             description = "포인트의 상태를 변경합니다. SUCCESS 상태인 포인트는 변경할 수 없습니다."
     )
+    @PreAuthorize("hasRole('MASTER')")
     public ResponseEntity<ApiResponse<PointResponse>> updatePointStatus(
             @Parameter(description = "포인트 ID", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
             @PathVariable UUID pointId,
@@ -86,6 +89,7 @@ public class PointController {
             summary = "포인트 조회",
             description = "사용자의 포인트 내역을 조회합니다. 상태(PENDING, SUCCESS, FAILED)로 필터링할 수 있습니다."
     )
+    @PreAuthorize("hasRole('MASTER')")
     public ResponseEntity<ApiResponse<Page<PointResponse>>> getPoints(
             @Parameter(description = "사용자 ID", example = "1001", required = true)
             @RequestParam Long userId,

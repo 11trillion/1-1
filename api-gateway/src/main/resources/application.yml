@@ -41,6 +41,8 @@ spring:
           uri: lb://game-service
           predicates:
             - Path=/api/v1/games/**
+          filters:
+            - AuthenticationFilter
         - id: game-service-openapi
           uri: lb://game-service
           predicates:
@@ -52,6 +54,8 @@ spring:
           uri: lb://point-service
           predicates:
             - Path=/api/v1/points/**
+          filters:
+            - AuthenticationFilter
         - id: point-service-openapi
           uri: lb://point-service
           predicates:
@@ -63,6 +67,8 @@ spring:
           uri: lb://betting-service
           predicates:
             - Path=/api/v1/bets/**
+          filters:
+            - AuthenticationFilter
         - id: betting-service-openapi
           uri: lb://betting-service
           predicates:
@@ -95,7 +101,3 @@ management:
     web:
       exposure:
         include: refresh
-
-#jwt:
-#  secret: ${JWT_SECRET}
-#  expiration: ${JWT_EXPIRATION}

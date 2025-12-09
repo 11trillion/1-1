@@ -1,13 +1,10 @@
 package com.oneonone.userservice.presentation;
 
-import com.oneonone.common.enums.UserRole;
-import com.oneonone.common.exception.BusinessException;
 import com.oneonone.common.response.ApiResponse;
 import com.oneonone.userservice.application.command.*;
 import com.oneonone.userservice.application.service.AuthService;
 import com.oneonone.userservice.application.service.UserService;
 import com.oneonone.userservice.domain.entity.User;
-import com.oneonone.userservice.exception.UserErrorCode;
 import com.oneonone.userservice.presentation.dto.request.*;
 import com.oneonone.userservice.presentation.dto.response.*;
 import io.swagger.v3.oas.annotations.Operation;
@@ -21,6 +18,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -101,6 +99,7 @@ public class UserController {
             summary = "내 정보 조회",
             description = "현재 로그인한 사용자의 정보를 조회합니다."
     )
+    @PreAuthorize("hasAnyRole('USER', 'MASTER')")
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<UserResponse>> getMyProfile(
             @RequestHeader("X-User-Id") Long userId) {
@@ -113,6 +112,7 @@ public class UserController {
             description = "현재 로그인한 사용자의 정보(비밀번호, 닉네임, 슬랙 ID)를 수정합니다."
     )
     @PatchMapping("/me")
+    @PreAuthorize("hasAnyRole('USER', 'MASTER')")
     public ResponseEntity<ApiResponse<UserResponse>> updateMyProfile(
             @RequestHeader("X-User-Id") Long userId,
             @Parameter(description = "수정하고자 하는 정보", required = true)
@@ -130,6 +130,7 @@ public class UserController {
             summary = "회원 탈퇴",
             description = "현재 로그인한 사용자의 정보를 삭제함으로써(soft delete) 회원 탈퇴를 진행하며, 로그아웃 처리 됩니다."
     )
+    @PreAuthorize("hasAnyRole('USER', 'MASTER')")
     @DeleteMapping("/me")
     public ResponseEntity<ApiResponse<Void>> deleteMyProfile(
             @RequestHeader("X-User-Id") Long userId,
@@ -143,11 +144,10 @@ public class UserController {
             summary = "사용자 목록 조회",
             description = "관리자가 모든 사용자의 목록을 조회합니다."
     )
+    @PreAuthorize("hasRole('MASTER')")
     @GetMapping
     public ResponseEntity<ApiResponse<Page<MasterUserResponse>>> getUserList(
-            @RequestHeader("X-User-Role") String role,
             @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        if (!UserRole.valueOf(role).equals(UserRole.MASTER)) throw new BusinessException(UserErrorCode.FORBIDDEN);
         Page<MasterUserResponse> response = userService.getAllUsers(pageable);
         return ResponseEntity.ok(ApiResponse.success(response, "사용자 목록 조회 성공"));
     }
@@ -156,12 +156,11 @@ public class UserController {
             summary = "사용자 정보 조회",
             description = "관리자가 특정 사용자의 정보를 조회합니다."
     )
+    @PreAuthorize("hasRole('MASTER')")
     @GetMapping("/{userId}")
     public ResponseEntity<ApiResponse<MasterUserResponse>> getUserDetail(
-            @RequestHeader("X-User-Role") String role,
             @Parameter(description = "조회할 사용자 ID", required = true)
             @PathVariable Long userId) {
-        if (!UserRole.valueOf(role).equals(UserRole.MASTER)) throw new BusinessException(UserErrorCode.FORBIDDEN);
         MasterUserResponse response = userService.getUser(userId);
         return ResponseEntity.ok(ApiResponse.success(response, "사용자 조회 성공"));
     }
@@ -170,14 +169,13 @@ public class UserController {
             summary = "사용자 정보 수정",
             description = "관리자가 특정 사용자의 정보(닉네임, 역할, 상태, 포인트 잔액, 슬랙 ID)를 수정합니다."
     )
+    @PreAuthorize("hasRole('MASTER')")
     @PatchMapping("/{userId}")
     public ResponseEntity<ApiResponse<MasterUserResponse>> updateUser(
-            @RequestHeader("X-User-Role") String role,
             @Parameter(description = "수정하고자 하는 정보", required = true)
             @RequestBody UpdateMasterRequest request,
             @Parameter(description = "수정할 사용자 ID", required = true)
             @PathVariable Long userId) {
-        if (!UserRole.valueOf(role).equals(UserRole.MASTER)) throw new BusinessException(UserErrorCode.FORBIDDEN);
         UpdateMasterCommand command = new UpdateMasterCommand(
                 request.nickname(),
                 request.role(),
@@ -193,13 +191,12 @@ public class UserController {
             summary = "사용자 삭제",
             description = "관리자가 특정 사용자를 삭제합니다."
     )
+    @PreAuthorize("hasRole('MASTER')")
     @DeleteMapping("/{userId}")
     public ResponseEntity<ApiResponse<Void>> deleteUser(
             @RequestHeader("X-User-Id") Long id,
-            @RequestHeader("X-User-Role") String role,
             @Parameter(description = "삭제할 사용자 ID", required = true)
             @PathVariable Long userId) {
-        if (!UserRole.valueOf(role).equals(UserRole.MASTER)) throw new BusinessException(UserErrorCode.FORBIDDEN);
         userService.deleteByMaster(id, userId);
         return ResponseEntity.noContent().build();
     }
@@ -208,12 +205,12 @@ public class UserController {
             summary = "사용자 포인트 잔액 조회 - 서비스 간 통신용",
             description = "관리자가 특정 사용자의 포인트 잔액을 조회합니다."
     )
+    // TODO: 통신용은 Internal로 분리하면 좋을 듯
+    @PreAuthorize("hasRole('MASTER')")
     @GetMapping("/{userId}/balance")
     public ResponseEntity<ApiResponse<BalanceResponse>> getBalance(
-            @RequestHeader("X-User-Role") String role,
             @Parameter(description = "포인트 잔액을 조회할 사용자 ID", required = true)
             @PathVariable Long userId) {
-        if (!UserRole.valueOf(role).equals(UserRole.MASTER)) throw new BusinessException(UserErrorCode.FORBIDDEN);
         BalanceResponse response = userService.getPoint(userId);
         return ResponseEntity.ok(ApiResponse.success(response, "사용자 포인트 조회 성공"));
     }
@@ -222,20 +219,19 @@ public class UserController {
             summary = "사용자 포인트 잔액 수정 - 서비스 간 통신용",
             description = "관리자가 특정 사용자의 포인트를 증가/감소시킵니다."
     )
+    @PreAuthorize("hasRole('MASTER')")
     @PatchMapping("/{userId}/balance")
     public ResponseEntity<ApiResponse<BalanceResponse>> updateBalance(
-            @RequestHeader("X-User-Role") String role,
             @Parameter(description = "포인트 잔액을 수정할 사용자 ID", required = true)
             @PathVariable Long userId,
             @Parameter(description = "포인트 증감량(증가: 양수, 감소: 음수)", required = true)
             @RequestBody UpdateBalanceRequest request) {
         UUID sagaId = UUID.randomUUID();
-//        if (!UserRole.valueOf(role).equals(UserRole.MASTER)) throw new BusinessException(UserErrorCode.FORBIDDEN);
         UpdateBalanceCommand command = new UpdateBalanceCommand(
-                sagaId,
+                sagaId, // TODO: sagaId는 호출하는 쪽 (Betting Service)가 관리하도록 수정
                 request.amount(),
                 request.type(),
-                UUID.randomUUID(),   // ✅ 여기서 생성
+                UUID.randomUUID(),
                 request.betId());
         BalanceResponse response = userService.updateBalance(userId, command);
         return ResponseEntity.ok(ApiResponse.success(response, "사용자 포인트 밸런스 수정 성공"));

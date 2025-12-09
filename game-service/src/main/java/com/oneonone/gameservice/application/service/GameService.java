@@ -5,8 +5,8 @@ import com.oneonone.gameservice.application.event.GameCompletedEvent;
 import com.oneonone.gameservice.domain.GameErrorCode;
 import com.oneonone.gameservice.domain.entity.Game;
 import com.oneonone.gameservice.domain.entity.GameStatus;
+import com.oneonone.gameservice.domain.repository.GameRepository;
 import com.oneonone.gameservice.infrastructure.kafka.GameEventProducer;
-import com.oneonone.gameservice.infrastructure.repository.GameJPARepository;
 import com.oneonone.gameservice.presentation.dto.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class GameService {
-    private final GameJPARepository gameRepository;
+    private final GameRepository gameRepository;
     private final GameEventProducer  gameEventProducer;
 
     @Transactional

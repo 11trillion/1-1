@@ -1,0 +1,7 @@
+package com.oneonone.common.security;
+
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+
+public interface SecurityConfigurer {
+    void configure(HttpSecurity http) throws Exception;
+}

@@ -53,10 +53,19 @@ spring:
       hibernate:
         format_sql: true
         default_schema: users
+
+  data:
+    redis:
+      host: redis      # docker-compose 서비스 이름
+      port: 6379
+
+
   cloud:
     service-bindings:
       # DB 연결이 준비 상태(up)가 될 때까지 기다립니다.
       enabled: true
+
+
 
 management:
   endpoints:

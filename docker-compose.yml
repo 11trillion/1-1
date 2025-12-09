@@ -158,9 +158,12 @@ services:
     env_file:
       - .env
     depends_on:
-      - postgres
-      - eureka-server
-      - config-server
+      postgres:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+      config-server:
+        condition: service_healthy
 
   game-service:
     build:

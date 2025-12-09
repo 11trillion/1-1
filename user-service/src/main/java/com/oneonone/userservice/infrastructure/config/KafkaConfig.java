@@ -54,7 +54,7 @@ public class KafkaConfig {
         configProps.put(ErrorHandlingDeserializer.KEY_DESERIALIZER_CLASS, StringDeserializer.class);
         configProps.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, JsonDeserializer.class);
         configProps.put(JsonDeserializer.TRUSTED_PACKAGES, "com.oneonone.*");
-        configProps.put(JsonDeserializer.VALUE_DEFAULT_TYPE, BalanceCompensationEvent.class.getName());
+        configProps.put(JsonDeserializer.VALUE_DEFAULT_TYPE, BettingEvent.class.getName());
         configProps.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
         return new DefaultKafkaConsumerFactory<>(configProps);
     }

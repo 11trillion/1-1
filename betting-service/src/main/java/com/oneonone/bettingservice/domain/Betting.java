@@ -4,6 +4,7 @@ import com.oneonone.common.model.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.Where;
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -11,6 +12,7 @@ import java.util.UUID;
 @Entity
 @Getter
 @Setter
+@Where(clause = "deleted_at is null")
 @Table(name = "p_bettings")
 public class Betting extends BaseEntity {
     @Id
@@ -44,8 +46,7 @@ public class Betting extends BaseEntity {
             UUID gameId,
             BigDecimal betAmount,
             BigDecimal odds,
-            BetType betType,
-            BetResult betResult
+            BetType betType
     ){
         Betting betting = new Betting();
         betting.setUserId(userId);
@@ -53,7 +54,6 @@ public class Betting extends BaseEntity {
         betting.setBetAmount(betAmount);
         betting.setOdds(odds);
         betting.setBetType(betType);
-        betting.setBetResult(betResult);
         return betting;
     }
 
@@ -61,13 +61,11 @@ public class Betting extends BaseEntity {
     public void updateBetting(
             BigDecimal betAmount,
             BigDecimal odds,
-            BetType betType,
-            BetResult betResult
+            BetType betType
     ){
         if(betResult != null) this.betAmount = betAmount;
         if(odds != null) this.odds = odds;
         if(betType != null) this.betType = betType;
-        if(betResult != null) this.betResult = betResult;
     }
 
     // 경기결과 업데이트

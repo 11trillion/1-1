@@ -77,8 +77,7 @@ public class BettingService {
                 requestDto.gameId(),
                 requestDto.betAmount(),
                 requestDto.odds(),
-                requestDto.betType(),
-                requestDto.betResult()
+                requestDto.betType()
         );
 
         // 저장
@@ -89,20 +88,19 @@ public class BettingService {
 
     // 베팅 수정
     @Transactional
-    public BettingResponseDto updateBetting(BettingRequestDto requestDto){
-        Betting betting = betting(requestDto.bettingId());
+    public BettingResponseDto updateBetting(UUID betId, BettingRequestDto requestDto){
+        Betting betting = betting(betId);
 
+        // todo 조건에 대해서 좀 더 고민하기
+        // todo userId는 로그인 정보에서 가지고오도록 수정 예정
         if(!Objects.equals(betting.getUserId(), requestDto.userId())){          // 사용자 정보 다를 경우
-            throw new BusinessException(BettingErrorCode.BETTING_UPDATE_ERROR);
-        }else  if(betting.getGameId() != requestDto.gameId()){                  // 게임 정보 다를 경우
             throw new BusinessException(BettingErrorCode.BETTING_UPDATE_ERROR);
         }
 
         betting.updateBetting(
                 requestDto.betAmount(),
                 requestDto.odds(),
-                requestDto.betType(),
-                requestDto.betResult()
+                requestDto.betType()
         );
 
         return BettingResponseDto.from(betting);
@@ -142,7 +140,7 @@ public class BettingService {
 
         // 포인트 서비스 이벤트 발행
         rewards.forEach(event ->
-                kafkaPointReward.send("point-reward",
+                kafkaPointReward.send("betting-reward",
                         event.userId().toString(),  // key: userId
                         event                       // value : Long balance
                 ).whenComplete((result, ex) -> {

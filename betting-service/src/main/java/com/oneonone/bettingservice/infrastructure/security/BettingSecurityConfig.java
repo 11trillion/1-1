@@ -11,6 +11,12 @@ public class BettingSecurityConfig implements SecurityConfigurer {
     @Override
     public void configure(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(auth -> auth
-                .anyRequest().authenticated());
+                .requestMatchers(
+                        "/v3/api-docs/**",
+                        "/swagger-ui/**",
+                        "/swagger-ui.html"
+                ).permitAll()
+                .anyRequest().authenticated()
+        );
     }
 }

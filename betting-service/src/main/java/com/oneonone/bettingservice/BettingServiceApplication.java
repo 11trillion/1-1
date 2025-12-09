@@ -4,9 +4,11 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
-
-@SpringBootApplication
 @EnableJpaAuditing
+@SpringBootApplication(scanBasePackages = {
+        "com.oneonone.bettingservice",
+        "com.oneonone.common"
+})
 public class BettingServiceApplication {
 
     public static void main(String[] args) {

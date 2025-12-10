@@ -40,7 +40,6 @@ spring:
       enabled: true
 
   kafka:
-#    bootstrap-servers: localhost:9092
     bootstrap-servers: kafka:29092
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer

@@ -1,4 +1,4 @@
-package com.oneonone.gameservice.application.event;
+package com.oneonone.bettingservice.infrastructure.event;
 
 import com.oneonone.common.enums.GameResult;
 

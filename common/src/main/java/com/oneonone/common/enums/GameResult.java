@@ -1,4 +1,4 @@
-package com.oneonone.gameservice.domain.entity;
+package com.oneonone.common.enums;
 
 import lombok.Getter;
 
@@ -23,6 +23,4 @@ public enum GameResult {
         if (homeScore < awayScore) return AWAY_WIN;
         return DRAW;
     }
-
-
 }

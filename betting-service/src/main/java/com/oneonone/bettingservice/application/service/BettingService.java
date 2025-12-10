@@ -5,10 +5,9 @@ import com.oneonone.bettingservice.domain.Betting;
 import com.oneonone.bettingservice.domain.BettingErrorCode;
 import com.oneonone.bettingservice.domain.BettingRepository;
 import com.oneonone.bettingservice.infrastructure.event.BettingEvent;
-import com.oneonone.bettingservice.presentation.dto.BettingKafkaRequestDto;
+import com.oneonone.bettingservice.infrastructure.event.GameCompletedEvent;
 import com.oneonone.bettingservice.presentation.dto.BettingRequestDto;
 import com.oneonone.bettingservice.presentation.dto.BettingResponseDto;
-import com.oneonone.bettingservice.presentation.dto.PointRewardEventDto;
 import com.oneonone.common.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -122,7 +121,7 @@ public class BettingService {
 
     // Kafka로 게임 결과를 받고 베팅금액 * 배당률을 계산 후 회원 서비스에 보내서 포인트를 업데이트 한다.
     @Transactional
-    public void updateGameResult(BettingKafkaRequestDto requestDto){
+    public void updateGameResult(GameCompletedEvent requestDto){
         log.info("updateGameResult");
         // 게임 아이디를 받아서 경기결과를 업데이트 해준다.
         List<Betting> bets = bettingRepository

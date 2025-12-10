@@ -1,8 +1,8 @@
 package com.oneonone.bettingservice.presentation.dto;
 
 import com.oneonone.bettingservice.domain.BetResult;
-import com.oneonone.bettingservice.domain.BetType;
 import com.oneonone.bettingservice.domain.Betting;
+import com.oneonone.common.enums.GameResult;
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -13,7 +13,7 @@ public record BettingResponseDto (
         UUID gameId,
         BigDecimal betAmount,
         BigDecimal odds,
-        BetType betType,
+        GameResult betType,
         BetResult betResult
 ){
     public static BettingResponseDto from (Betting betting){

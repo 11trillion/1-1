@@ -51,4 +51,9 @@ public class PointRepositoryImpl implements PointRepository {
     public List<Point> findBySagaId(UUID sagaId) {
         return pointJpaRepository.findBySagaId(sagaId);
     }
+
+    @Override
+    public boolean existsByBetId(String betId) {
+        return pointJpaRepository.existsByBetId(betId);
+    }
 }

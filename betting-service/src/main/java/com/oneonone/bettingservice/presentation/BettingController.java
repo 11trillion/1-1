@@ -7,7 +7,6 @@ import com.oneonone.bettingservice.presentation.dto.BettingRequestDto;
 import com.oneonone.bettingservice.presentation.dto.BettingResponseDto;
 import com.oneonone.common.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -65,8 +64,7 @@ public class BettingController {
     }
 
     // 베팅 생성
-    @Operation(summary = "베팅 생성." , description = "베팅을 생성합니다."
-             , security = @SecurityRequirement(name = "BearerAuth"))
+    @Operation(summary = "베팅 생성." , description = "베팅을 생성합니다.")
     @PreAuthorize("hasAnyRole('USER', 'MASTER')")
     @PostMapping
     public ResponseEntity<ApiResponse<BettingResponseDto>> createBetting(
@@ -77,8 +75,7 @@ public class BettingController {
     }
 
     // 베팅 수정
-    @Operation(summary = "베팅 수정" , description = "베팅을 수정합니다."
-            , security = @SecurityRequirement(name = "BearerAuth"))
+    @Operation(summary = "베팅 수정" , description = "베팅을 수정합니다.")
     @PreAuthorize("hasAnyRole('USER', 'MASTER')")
     @PatchMapping("/{betId}")
     public ResponseEntity<ApiResponse<BettingResponseDto>> updateBetting(
@@ -90,8 +87,7 @@ public class BettingController {
     }
 
     // 베팅 삭제
-    @Operation(summary = "베팅 삭제" , description = "베팅을 삭제합니다."
-            , security = @SecurityRequirement(name = "BearerAuth"))
+    @Operation(summary = "베팅 삭제" , description = "베팅을 삭제합니다.")
     @PreAuthorize("hasAnyRole('USER', 'MASTER')")
     @DeleteMapping("/{betId}")
     public ResponseEntity<ApiResponse<BettingResponseDto>> deleteBetting(

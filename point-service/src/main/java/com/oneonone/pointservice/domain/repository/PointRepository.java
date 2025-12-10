@@ -19,4 +19,6 @@ public interface PointRepository {
     Optional<Point> findByEventId(UUID eventId);
     // Saga 추적 (sagaId 기반)
     List<Point> findBySagaId(UUID sagaId);
+
+    boolean existsByBetId(String betId);
 }

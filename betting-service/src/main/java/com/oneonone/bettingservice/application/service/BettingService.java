@@ -4,6 +4,7 @@ import com.oneonone.bettingservice.domain.BetResult;
 import com.oneonone.bettingservice.domain.Betting;
 import com.oneonone.bettingservice.domain.BettingErrorCode;
 import com.oneonone.bettingservice.domain.BettingRepository;
+import com.oneonone.bettingservice.infrastructure.event.BettingEvent;
 import com.oneonone.bettingservice.presentation.dto.BettingKafkaRequestDto;
 import com.oneonone.bettingservice.presentation.dto.BettingRequestDto;
 import com.oneonone.bettingservice.presentation.dto.BettingResponseDto;
@@ -26,7 +27,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class BettingService {
     private final BettingRepository bettingRepository;
-    private final KafkaTemplate<String, PointRewardEventDto> kafkaPointReward;
+    private final KafkaTemplate<String, BettingEvent> kafkaPointReward;
 
     // 베팅 내역 조회
     public Betting betting (UUID bettingId){
@@ -133,10 +134,14 @@ public class BettingService {
         }
 
         // 정산 계산 후 회원 모듈에게 포인트를 수정하도록 요청한다.
-        List<PointRewardEventDto> rewards = bets.stream()
+        List<BettingEvent> rewards = bets.stream()
                 .filter(Betting::isWin)
-                .map(b -> new PointRewardEventDto(b.getUserId(),  b.calculateReward()))
-                .toList();
+                .map(b -> new BettingEvent(
+                        UUID.randomUUID().toString(),
+                        b.getUserId(),
+                        b.calculateReward(),
+                        b.getId().toString()
+                        )).toList();
 
         // 포인트 서비스 이벤트 발행
         rewards.forEach(event ->

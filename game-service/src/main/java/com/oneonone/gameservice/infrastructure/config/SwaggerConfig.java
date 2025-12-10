@@ -1,4 +1,4 @@
-package com.oneonone.userservice.infrastructure.config;
+package com.oneonone.gameservice.infrastructure.config;
 
 import com.oneonone.common.util.SwaggerHelper;
 import io.swagger.v3.oas.models.Components;

@@ -4,6 +4,7 @@ import com.oneonone.common.response.ApiResponse;
 import com.oneonone.gameservice.application.service.GameService;
 import com.oneonone.gameservice.presentation.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -53,7 +54,7 @@ public class GameController {
     @PreAuthorize("hasAnyRole('USER', 'MASTER')")
     @GetMapping("/{gameId}")
     public ResponseEntity<ApiResponse<GameResponse>> getGameById(
-            @Valid @PathVariable UUID gameId) {
+            @PathVariable UUID gameId) {
         GameResponse result = GameResponse.from(gameService.getGameById(gameId));
         return ResponseEntity.ok(ApiResponse.success(result,"게임 단건조회 결과입니다."));
     }
@@ -72,7 +73,7 @@ public class GameController {
     @PreAuthorize("hasRole('MASTER')")
     @DeleteMapping("/{gameId}")
     public ResponseEntity<ApiResponse<Void>> deleteGame(
-            @RequestHeader("X-User-Id") Long userId,
+            @Parameter(hidden = true) @RequestHeader("X-User-Id") Long userId,
             @PathVariable UUID gameId) {
         gameService.deleteGame(gameId,userId);
         return ResponseEntity.ok(ApiResponse.success(null,"게임 정보 삭제가 완료되었습니다."));

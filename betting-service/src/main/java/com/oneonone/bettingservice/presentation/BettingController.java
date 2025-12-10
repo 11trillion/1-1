@@ -7,6 +7,7 @@ import com.oneonone.bettingservice.presentation.dto.BettingRequestDto;
 import com.oneonone.bettingservice.presentation.dto.BettingResponseDto;
 import com.oneonone.common.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
@@ -72,7 +73,7 @@ public class BettingController {
     @PreAuthorize("hasAnyRole('USER', 'MASTER')")
     @PostMapping
     public ResponseEntity<ApiResponse<BettingResponseDto>> createBetting(
-            @RequestHeader("X-User-Id") Long userId,
+            @Parameter(hidden = true) @RequestHeader("X-User-Id") Long userId,
             @RequestBody BettingRequestDto requestDto
     ){
         BettingResponseDto result = bettingService.createBetting(userId, requestDto);
@@ -85,7 +86,7 @@ public class BettingController {
     @PatchMapping("/{betId}")
     public ResponseEntity<ApiResponse<BettingResponseDto>> updateBetting(
             @PathVariable UUID betId,
-            @RequestHeader("X-User-Id") Long userId,
+            @Parameter(hidden = true) @RequestHeader("X-User-Id") Long userId,
             @RequestBody BettingRequestDto requestDto
     ){
         BettingResponseDto result = bettingService.updateBetting(betId, userId, requestDto);
@@ -97,7 +98,7 @@ public class BettingController {
     @PreAuthorize("hasAnyRole('USER', 'MASTER')")
     @DeleteMapping("/{betId}")
     public ResponseEntity<ApiResponse<BettingResponseDto>> deleteBetting(
-            @RequestHeader("X-User-Id") Long userId,
+            @Parameter(hidden = true) @RequestHeader("X-User-Id") Long userId,
             @PathVariable UUID betId
     ){
         bettingService.deleteBetting(betId, userId);

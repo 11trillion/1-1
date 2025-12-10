@@ -43,6 +43,11 @@ spring:
       group-id: betting-service
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
+  data:
+    redis:
+      host: redis      # docker-compose 서비스 이름
+      port: 6379
+
 
 management:
   endpoints:

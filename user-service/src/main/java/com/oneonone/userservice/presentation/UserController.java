@@ -102,7 +102,7 @@ public class UserController {
     @PreAuthorize("hasAnyRole('USER', 'MASTER')")
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<UserResponse>> getMyProfile(
-            @RequestHeader("X-User-Id") Long userId) {
+            @Parameter(hidden = true) @RequestHeader("X-User-Id") Long userId) {
         UserResponse response = userService.getMyProfile(userId);
         return ResponseEntity.ok(ApiResponse.success(response, "내 정보 조회 성공"));
     }
@@ -114,7 +114,7 @@ public class UserController {
     @PatchMapping("/me")
     @PreAuthorize("hasAnyRole('USER', 'MASTER')")
     public ResponseEntity<ApiResponse<UserResponse>> updateMyProfile(
-            @RequestHeader("X-User-Id") Long userId,
+            @Parameter(hidden = true) @RequestHeader("X-User-Id") Long userId,
             @Parameter(description = "수정하고자 하는 정보", required = true)
             @Valid @RequestBody UpdateUserRequest request) {
         UpdateUserCommand command = new UpdateUserCommand(
@@ -133,7 +133,7 @@ public class UserController {
     @PreAuthorize("hasAnyRole('USER', 'MASTER')")
     @DeleteMapping("/me")
     public ResponseEntity<ApiResponse<Void>> deleteMyProfile(
-            @RequestHeader("X-User-Id") Long userId,
+            @Parameter(hidden = true) @RequestHeader("X-User-Id") Long userId,
             @RequestHeader("Authorization") String header) {
         userService.deleteMyProfile(userId);
         authService.logout(header.substring(7));
@@ -167,8 +167,7 @@ public class UserController {
 
     @Operation(
             summary = "사용자 정보 수정",
-            description = "관리자가 특정 사용자의 정보(닉네임, 역할, 상태, 포인트 잔액, 슬랙 ID)를 수정합니다."
-    )
+            description = "관리자가 특정 사용자의 정보(닉네임, 역할, 상태, 포인트 잔액, 슬랙 ID)를 수정합니다.")
     @PreAuthorize("hasRole('MASTER')")
     @PatchMapping("/{userId}")
     public ResponseEntity<ApiResponse<MasterUserResponse>> updateUser(
@@ -194,7 +193,7 @@ public class UserController {
     @PreAuthorize("hasRole('MASTER')")
     @DeleteMapping("/{userId}")
     public ResponseEntity<ApiResponse<Void>> deleteUser(
-            @RequestHeader("X-User-Id") Long id,
+            @Parameter(hidden = true) @RequestHeader("X-User-Id") Long id,
             @Parameter(description = "삭제할 사용자 ID", required = true)
             @PathVariable Long userId) {
         userService.deleteByMaster(id, userId);

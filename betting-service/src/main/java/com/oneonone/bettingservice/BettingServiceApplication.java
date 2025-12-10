@@ -11,10 +11,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
                 @Server(url = "/", description = "Betting Service (via Gateway)")
         }
 )
-@SpringBootApplication(scanBasePackages = {
-        "com.oneonone.bettingservice",
-        "com.oneonone.common"
-})
 @EnableJpaAuditing
 public class BettingServiceApplication {
 

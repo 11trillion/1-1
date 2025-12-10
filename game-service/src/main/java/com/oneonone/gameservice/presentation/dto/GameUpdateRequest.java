@@ -9,11 +9,8 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 public record GameUpdateRequest (
-        @NotBlank(message = "홈 팀은 필수입니다.")
         String homeTeam,
-        @NotBlank(message = "어웨이 팀은 필수입니다.")
         String awayTeam,
-        @NotNull(message = "시작 시간은 필수입니다.")
         LocalDateTime startAt,
         LocalDateTime endAt,
         @Min(value = 0, message = "홈팀 점수는 0 이상이어야 합니다.")

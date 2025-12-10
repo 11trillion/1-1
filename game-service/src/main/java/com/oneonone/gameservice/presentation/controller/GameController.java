@@ -61,10 +61,10 @@ public class GameController {
 
     @Operation(summary = "게임 정보 수정", description = "게임의 정보를 수정합니다.")
     @PreAuthorize("hasRole('MASTER')")
-    @PutMapping("/{gameId}")
+    @PatchMapping("/{gameId}")
     public ResponseEntity<ApiResponse<GameUpdateResponse>> updateGame(
             @PathVariable UUID gameId,
-            @RequestBody GameUpdateRequest gameUpdateRequest) {
+            @Valid @RequestBody GameUpdateRequest gameUpdateRequest) {
         GameUpdateResponse result = gameService.updateGame(gameId,gameUpdateRequest);
         return ResponseEntity.ok(ApiResponse.success(result,"게임 정보 수정이 완료되었습니다."));
     }

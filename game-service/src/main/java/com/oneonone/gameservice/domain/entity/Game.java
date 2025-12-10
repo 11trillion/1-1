@@ -109,26 +109,50 @@ public class Game extends BaseEntity {
 
     public void update(
             String homeTeam, String awayTeam, LocalDateTime startAt,
-            LocalDateTime endAt, int homeScore, int awayScore, GameStatus status) {
+            LocalDateTime endAt, Integer homeScore, Integer awayScore, GameStatus status) {
 
-        validateTeams(homeTeam, awayTeam);
-        validateScore(homeScore, awayScore);
+        //상태 END면 수정 불가능 end 로직에서 위로 당겨옴
+        if (this.status.isEnded()) {
+            throw new BusinessException(GameErrorCode.GAME_ALREADY_ENDED);
+        }
+
+        //PatchMapping으로 null 값을 비교한다. null이면 기존값을 사용한다.
+        String newHomeTeam      = (homeTeam   != null && !homeTeam.isBlank()) ? homeTeam   : this.homeTeam;
+        String newAwayTeam      = (awayTeam   != null && !awayTeam.isBlank()) ? awayTeam   : this.awayTeam;
+        LocalDateTime newStartAt = (startAt   != null ) ? startAt    : this.startAt;
+        LocalDateTime newEndAt   = (endAt     != null) ? endAt      : this.endAt;
+        int newHomeScore        = (homeScore  != null) ? homeScore  : this.homeScore;
+        int newAwayScore        = (awayScore  != null) ? awayScore  : this.awayScore;
+        GameStatus newStatus    = status;
 
 
-        this.homeTeam = homeTeam;
-        this.awayTeam = awayTeam;
-        this.startAt = startAt;
-        this.homeScore = homeScore;
-        this.awayScore = awayScore;
+        //patch 도입으로 바뀐 값을 검증함.
+        validateTeams(newHomeTeam, newAwayTeam);
+
+        //상태별 처리(Patch 적용 ver)
 
         if (status == GameStatus.SCHEDULED) {
+            this.homeTeam = newHomeTeam;
+            this.awayTeam = newAwayTeam;
+            this.startAt = newStartAt;
+            this.homeScore = 0;
+            this.awayScore = 0;
             this.endAt = null;
             this.status = GameStatus.SCHEDULED;
             this.result = GameResult.WAIT;
             return;
         }
 
+        //점수 수정 가능/ 종료시간 x
         if (status == GameStatus.PROGRESS) {
+            //점수 검증
+            validateScore(newHomeScore, newAwayScore);
+
+            this.homeTeam = newHomeTeam;
+            this.awayTeam = newAwayTeam;
+            this.startAt = newStartAt;
+            this.homeScore = newHomeScore;
+            this.awayScore = newAwayScore;
             this.endAt = null;
             this.status = GameStatus.PROGRESS;
             this.result = GameResult.WAIT;
@@ -136,22 +160,22 @@ public class Game extends BaseEntity {
         }
 
         if (status == GameStatus.END) {
-            if (endAt == null) {
+            if (newEndAt == null) {
                 throw new BusinessException(GameErrorCode.ENDED_GAME_TIME_ERROR);
             }
-            validateTime(startAt, endAt);
+            validateScore(newHomeScore, newAwayScore);
+            validateTime(newStartAt, newEndAt);
+            this.homeTeam = newHomeTeam;
+            this.awayTeam = newAwayTeam;
+            this.startAt = newStartAt;
             this.endAt = endAt;
+            this.homeScore = newHomeScore;
+            this.awayScore = newAwayScore;
             this.status = GameStatus.END;
-            this.result = GameResult.checkScore(homeScore, awayScore);
+            this.result = GameResult.checkScore(newHomeScore, newAwayScore);
             return;
         }
-
-        // 나머지 상태는 기본 적용
-        this.status = status;
-        this.result = GameResult.checkScore(homeScore, awayScore);
-
-
-
+        throw new BusinessException(GameErrorCode.INVALID_STATUS);
     }
 
 

@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.*;
+import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 
@@ -39,7 +40,7 @@ public class KafkaConfig {
 
     // Listener 설정
     @Bean
-    public ConsumerFactory<String, BettingKafkaRequestDto> bettingConsumerFactory() {
+    public ConsumerFactory<String, GameCompletedEvent> bettingConsumerFactory() {
         // 컨슈머 팩토리 설정을 위한 맵을 생성합니다.
         Map<String, Object> configProps = new HashMap<>();
         // Kafka 브로커의 주소를 설정합니다.

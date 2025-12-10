@@ -1,8 +1,7 @@
 package com.oneonone.bettingservice.presentation;
 
 import com.oneonone.bettingservice.application.service.BettingService;
-import com.oneonone.bettingservice.domain.BetType;
-import com.oneonone.bettingservice.presentation.dto.BettingKafkaRequestDto;
+import com.oneonone.bettingservice.infrastructure.event.GameCompletedEvent;
 import com.oneonone.bettingservice.presentation.dto.BettingRequestDto;
 import com.oneonone.bettingservice.presentation.dto.BettingResponseDto;
 import com.oneonone.common.enums.GameResult;
@@ -112,8 +111,8 @@ public class BettingController {
         UUID uuid = UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
         GameResult result = GameResult.HOME_WIN;
 
-        BettingKafkaRequestDto requestDto =
-                new BettingKafkaRequestDto(uuid, result);
+        GameCompletedEvent requestDto =
+                new GameCompletedEvent(uuid, "Seoul", "Busan", 2,1, result);
 
         bettingService.updateGameResult(requestDto);
     }

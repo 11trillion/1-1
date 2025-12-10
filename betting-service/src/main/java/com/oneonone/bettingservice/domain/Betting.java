@@ -1,5 +1,6 @@
 package com.oneonone.bettingservice.domain;
 
+import com.oneonone.common.enums.GameResult;
 import com.oneonone.common.model.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -34,7 +35,7 @@ public class Betting extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "bet_type", nullable = false)
-    private BetType betType;
+    private GameResult betType;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "bet_result", nullable = false)

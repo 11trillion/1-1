@@ -1,6 +1,6 @@
 package com.oneonone.bettingservice.application.service;
 
-import com.oneonone.bettingservice.presentation.dto.BettingKafkaRequestDto;
+import com.oneonone.bettingservice.infrastructure.event.GameCompletedEvent;
 import com.oneonone.common.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,8 +16,8 @@ public class BettingKafkaListener {
     private final BettingService bettingService;
 
     @Transactional
-    @KafkaListener(groupId = "betting-service", topics = "gameResult")
-    public void updateGameResult(BettingKafkaRequestDto requestDto){
+    @KafkaListener(groupId = "betting-service", topics = "${kafka.topics.game-completed:gameResult}")
+    public void updateGameResult(GameCompletedEvent requestDto){
         try{
             bettingService.updateGameResult(requestDto);
         }catch (BusinessException e){

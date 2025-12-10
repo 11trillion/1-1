@@ -1,7 +1,7 @@
 package com.oneonone.gameservice.presentation.dto;
 
+import com.oneonone.common.enums.GameResult;
 import com.oneonone.gameservice.domain.entity.Game;
-import com.oneonone.gameservice.domain.entity.GameResult;
 import com.oneonone.gameservice.domain.entity.GameStatus;
 
 import java.time.LocalDateTime;

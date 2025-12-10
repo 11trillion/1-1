@@ -5,6 +5,7 @@ import com.oneonone.bettingservice.domain.BetType;
 import com.oneonone.bettingservice.presentation.dto.BettingKafkaRequestDto;
 import com.oneonone.bettingservice.presentation.dto.BettingRequestDto;
 import com.oneonone.bettingservice.presentation.dto.BettingResponseDto;
+import com.oneonone.common.enums.GameResult;
 import com.oneonone.common.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -109,7 +110,7 @@ public class BettingController {
     @GetMapping("/kafkaTest")
     public void kafkaTest(){
         UUID uuid = UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
-        BetType result = BetType.HOME_WIN;
+        GameResult result = GameResult.HOME_WIN;
 
         BettingKafkaRequestDto requestDto =
                 new BettingKafkaRequestDto(uuid, result);

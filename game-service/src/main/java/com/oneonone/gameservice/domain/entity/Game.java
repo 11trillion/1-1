@@ -1,5 +1,6 @@
 package com.oneonone.gameservice.domain.entity;
 
+import com.oneonone.common.enums.GameResult;
 import com.oneonone.common.exception.BusinessException;
 import com.oneonone.common.model.BaseEntity;
 import com.oneonone.gameservice.domain.GameErrorCode;

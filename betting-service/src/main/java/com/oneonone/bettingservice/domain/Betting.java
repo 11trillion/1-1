@@ -46,7 +46,7 @@ public class Betting extends BaseEntity {
             UUID gameId,
             BigDecimal betAmount,
             BigDecimal odds,
-            BetType betType
+            GameResult betType
     ){
         Betting betting = new Betting();
         betting.setUserId(userId);
@@ -61,7 +61,7 @@ public class Betting extends BaseEntity {
     public void updateBetting(
             BigDecimal betAmount,
             BigDecimal odds,
-            BetType betType
+            GameResult betType
     ){
         if(betResult != null) this.betAmount = betAmount;
         if(odds != null) this.odds = odds;

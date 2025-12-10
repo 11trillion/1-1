@@ -9,6 +9,7 @@ import com.oneonone.common.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -33,6 +34,7 @@ public class BettingController {
     @GetMapping("/{betId}")
     public ResponseEntity<ApiResponse<Page<BettingResponseDto>>> getBetListByBetId(
             @PathVariable UUID betId,
+            @ParameterObject
             @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ){
         Page<BettingResponseDto> result = bettingService.getBetListByBetId(betId, pageable);
@@ -45,6 +47,7 @@ public class BettingController {
     @GetMapping("/game/{gameId}")
     public ResponseEntity<ApiResponse<Page<BettingResponseDto>>> getBetListByGameId(
             @PathVariable UUID gameId,
+            @ParameterObject
             @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ){
         Page<BettingResponseDto> result = bettingService.getBetListByGameId(gameId, pageable);
@@ -57,6 +60,7 @@ public class BettingController {
     @GetMapping("/user/{userId}")
     public ResponseEntity<ApiResponse<Page<BettingResponseDto>>> getBetListByUserId(
             @PathVariable Long userId,
+            @ParameterObject
             @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ){
         Page<BettingResponseDto> result = bettingService.getBetListByUserId(userId, pageable);
@@ -68,9 +72,10 @@ public class BettingController {
     @PreAuthorize("hasAnyRole('USER', 'MASTER')")
     @PostMapping
     public ResponseEntity<ApiResponse<BettingResponseDto>> createBetting(
+            @RequestHeader("X-User-Id") Long userId,
             @RequestBody BettingRequestDto requestDto
     ){
-        BettingResponseDto result = bettingService.createBetting(requestDto);
+        BettingResponseDto result = bettingService.createBetting(userId, requestDto);
         return ResponseEntity.ok(ApiResponse.success(result, "베팅 생성 성공"));
     }
 
@@ -80,9 +85,10 @@ public class BettingController {
     @PatchMapping("/{betId}")
     public ResponseEntity<ApiResponse<BettingResponseDto>> updateBetting(
             @PathVariable UUID betId,
+            @RequestHeader("X-User-Id") Long userId,
             @RequestBody BettingRequestDto requestDto
     ){
-        BettingResponseDto result = bettingService.updateBetting(betId, requestDto);
+        BettingResponseDto result = bettingService.updateBetting(betId, userId, requestDto);
         return ResponseEntity.ok(ApiResponse.success(result, "베팅 수정 성공"));
     }
 

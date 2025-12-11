@@ -61,7 +61,7 @@ public class BettingConsumer {
             );
             String payload = objectMapper.writeValueAsString(balanceEvent);
             OutboxEvent outboxEvent = new OutboxEvent(
-                    UUID.fromString(sagaId),
+                    UUID.fromString(sagaId), // TODO: DLT TEST -> null 처리
                     UUID.fromString(event.eventId()),
                     event.userId(),
                     payload

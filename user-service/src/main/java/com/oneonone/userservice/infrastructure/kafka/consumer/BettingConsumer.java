@@ -35,6 +35,9 @@ public class BettingConsumer {
     )
     @Transactional
     public void consume(BettingEvent event) {
+        // Betting Service에서 생성한 sagaId
+        String sagaId = event.sagaId();
+
         log.info("[KAFKA-CONSUME] [Betting] Received eventId={}, userId={}: ", event.eventId(), event.userId());
         if (processedBettingEventRepository.existsByBetId(UUID.fromString(event.betId()))) {
             log.warn("[KAFKA-CONSUME] [Betting] Already processed eventId={}", event.eventId());
@@ -48,7 +51,7 @@ public class BettingConsumer {
             user.updateBalance(event.amount(), PointType.CREDIT);
             log.info("[KAFKA-CONSUME] [Betting] PointBalance After Update userId={}, pointBalance={}", user.getUserId(), user.getPointBalance());
             BalanceEvent balanceEvent = new BalanceEvent(
-                    UUID.randomUUID().toString(),
+                    event.sagaId(), // Betting Service에서 생성한 sagaId
                     event.eventId(),
                     event.userId(),
                     event.amount(),

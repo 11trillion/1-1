@@ -84,8 +84,8 @@ public class BalanceCompensationConsumer {
             // 비즈니스 로직 실패 시 실패 신호 전송
             if (event != null) {
                 try {
-                    com.oneonone.userservice.domain.entity.CompensationEvent compensationRecord =
-                            com.oneonone.userservice.domain.entity.CompensationEvent.failure(
+                    CompensationEvent compensationRecord =
+                            CompensationEvent.failure(
                                     UUID.fromString(event.eventId()),
                                     event.userId(),
                                     event.amount(),

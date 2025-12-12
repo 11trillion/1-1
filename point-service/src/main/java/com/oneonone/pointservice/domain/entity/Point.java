@@ -23,11 +23,20 @@ public class Point extends BaseEntity {
     @Column(name="point_id")
     private UUID id;
 
-    @Column(name = "saga_id", nullable = false, updatable = false)
-    private UUID sagaId;    // Saga 전체 흐름 추적
+    /**
+     * Saga 전체 흐름 추적
+     * - 일반 거래: null
+     * - Saga 거래: Saga 식별자
+     */
+    @Column(name = "saga_id")
+    private UUID sagaId;
 
-    @Column(name = "event_id", nullable = false, updatable = false, unique = true)
-    private UUID eventId;   // 개별 메시지 멱등성
+    /**
+     * 개별 이벤트 멱등성 보장
+     * - Saga 거래: 이벤트 식별자 (중복 처리 방지)
+     */
+    @Column(name = "event_id", unique = true)
+    private UUID eventId;
 
     @Enumerated(EnumType.STRING)
     @Column(name="point_type", nullable=false)
@@ -43,11 +52,16 @@ public class Point extends BaseEntity {
     @Column(name="description")
     private String description;
 
+    @Column(name = "bet_id")
     private String betId;
 
     @Column(name="user_id", nullable=false)
     private Long userId;
 
+    /**
+     * 보상 완료 시각
+     * - status가 COMPENSATED일 때만 값 존재
+     */
     @Column(name="compensated_at")
     private LocalDateTime compensatedAt;
 

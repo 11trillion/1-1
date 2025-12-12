@@ -139,16 +139,27 @@ public class BettingService {
         // 정산 계산 후 회원 모듈에게 포인트를 수정하도록 요청한다.
         List<BettingEvent> rewards = bets.stream()
                 .filter(Betting::isWin)
-                .map(b -> new BettingEvent(
-                        UUID.randomUUID().toString(),
-                        b.getUserId(),
-                        b.calculateReward(),
-                        b.getId().toString()
-                        )).toList();
+                .map(b -> {
+                    String sagaId = UUID.randomUUID().toString();
+                    String eventId = UUID.randomUUID().toString();
+
+                    log.info("[GAME-RESULT] Creating reward - sagaId={}, betId={}, userId={}, amount={}",
+                            sagaId, b.getId(), b.getUserId(), b.calculateReward());
+
+                    return new BettingEvent(
+                            sagaId,
+                            eventId,
+                            b.getUserId(),
+                            b.calculateReward(),
+                            b.getId().toString()
+                    );
+                })
+                .toList();
 
         // 포인트 서비스 이벤트 발행
         rewards.forEach(event ->
-                kafkaPointReward.send("betting-reward",
+                kafkaPointReward.send(
+                        "betting-reward",
                         event.userId().toString(),  // key: userId
                         event                       // value : Long balance
                 ).whenComplete((result, ex) -> {
@@ -159,5 +170,8 @@ public class BettingService {
                     }
                 })
         );
+
+        log.info("[GAME-RESULT] Game result processed - gameId={}, totalRewards={}",
+                requestDto.gameId(), rewards.size());
     }
 }

@@ -1,6 +1,7 @@
 package com.oneonone.bettingservice.infrastructure.event;
 
 public record BettingEvent(
+        String sagaId,
         String eventId,
         Long userId,
         Long amount,

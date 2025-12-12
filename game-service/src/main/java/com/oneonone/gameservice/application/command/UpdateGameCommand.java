@@ -6,7 +6,6 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 public record UpdateGameCommand(
-        UUID gameId,
         String homeTeam,
         String awayTeam,
         LocalDateTime startAt,

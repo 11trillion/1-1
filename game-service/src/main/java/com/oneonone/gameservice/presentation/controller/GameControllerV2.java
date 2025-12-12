@@ -2,7 +2,6 @@ package com.oneonone.gameservice.presentation.controller;
 
 import com.oneonone.common.response.ApiResponse;
 import com.oneonone.gameservice.application.command.CreateGameCommand;
-import com.oneonone.gameservice.application.command.DeleteGameCommand;
 import com.oneonone.gameservice.application.command.UpdateGameCommand;
 import com.oneonone.gameservice.application.service.GameCQRSService;
 import com.oneonone.gameservice.presentation.dto.*;
@@ -75,7 +74,6 @@ public class GameControllerV2 {
             @PathVariable UUID gameId,
             @Valid @RequestBody GameUpdateRequest gameUpdateRequest) {
         UpdateGameCommand command = new UpdateGameCommand(
-                gameId,
                 gameUpdateRequest.homeTeam(),
                 gameUpdateRequest.awayTeam(),
                 gameUpdateRequest.startAt(),
@@ -84,7 +82,7 @@ public class GameControllerV2 {
                 gameUpdateRequest.status()
         );
 
-        GameUpdateResponse result = gameService.updateGame(command);
+        GameUpdateResponse result = gameService.updateGame(gameId,command);
         return ResponseEntity.ok(ApiResponse.success(result,"게임 정보 수정이 완료되었습니다."));
     }
 
@@ -94,8 +92,8 @@ public class GameControllerV2 {
     public ResponseEntity<ApiResponse<Void>> deleteGame(
             @Parameter(hidden = true) @RequestHeader("X-User-Id") Long userId,
             @PathVariable UUID gameId) {
-        DeleteGameCommand command = new DeleteGameCommand(gameId, userId);
-        gameService.deleteGame(command);
+
+        gameService.deleteGame(gameId,userId);
         return ResponseEntity.ok(ApiResponse.success(null,"게임 정보 삭제가 완료되었습니다."));
     }
 

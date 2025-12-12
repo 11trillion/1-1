@@ -2,7 +2,6 @@ package com.oneonone.gameservice.application.service;
 
 import com.oneonone.common.exception.BusinessException;
 import com.oneonone.gameservice.application.command.CreateGameCommand;
-import com.oneonone.gameservice.application.command.DeleteGameCommand;
 import com.oneonone.gameservice.application.command.UpdateGameCommand;
 import com.oneonone.gameservice.application.event.GameCompletedEvent;
 import com.oneonone.gameservice.domain.GameErrorCode;
@@ -13,13 +12,11 @@ import com.oneonone.gameservice.infrastructure.kafka.GameEventProducer;
 import com.oneonone.gameservice.presentation.dto.GameCreateResponse;
 import com.oneonone.gameservice.presentation.dto.GameResponse;
 import com.oneonone.gameservice.presentation.dto.GameUpdateResponse;
-import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PathVariable;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -44,8 +41,8 @@ public class GameCQRSService {
     }
 
     @Transactional
-    public GameUpdateResponse updateGame(UpdateGameCommand command) {
-        Game game = gameRepository.findById(command.gameId())
+    public GameUpdateResponse updateGame(UUID gameId, UpdateGameCommand command) {
+        Game game = gameRepository.findByGameIdAndDeletedAtIsNull(gameId)
                 .orElseThrow(() -> new BusinessException(GameErrorCode.GAME_NOT_FOUND));
 
         GameStatus prevStatus = game.getStatus();
@@ -81,11 +78,11 @@ public class GameCQRSService {
     }
 
     @Transactional
-    public void deleteGame(DeleteGameCommand command) {
-        Game game = gameRepository.findById(command.gameId())
-                .orElseThrow(() -> new BusinessException(GameErrorCode.GAME_NOT_FOUND));
+    public void deleteGame(UUID gameId,Long userId) {
+        Game game = gameRepository.findByGameIdAndDeletedAtIsNull(gameId)
+                .orElseThrow(() ->  new BusinessException(GameErrorCode.GAME_NOT_FOUND));
 
-        game.softDelete(command.userId());
+        game.softDelete(userId);
     }
 
 
@@ -95,8 +92,8 @@ public class GameCQRSService {
         return page.map(GameResponse::from);
     }
 
-    public Game getGameById(@Valid @PathVariable UUID gameId) {
-        return gameRepository.findById(gameId)
+    public Game getGameById(UUID gameId) {
+        return gameRepository.findByGameIdAndDeletedAtIsNull(gameId)
                 .orElseThrow(() ->  new BusinessException(GameErrorCode.GAME_NOT_FOUND));
     }
 

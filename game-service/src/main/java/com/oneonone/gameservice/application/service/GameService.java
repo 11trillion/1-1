@@ -46,13 +46,13 @@ public class GameService {
     }
 
     public Game getGameById(@Valid @PathVariable UUID gameId) {
-        return gameRepository.findById(gameId)
+        return gameRepository.findByGameIdAndDeletedAtIsNull(gameId)
                 .orElseThrow(() ->  new BusinessException(GameErrorCode.GAME_NOT_FOUND));
     }
 
     @Transactional
     public GameUpdateResponse updateGame(UUID gameId, GameUpdateRequest gameUpdateRequest) {
-        Game game = gameRepository.findById(gameId)
+        Game game = gameRepository.findByGameIdAndDeletedAtIsNull(gameId)
                 .orElseThrow(() ->  new BusinessException(GameErrorCode.GAME_NOT_FOUND));
         //들어오는 게임의 이벤트 중복을 방지하기 위해
         GameStatus prevStatus = game.getStatus();
@@ -92,7 +92,7 @@ public class GameService {
     }
     @Transactional
     public void deleteGame(UUID gameId,Long userId) {
-        Game game = gameRepository.findById(gameId)
+        Game game = gameRepository.findByGameIdAndDeletedAtIsNull(gameId)
                 .orElseThrow(() ->  new BusinessException(GameErrorCode.GAME_NOT_FOUND));
 
         game.softDelete(userId);

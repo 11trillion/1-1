@@ -10,7 +10,7 @@ public record UpdateGameCommand(
         String homeTeam,
         String awayTeam,
         LocalDateTime startAt,
-        LocalDateTime endAt,
+        //LocalDateTime endAt, => now라 필요없음
         Integer homeScore,
         Integer awayScore,
         GameStatus status

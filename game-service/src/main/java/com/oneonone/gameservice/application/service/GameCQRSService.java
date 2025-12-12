@@ -13,18 +13,25 @@ import com.oneonone.gameservice.infrastructure.kafka.GameEventProducer;
 import com.oneonone.gameservice.presentation.dto.GameCreateResponse;
 import com.oneonone.gameservice.presentation.dto.GameResponse;
 import com.oneonone.gameservice.presentation.dto.GameUpdateResponse;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @RequiredArgsConstructor
+@Service
+@Transactional(readOnly = true)
 public class GameCQRSService {
     private final GameRepository gameRepository;
     private final GameEventProducer gameEventProducer;
 
+    @Transactional
     public GameCreateResponse createGame(CreateGameCommand command) {
         Game game = Game.createGame(
                 command.homeTeam(),
@@ -36,6 +43,7 @@ public class GameCQRSService {
         return GameCreateResponse.from(game);
     }
 
+    @Transactional
     public GameUpdateResponse updateGame(UpdateGameCommand command) {
         Game game = gameRepository.findById(command.gameId())
                 .orElseThrow(() -> new BusinessException(GameErrorCode.GAME_NOT_FOUND));
@@ -72,6 +80,7 @@ public class GameCQRSService {
         return GameUpdateResponse.from(game);
     }
 
+    @Transactional
     public void deleteGame(DeleteGameCommand command) {
         Game game = gameRepository.findById(command.gameId())
                 .orElseThrow(() -> new BusinessException(GameErrorCode.GAME_NOT_FOUND));
@@ -86,10 +95,9 @@ public class GameCQRSService {
         return page.map(GameResponse::from);
     }
 
-    public GameResponse getGameById(UUID gameId) {
-        Game game = gameRepository.findById(gameId)
-                .orElseThrow(() -> new BusinessException(GameErrorCode.GAME_NOT_FOUND));
-        return GameResponse.from(game);
+    public Game getGameById(@Valid @PathVariable UUID gameId) {
+        return gameRepository.findById(gameId)
+                .orElseThrow(() ->  new BusinessException(GameErrorCode.GAME_NOT_FOUND));
     }
 
 }

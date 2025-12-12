@@ -3,6 +3,7 @@ package com.oneonone.userservice.presentation;
 import com.oneonone.common.response.ApiResponse;
 import com.oneonone.userservice.application.command.*;
 import com.oneonone.userservice.application.service.AuthService;
+import com.oneonone.userservice.application.service.EmailService;
 import com.oneonone.userservice.application.service.UserService;
 import com.oneonone.userservice.domain.entity.User;
 import com.oneonone.userservice.presentation.dto.request.*;
@@ -36,6 +37,7 @@ public class UserController {
 
     private final UserService userService;
     private final AuthService authService;
+    private final EmailService emailService;
 
     @Operation(
             summary = "회원가입",
@@ -48,6 +50,7 @@ public class UserController {
         SignupCommand command = new SignupCommand(
                 request.username(),
                 request.password(),
+                request.email(),
                 request.nickname(),
                 request.slackId(),
                 request.role()
@@ -55,6 +58,30 @@ public class UserController {
         User user = userService.signUp(command);
         SignupResponse response = SignupResponse.from(user);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response, "회원가입 완료"));
+    }
+
+    @Operation(
+            summary = "이메일 전송",
+            description = "입력한 이메일로 인증번호를 발송합니다."
+    )
+    @PostMapping("/email/send")
+    public ResponseEntity<ApiResponse<Void>> sendEmail(
+            @Valid @RequestBody EmailRequest request) {
+        EmailCommand command = new EmailCommand(request.email());
+        emailService.sendCode(command.email());
+        return ResponseEntity.noContent().build();
+    }
+
+    @Operation(
+            summary = "인증코드 검증",
+            description = "Redis에 저장되어 있는 인증코드와 입력한 인증코드가 일치하는지 확인합니다."
+    )
+    @GetMapping("/email/verify")
+    public ResponseEntity<ApiResponse<EmailVerifyResponse>> verifyEmail(
+            @Valid EmailVerifyRequest request) {
+        EmailVerifyCommand command = new EmailVerifyCommand(request.email(), request.code());
+        EmailVerifyResponse response = emailService.verifyCode(command.email(), command.code());
+        return ResponseEntity.ok(ApiResponse.success(response, "이메일 인증 성공"));
     }
 
     @Operation(

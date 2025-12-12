@@ -28,6 +28,9 @@ public class User extends BaseEntity {
     private String password;
 
     @Column(nullable = false)
+    private String email;
+
+    @Column(nullable = false)
     private String nickname;
 
     @Column(nullable = false)
@@ -46,12 +49,14 @@ public class User extends BaseEntity {
 
     public static User create(String username,
                               String encodedPassword,
+                              String email,
                               String nickname,
                               String slackId,
                               UserRole role) {
         return User.builder()
                 .username(username)
                 .password(encodedPassword)
+                .email(email)
                 .nickname(nickname)
                 .status(UserStatus.ACTIVE)
                 .role(role == null ? UserRole.USER : role)

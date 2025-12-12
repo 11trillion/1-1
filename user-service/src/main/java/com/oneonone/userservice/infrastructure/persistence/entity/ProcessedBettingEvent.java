@@ -1,9 +1,6 @@
 package com.oneonone.userservice.infrastructure.persistence.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,14 +15,17 @@ import java.util.UUID;
 public class ProcessedBettingEvent {
 
     @Id
-    @Column
-    private UUID eventId;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Column(nullable = false)
-    private Long userId;
+    private UUID eventId;
 
     @Column(nullable = false, unique = true)
     private UUID betId;
+
+    @Column(nullable = false)
+    private Long userId;
 
     @Column(nullable = false)
     private Long amount;

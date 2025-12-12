@@ -90,6 +90,7 @@ public class Game extends BaseEntity {
         }
     }
 
+    /**
     public void start() {
         if(!status.isScheduled()) {
             throw new BusinessException(GameErrorCode.GAME_START_ERROR);
@@ -107,7 +108,7 @@ public class Game extends BaseEntity {
         this.status = GameStatus.END;
         this.result = GameResult.checkScore(homeScore, awayScore);
     }
-
+**/
     public void update(
             String homeTeam, String awayTeam, LocalDateTime startAt,
             LocalDateTime endAt, Integer homeScore, Integer awayScore, GameStatus status) {
@@ -169,7 +170,7 @@ public class Game extends BaseEntity {
             this.homeTeam = newHomeTeam;
             this.awayTeam = newAwayTeam;
             this.startAt = newStartAt;
-            this.endAt = endAt;
+            this.endAt = newEndAt;
             this.homeScore = newHomeScore;
             this.awayScore = newAwayScore;
             this.status = GameStatus.END;

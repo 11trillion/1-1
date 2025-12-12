@@ -1,7 +1,9 @@
 package com.oneonone.gameservice.presentation.controller;
 
 import com.oneonone.common.response.ApiResponse;
-import com.oneonone.gameservice.application.service.GameService;
+import com.oneonone.gameservice.application.command.CreateGameCommand;
+import com.oneonone.gameservice.application.command.UpdateGameCommand;
+import com.oneonone.gameservice.application.service.GameCQRSService;
 import com.oneonone.gameservice.presentation.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -21,17 +23,23 @@ import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/games")
-@Tag(name = "게임 API", description = "게임 관련 API입니다.")
-public class GameController {
-    private final GameService gameService;
+@RequestMapping("/api/v2/games")
+@Tag(name = "게임 API", description = "CQRS 기반 게임 관련 API입니다.")
+public class GameControllerV2 {
+    private final GameCQRSService gameService;
 
     @Operation(summary = "게임 생성", description = "게임 생성 API")
     @PreAuthorize("hasRole('MASTER')")
     @PostMapping
     public ResponseEntity<ApiResponse<GameCreateResponse>> createGame
             (@Valid @RequestBody GameCreateRequest gameCreateRequest) {
-        GameCreateResponse result = gameService.createGame(gameCreateRequest);
+
+        CreateGameCommand command = new CreateGameCommand(
+                gameCreateRequest.homeTeam(),
+                gameCreateRequest.awayTeam(),
+                gameCreateRequest.startAt()
+                );
+        GameCreateResponse result = gameService.createGame(command);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(result,"게임 생성이 완료되었습니다."));
     }
 
@@ -39,7 +47,7 @@ public class GameController {
     @PreAuthorize("hasAnyRole('USER', 'MASTER')")
     @GetMapping
     public ResponseEntity<ApiResponse<Page<GameResponse>>> getAllGames(
-            @PageableDefault (
+            @PageableDefault(
                     size = 20,
                     sort = "createdAt",
                     direction = Sort.Direction.DESC
@@ -65,7 +73,16 @@ public class GameController {
     public ResponseEntity<ApiResponse<GameUpdateResponse>> updateGame(
             @PathVariable UUID gameId,
             @Valid @RequestBody GameUpdateRequest gameUpdateRequest) {
-        GameUpdateResponse result = gameService.updateGame(gameId,gameUpdateRequest);
+        UpdateGameCommand command = new UpdateGameCommand(
+                gameUpdateRequest.homeTeam(),
+                gameUpdateRequest.awayTeam(),
+                gameUpdateRequest.startAt(),
+                gameUpdateRequest.homeScore(),
+                gameUpdateRequest.awayScore(),
+                gameUpdateRequest.status()
+        );
+
+        GameUpdateResponse result = gameService.updateGame(gameId,command);
         return ResponseEntity.ok(ApiResponse.success(result,"게임 정보 수정이 완료되었습니다."));
     }
 
@@ -74,8 +91,11 @@ public class GameController {
     @DeleteMapping("/{gameId}")
     public ResponseEntity<ApiResponse<Void>> deleteGame(
             @Parameter(hidden = true) @RequestHeader("X-User-Id") Long userId,
-            UUID gameId) {
+            @PathVariable UUID gameId) {
+
         gameService.deleteGame(gameId,userId);
         return ResponseEntity.ok(ApiResponse.success(null,"게임 정보 삭제가 완료되었습니다."));
     }
+
+
 }

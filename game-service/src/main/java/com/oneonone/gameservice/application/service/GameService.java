@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
@@ -45,22 +46,25 @@ public class GameService {
     }
 
     public Game getGameById(@Valid @PathVariable UUID gameId) {
-        return gameRepository.findById(gameId)
+        return gameRepository.findByGameIdAndDeletedAtIsNull(gameId)
                 .orElseThrow(() ->  new BusinessException(GameErrorCode.GAME_NOT_FOUND));
     }
 
     @Transactional
     public GameUpdateResponse updateGame(UUID gameId, GameUpdateRequest gameUpdateRequest) {
-        Game game = gameRepository.findById(gameId)
+        Game game = gameRepository.findByGameIdAndDeletedAtIsNull(gameId)
                 .orElseThrow(() ->  new BusinessException(GameErrorCode.GAME_NOT_FOUND));
         //들어오는 게임의 이벤트 중복을 방지하기 위해
         GameStatus prevStatus = game.getStatus();
+
+        //END 넣어주기!
+        LocalDateTime now = LocalDateTime.now();
 
         game.update(
                 gameUpdateRequest.homeTeam(),
                 gameUpdateRequest.awayTeam(),
                 gameUpdateRequest.startAt(),
-                gameUpdateRequest.endAt(),
+                now,
                 gameUpdateRequest.homeScore(),
                 gameUpdateRequest.awayScore(),
                 gameUpdateRequest.status()
@@ -88,7 +92,7 @@ public class GameService {
     }
     @Transactional
     public void deleteGame(UUID gameId,Long userId) {
-        Game game = gameRepository.findById(gameId)
+        Game game = gameRepository.findByGameIdAndDeletedAtIsNull(gameId)
                 .orElseThrow(() ->  new BusinessException(GameErrorCode.GAME_NOT_FOUND));
 
         game.softDelete(userId);

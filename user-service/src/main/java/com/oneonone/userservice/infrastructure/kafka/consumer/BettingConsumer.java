@@ -39,7 +39,7 @@ public class BettingConsumer {
     )
     @Transactional
     public void consume(BettingEvent event) throws JsonProcessingException {
-        log.info("[KAFKA-CONSUME] [Betting] Received eventId={}, userId={}: ", event.eventId(), event.userId());
+        log.info("[KAFKA-CONSUME] [Betting] Received sagaId={} eventId={}, userId={}: ", event.sagaId(), event.eventId(), event.userId());
         if (processedBettingEventRepository.existsByEventId(UUID.fromString(event.eventId()))) {
             log.warn("[KAFKA-CONSUME] [Betting] Already processed eventId={}", event.eventId());
             return;
@@ -52,7 +52,7 @@ public class BettingConsumer {
             log.info("[KAFKA-CONSUME] [Betting] PointBalance After Update userId={}, pointBalance={}", user.getUserId(), user.getPointBalance());
             String sagaId = UUID.randomUUID().toString(); // TODO: 임시 sagaId
             BalanceEvent balanceEvent = new BalanceEvent(
-                    sagaId, // TODO: Betting에서 받아오도록 수정
+                    event.sagaId(), // Betting Service에서 생성한 sagaId
                     event.eventId(),
                     event.userId(),
                     event.amount(),

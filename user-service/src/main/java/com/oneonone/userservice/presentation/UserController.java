@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
+@Slf4j
 @Tag(
         name = "User API",
         description = "회원가입 및 로그인을 비롯한 사용자를 담당하는 API"
@@ -201,10 +203,9 @@ public class UserController {
     }
 
     @Operation(
-            summary = "사용자 포인트 잔액 조회 - 서비스 간 통신용",
+            summary = "사용자 포인트 잔액 조회 - 관리자용",
             description = "관리자가 특정 사용자의 포인트 잔액을 조회합니다."
     )
-    // TODO: 통신용은 Internal로 분리하면 좋을 듯
     @PreAuthorize("hasRole('MASTER')")
     @GetMapping("/{userId}/balance")
     public ResponseEntity<ApiResponse<BalanceResponse>> getBalance(
@@ -215,8 +216,15 @@ public class UserController {
     }
 
     @Operation(
-            summary = "사용자 포인트 잔액 수정 - 서비스 간 통신용",
-            description = "관리자가 특정 사용자의 포인트를 증가/감소시킵니다."
+            summary = "사용자 포인트 잔액 수정 - 관리자 전용",
+            description = """
+                    관리자가 사용자의 포인트를 직접 증가/감소시킵니다.
+                    - 수동 보상 지급
+                    - 패널티 차감
+                    - 데이터 정정
+                    
+                    서비스 간 통신(Betting Service)은 /api/v1/internal/users/{userId}/balance 사용
+                    """
     )
     @PreAuthorize("hasRole('MASTER')")
     @PatchMapping("/{userId}/balance")
@@ -225,13 +233,23 @@ public class UserController {
             @PathVariable Long userId,
             @Parameter(description = "포인트 증감량(증가: 양수, 감소: 음수)", required = true)
             @RequestBody UpdateBalanceRequest request) {
+
+        if (request.sagaId() != null) {
+            throw new IllegalArgumentException("Admin API는 sagaId를 보내면 안 됩니다");
+        }
+
+        // 새로운 Saga 시작
         UUID sagaId = UUID.randomUUID();
+        log.info("[ADMIN-API] Balance adjustment - sagaId={}, userId={}, amount={}",
+                sagaId, userId, request.amount());
+
         UpdateBalanceCommand command = new UpdateBalanceCommand(
-                sagaId, // TODO: sagaId는 호출하는 쪽 (Betting Service)가 관리하도록 수정
+                sagaId,
                 request.amount(),
                 request.type(),
                 UUID.randomUUID(),
-                request.betId());
+                null
+        );
         BalanceResponse response = userService.updateBalance(userId, command);
         return ResponseEntity.ok(ApiResponse.success(response, "사용자 포인트 밸런스 수정 성공"));
     }

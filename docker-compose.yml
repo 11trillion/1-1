@@ -12,6 +12,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       TZ: Asia/Seoul
     volumes:
+      - postgres_data:/var/lib/postgresql/data
       - ./infra/init:/docker-entrypoint-initdb.d
     restart: always
     healthcheck:
@@ -235,3 +236,4 @@ services:
 
 volumes:
   redis_data:
+  postgres_data:

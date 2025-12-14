@@ -5,6 +5,7 @@ import com.oneonone.userservice.domain.entity.User;
 import com.oneonone.userservice.domain.enums.UserStatus;
 public record SignupResponse(
         String username,
+        String email,
         String nickname,
         UserRole role,
         UserStatus status,
@@ -13,6 +14,7 @@ public record SignupResponse(
     public static SignupResponse from(User user) {
         return new SignupResponse(
                 user.getUsername(),
+                user.getEmail(),
                 user.getNickname(),
                 user.getRole(),
                 user.getStatus(),

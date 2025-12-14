@@ -3,10 +3,7 @@ package com.oneonone.userservice.application.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oneonone.common.exception.BusinessException;
-import com.oneonone.userservice.application.command.SignupCommand;
-import com.oneonone.userservice.application.command.UpdateBalanceCommand;
-import com.oneonone.userservice.application.command.UpdateMasterCommand;
-import com.oneonone.userservice.application.command.UpdateUserCommand;
+import com.oneonone.userservice.application.command.*;
 import com.oneonone.userservice.application.dto.UserInfo;
 import com.oneonone.userservice.application.event.BalanceEventPayload;
 import com.oneonone.userservice.domain.entity.OutboxEvent;
@@ -46,6 +43,7 @@ public class UserService {
         User user = User.create(
                 command.username(),
                 encodedPassword,
+                command.email(),
                 command.nickname(),
                 command.slackId(),
                 command.role()

@@ -16,6 +16,7 @@ dependencies {
 
     // Monitoring
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
 
     // Eureka Client (Service Discovery)
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'

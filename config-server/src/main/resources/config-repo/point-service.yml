@@ -5,7 +5,6 @@ spring:
   application:
     name: point-service
   datasource:
-#    url: jdbc:postgresql://localhost:5432/oneonone
     #docker setting (얘도 docker 주소에요)
     url: jdbc:postgresql://postgres:5432/oneonone
     username: ${DB_USERNAME}
@@ -60,11 +59,3 @@ spring:
     redis:
       host: redis      # docker-compose 서비스 이름
       port: 6379
-
-
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: refresh

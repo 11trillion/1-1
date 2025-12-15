@@ -89,6 +89,33 @@ services:
       STORAGE_TYPE: mem
     restart: always
 
+  prometheus:
+    user: "root"
+    image: prom/prometheus
+    container_name: prometheus_container
+    volumes:
+      - ./prometheus/config:/etc/prometheus
+      - ./prometheus/volume:/prometheus/data
+    ports:
+      - 9090:9090
+    command:
+      - '--web.enable-lifecycle'
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    restart: always
+    networks:
+      - promnet
+  grafana:
+    user: "root"
+    image: grafana/grafana
+    container_name: grafana_container
+    ports:
+      - 3000:3000
+    volumes:
+      - ./grafana/volume:/var/lib/grafana
+    restart: always
+    networks:
+      - promnet
+
   eureka-server:
     build:
       context: .
@@ -106,6 +133,8 @@ services:
       timeout: 3s
       retries: 5
       start_period: 60s
+    networks:
+      - promnet
 
   config-server:
     build:
@@ -131,7 +160,8 @@ services:
         condition: service_healthy
       postgres:
         condition: service_healthy
-
+    networks:
+      - promnet
 
   betting-service:
     build:
@@ -152,6 +182,8 @@ services:
         condition: service_healthy
       eureka-server:
         condition: service_started
+    networks:
+      - promnet
 
   user-service:
     build:
@@ -172,6 +204,8 @@ services:
         condition: service_started
       config-server:
         condition: service_healthy
+    networks:
+      - promnet
 
   game-service:
     build:
@@ -192,6 +226,8 @@ services:
         condition: service_started
       config-server:
         condition: service_healthy
+    networks:
+      - promnet
 
   point-service:
     build:
@@ -212,6 +248,8 @@ services:
         condition: service_started
       config-server:
         condition: service_healthy
+    networks:
+      - promnet
 
   api-gateway:
     build:
@@ -231,7 +269,13 @@ services:
       - user-service
       - game-service
       - point-service
+    networks:
+      - promnet
 
 
 volumes:
   redis_data:
+
+networks:
+  promnet:
+    driver: bridge

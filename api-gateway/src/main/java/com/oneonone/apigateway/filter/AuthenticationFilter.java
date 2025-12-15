@@ -91,7 +91,8 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                 || path.startsWith("/webjars")
                 || path.startsWith("/actuator")
                 || path.startsWith("/api/v1/users/signup")
-                || path.startsWith("/api/v1/users/login");
+                || path.startsWith("/api/v1/users/login")
+                || path.startsWith("/api/v1/users/email/");
     }
 
     private Mono<Void> onError(ServerWebExchange exchange, String message, HttpStatus status) {

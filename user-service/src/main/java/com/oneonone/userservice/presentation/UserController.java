@@ -3,6 +3,7 @@ package com.oneonone.userservice.presentation;
 import com.oneonone.common.response.ApiResponse;
 import com.oneonone.userservice.application.command.*;
 import com.oneonone.userservice.application.service.AuthService;
+import com.oneonone.userservice.application.service.EmailService;
 import com.oneonone.userservice.application.service.UserService;
 import com.oneonone.userservice.domain.entity.User;
 import com.oneonone.userservice.presentation.dto.request.*;
@@ -12,6 +13,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -23,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
+@Slf4j
 @Tag(
         name = "User API",
         description = "회원가입 및 로그인을 비롯한 사용자를 담당하는 API"
@@ -34,6 +37,7 @@ public class UserController {
 
     private final UserService userService;
     private final AuthService authService;
+    private final EmailService emailService;
 
     @Operation(
             summary = "회원가입",
@@ -46,6 +50,7 @@ public class UserController {
         SignupCommand command = new SignupCommand(
                 request.username(),
                 request.password(),
+                request.email(),
                 request.nickname(),
                 request.slackId(),
                 request.role()
@@ -53,6 +58,30 @@ public class UserController {
         User user = userService.signUp(command);
         SignupResponse response = SignupResponse.from(user);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response, "회원가입 완료"));
+    }
+
+    @Operation(
+            summary = "이메일 전송",
+            description = "입력한 이메일로 인증번호를 발송합니다."
+    )
+    @PostMapping("/email/send")
+    public ResponseEntity<ApiResponse<Void>> sendEmail(
+            @Valid @RequestBody EmailRequest request) {
+        EmailCommand command = new EmailCommand(request.email());
+        emailService.sendCode(command.email());
+        return ResponseEntity.noContent().build();
+    }
+
+    @Operation(
+            summary = "인증코드 검증",
+            description = "Redis에 저장되어 있는 인증코드와 입력한 인증코드가 일치하는지 확인합니다."
+    )
+    @GetMapping("/email/verify")
+    public ResponseEntity<ApiResponse<EmailVerifyResponse>> verifyEmail(
+            @Valid EmailVerifyRequest request) {
+        EmailVerifyCommand command = new EmailVerifyCommand(request.email(), request.code());
+        EmailVerifyResponse response = emailService.verifyCode(command.email(), command.code());
+        return ResponseEntity.ok(ApiResponse.success(response, "이메일 인증 성공"));
     }
 
     @Operation(
@@ -201,10 +230,9 @@ public class UserController {
     }
 
     @Operation(
-            summary = "사용자 포인트 잔액 조회 - 서비스 간 통신용",
+            summary = "사용자 포인트 잔액 조회 - 관리자용",
             description = "관리자가 특정 사용자의 포인트 잔액을 조회합니다."
     )
-    // TODO: 통신용은 Internal로 분리하면 좋을 듯
     @PreAuthorize("hasRole('MASTER')")
     @GetMapping("/{userId}/balance")
     public ResponseEntity<ApiResponse<BalanceResponse>> getBalance(
@@ -215,8 +243,15 @@ public class UserController {
     }
 
     @Operation(
-            summary = "사용자 포인트 잔액 수정 - 서비스 간 통신용",
-            description = "관리자가 특정 사용자의 포인트를 증가/감소시킵니다."
+            summary = "사용자 포인트 잔액 수정 - 관리자 전용",
+            description = """
+                    관리자가 사용자의 포인트를 직접 증가/감소시킵니다.
+                    - 수동 보상 지급
+                    - 패널티 차감
+                    - 데이터 정정
+                    
+                    서비스 간 통신(Betting Service)은 /api/v1/internal/users/{userId}/balance 사용
+                    """
     )
     @PreAuthorize("hasRole('MASTER')")
     @PatchMapping("/{userId}/balance")
@@ -225,13 +260,23 @@ public class UserController {
             @PathVariable Long userId,
             @Parameter(description = "포인트 증감량(증가: 양수, 감소: 음수)", required = true)
             @RequestBody UpdateBalanceRequest request) {
+
+        if (request.sagaId() != null) {
+            throw new IllegalArgumentException("Admin API는 sagaId를 보내면 안 됩니다");
+        }
+
+        // 새로운 Saga 시작
         UUID sagaId = UUID.randomUUID();
+        log.info("[ADMIN-API] Balance adjustment - sagaId={}, userId={}, amount={}",
+                sagaId, userId, request.amount());
+
         UpdateBalanceCommand command = new UpdateBalanceCommand(
-                sagaId, // TODO: sagaId는 호출하는 쪽 (Betting Service)가 관리하도록 수정
+                sagaId,
                 request.amount(),
                 request.type(),
                 UUID.randomUUID(),
-                request.betId());
+                null
+        );
         BalanceResponse response = userService.updateBalance(userId, command);
         return ResponseEntity.ok(ApiResponse.success(response, "사용자 포인트 밸런스 수정 성공"));
     }

@@ -11,6 +11,7 @@ public interface GameRepository {
     Game save(Game game);
     Optional<Game> findById(UUID id);
     Page<Game> findAllByDeletedAtIsNull(Pageable pageable);
+    Optional<Game> findByGameIdAndDeletedAtIsNull(UUID gameId);
 
 
 }

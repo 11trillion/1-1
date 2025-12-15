@@ -3,17 +3,14 @@ package com.oneonone.userservice.application.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oneonone.common.exception.BusinessException;
-import com.oneonone.userservice.application.command.SignupCommand;
-import com.oneonone.userservice.application.command.UpdateBalanceCommand;
-import com.oneonone.userservice.application.command.UpdateMasterCommand;
-import com.oneonone.userservice.application.command.UpdateUserCommand;
+import com.oneonone.userservice.application.command.*;
 import com.oneonone.userservice.application.dto.UserInfo;
+import com.oneonone.userservice.application.event.BalanceEventPayload;
 import com.oneonone.userservice.domain.entity.OutboxEvent;
 import com.oneonone.userservice.domain.entity.User;
 import com.oneonone.userservice.domain.repository.OutboxRepository;
 import com.oneonone.userservice.domain.repository.UserRepository;
 import com.oneonone.userservice.exception.UserErrorCode;
-import com.oneonone.userservice.infrastructure.kafka.event.BalanceEvent;
 import com.oneonone.userservice.presentation.dto.response.BalanceResponse;
 import com.oneonone.userservice.presentation.dto.response.MasterUserResponse;
 import com.oneonone.userservice.presentation.dto.response.UserResponse;
@@ -23,7 +20,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
@@ -47,6 +43,7 @@ public class UserService {
         User user = User.create(
                 command.username(),
                 encodedPassword,
+                command.email(),
                 command.nickname(),
                 command.slackId(),
                 command.role()
@@ -152,8 +149,8 @@ public class UserService {
         user.updateBalance(command.amount(), command.type());
         log.info("업데이트 완료");
         // Outbox payload 생성
-        BalanceEvent event = new BalanceEvent(
-                command.sagaId().toString(),     // ✅ sagaId
+        BalanceEventPayload event = new BalanceEventPayload(
+                command.sagaId().toString(),
                 command.eventId().toString(),
                 userId,
                 command.amount(),

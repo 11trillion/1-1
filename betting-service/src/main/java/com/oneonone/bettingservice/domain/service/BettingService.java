@@ -8,7 +8,11 @@ import com.oneonone.bettingservice.domain.event.BettingEvent;
 import com.oneonone.bettingservice.domain.event.GameCompletedEvent;
 import com.oneonone.bettingservice.application.dto.BettingRequestDto;
 import com.oneonone.bettingservice.application.dto.BettingResponseDto;
+import com.oneonone.bettingservice.infrastructure.client.UserServiceClient;
+import com.oneonone.bettingservice.infrastructure.client.dto.BalanceResponse;
 import com.oneonone.common.exception.BusinessException;
+import com.oneonone.common.response.ApiResponse;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -17,6 +21,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -27,6 +32,7 @@ import java.util.UUID;
 public class BettingService {
     private final BettingRepository bettingRepository;
     private final KafkaTemplate<String, BettingEvent> kafkaPointReward;
+    private final UserServiceClient userServiceClient;
 
     // 베팅 내역 조회
     public Betting betting (UUID bettingId){
@@ -74,6 +80,20 @@ public class BettingService {
         // todo 종료된 경기에는 베팅을 하지 못하도록 차단 -> 게임한테 경기정보를 받아와야할 것 같음
 
         // todo 회원에서 현재 포인트 받아와서 정보 가지고 있기
+        UUID sagaId = UUID.randomUUID();
+
+        // 잔액 조회
+        ApiResponse<BalanceResponse> balanceResponse = userServiceClient.getBalance(userId);
+        Long currentBalance = balanceResponse.data().pointBalance();
+        BigDecimal betAmount = requestDto.betAmount();
+        BigDecimal currentBalanceDecimal = BigDecimal.valueOf(currentBalance);
+
+        // 잔액 검증
+        if (currentBalanceDecimal.compareTo(betAmount) < 0) {
+            log.warn("[Betting] 포인트 부족 - userId={}, current={}, required={}",
+                    userId, currentBalance, betAmount);
+            throw new BusinessException(BettingErrorCode.INSUFFICIENT_BALANCE);
+        }
 
         // 생성
         Betting betting = Betting.createBetting(
@@ -141,16 +161,27 @@ public class BettingService {
         // 정산 계산 후 회원 모듈에게 포인트를 수정하도록 요청한다.
         List<BettingEvent> rewards = bets.stream()
                 .filter(Betting::isWin)
-                .map(b -> new BettingEvent(
-                        UUID.randomUUID().toString(),
-                        b.getUserId(),
-                        b.calculateReward(),
-                        b.getId().toString()
-                        )).toList();
+                .map(b -> {
+                    String sagaId = UUID.randomUUID().toString();
+                    String eventId = UUID.randomUUID().toString();
+
+                    log.info("[GAME-RESULT] Creating reward - sagaId={}, betId={}, userId={}, amount={}",
+                            sagaId, b.getId(), b.getUserId(), b.calculateReward());
+
+                    return new BettingEvent(
+                            sagaId,
+                            eventId,
+                            b.getUserId(),
+                            b.calculateReward(),
+                            b.getId().toString()
+                    );
+                })
+                .toList();
 
         // 포인트 서비스 이벤트 발행
         rewards.forEach(event ->
-                kafkaPointReward.send("betting-reward",
+                kafkaPointReward.send(
+                        "betting-reward",
                         event.userId().toString(),  // key: userId
                         event                       // value : Long balance
                 ).whenComplete((result, ex) -> {
@@ -161,5 +192,8 @@ public class BettingService {
                     }
                 })
         );
+
+        log.info("[GAME-RESULT] Game result processed - gameId={}, totalRewards={}",
+                requestDto.gameId(), rewards.size());
     }
 }

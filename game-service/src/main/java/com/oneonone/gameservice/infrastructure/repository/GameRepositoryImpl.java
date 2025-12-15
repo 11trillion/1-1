@@ -28,4 +28,8 @@ public class GameRepositoryImpl implements GameRepository {
     public Page<Game> findAllByDeletedAtIsNull(Pageable pageable) {
         return gameJPARepository.findAllByDeletedAtIsNull(pageable);
     }
+    @Override
+    public Optional<Game> findByGameIdAndDeletedAtIsNull(UUID gameId) {
+        return gameJPARepository.findByGameIdAndDeletedAtIsNull(gameId);
+    }
 }

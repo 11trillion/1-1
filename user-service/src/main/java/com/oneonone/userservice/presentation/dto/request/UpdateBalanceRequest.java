@@ -12,7 +12,6 @@ public record UpdateBalanceRequest(
         @NotNull(message = "타입은 필수입니다")
         PointType type,  // "DEBIT" or "CREDIT"
 
-        @NotNull(message = "Saga ID는 필수입니다")
         UUID sagaId,
 
         // betId는 선택적 (베팅 관련 작업에만 필요)

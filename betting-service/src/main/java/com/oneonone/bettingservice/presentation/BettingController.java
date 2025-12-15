@@ -6,6 +6,7 @@ import com.oneonone.bettingservice.application.dto.BettingRequestDto;
 import com.oneonone.bettingservice.application.dto.BettingResponseDto;
 import com.oneonone.common.enums.GameResult;
 import com.oneonone.common.response.ApiResponse;
+import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -74,7 +75,7 @@ public class BettingController {
     @PostMapping
     public ResponseEntity<ApiResponse<BettingResponseDto>> createBetting(
             @Parameter(hidden = true) @RequestHeader("X-User-Id") Long userId,
-            @RequestBody BettingRequestDto requestDto
+            @Valid @RequestBody BettingRequestDto requestDto
     ){
         BettingResponseDto result = bettingService.createBetting(userId, requestDto);
         return ResponseEntity.ok(ApiResponse.success(result, "베팅 생성 성공"));

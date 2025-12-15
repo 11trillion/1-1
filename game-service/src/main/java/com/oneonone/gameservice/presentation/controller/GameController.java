@@ -74,7 +74,7 @@ public class GameController {
     @DeleteMapping("/{gameId}")
     public ResponseEntity<ApiResponse<Void>> deleteGame(
             @Parameter(hidden = true) @RequestHeader("X-User-Id") Long userId,
-            @PathVariable UUID gameId) {
+            UUID gameId) {
         gameService.deleteGame(gameId,userId);
         return ResponseEntity.ok(ApiResponse.success(null,"게임 정보 삭제가 완료되었습니다."));
     }

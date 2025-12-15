@@ -12,7 +12,7 @@ public record GameUpdateRequest (
         String homeTeam,
         String awayTeam,
         LocalDateTime startAt,
-        LocalDateTime endAt,
+        //LocalDateTime endAt, => now로 사용
         @Min(value = 0, message = "홈팀 점수는 0 이상이어야 합니다.")
         Integer homeScore,
         @Min(value = 0, message = "어웨이 팀 점수는 0 이상이어야 합니다.")

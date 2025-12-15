@@ -32,6 +32,7 @@ public class KafkaConfig {
     @Bean
     public ProducerFactory<String, Object> dltProducerFactory() {
         Map<String, Object> configProps = new HashMap<>();
+//        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "kafka:29092");
         configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
@@ -43,10 +44,33 @@ public class KafkaConfig {
         return new KafkaTemplate<>(dltProducerFactory());
     }
 
+    // DLT Consumer
+    @Bean
+    public ConsumerFactory<String, BettingEvent> dltConsumerFactory() {
+        Map<String, Object> props = new HashMap<>();
+//        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "kafka:29092");
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "user-service.dlt");
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        props.put(JsonDeserializer.TRUSTED_PACKAGES, "com.oneonone.*");
+        props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, BettingEvent.class.getName());
+        return new DefaultKafkaConsumerFactory<>(props);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, BettingEvent> dltKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, BettingEvent> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(dltConsumerFactory());
+        return factory;
+    }
+
     // BettingEvent Consumer
     @Bean
     public ConsumerFactory<String, BettingEvent> bettingEventConsumerFactory() {
         Map<String, Object> configProps = new HashMap<>();
+//        configProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         configProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "kafka:29092");
         configProps.put(ConsumerConfig.GROUP_ID_CONFIG, "user-service");
         configProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);

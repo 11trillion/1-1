@@ -1,9 +1,9 @@
 server:
-  port: 8080
+  port: 8050
 eureka:
   client:
     service-url:
-      defaultZone: http://eureka-server:8761/eureka/
+      defaultZone: http://localhost:8761/eureka/
     register-with-eureka: true
     fetch-registry: true
 
@@ -78,7 +78,7 @@ spring:
             - RewritePath=/v3/api-docs/betting-service,/v3/api-docs
   data:
     redis:
-      host: redis      # docker-compose 서비스 이름
+#      host: redis      # docker-compose 서비스 이름
       port: 6379
 
 springdoc:

@@ -90,24 +90,20 @@ services:
     restart: always
 
   prometheus:
-    user: "root"
     image: prom/prometheus
-    container_name: prometheus_container
-    volumes:
-      - ./prometheus/config:/etc/prometheus
-      - ./prometheus/volume:/prometheus/data
+    container_name: oneonone-prometheus
     ports:
-      - 9090:9090
+      - "9090:9090"
+    volumes:
+      - ./prometheus:/etc/prometheus
     command:
-      - '--web.enable-lifecycle'
       - '--config.file=/etc/prometheus/prometheus.yml'
-    restart: always
     networks:
       - promnet
   grafana:
     user: "root"
     image: grafana/grafana
-    container_name: grafana_container
+    container_name: oneonone-grafana
     ports:
       - 3000:3000
     volumes:

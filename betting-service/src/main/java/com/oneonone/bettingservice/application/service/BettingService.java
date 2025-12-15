@@ -82,73 +82,36 @@ public class BettingService {
         // todo 회원에서 현재 포인트 받아와서 정보 가지고 있기
         UUID sagaId = UUID.randomUUID();
 
-        try {
-            log.info("[Betting] 포인트 조회 시작 - userId={}, sagaId={}", userId, sagaId);
-            ApiResponse<BalanceResponse> balanceResponse = userServiceClient.getBalance(userId);
+        // 잔액 조회
+        ApiResponse<BalanceResponse> balanceResponse = userServiceClient.getBalance(userId);
+        Long currentBalance = balanceResponse.data().pointBalance();
+        BigDecimal betAmount = requestDto.betAmount();
+        BigDecimal currentBalanceDecimal = BigDecimal.valueOf(currentBalance);
 
-            if (!balanceResponse.success()) {
-                throw new BusinessException(BettingErrorCode.POINT_QUERY_FAILED);
-            }
-
-            Long currentBalance = balanceResponse.data().pointBalance();
-            BigDecimal betAmount = requestDto.betAmount();
-
-            // 포인트 검증 -BigDecimal로 변환해서 비교
-            BigDecimal currentBalanceDecimal = BigDecimal.valueOf(currentBalance);
-
-            // 포인트 검증
-            if (currentBalanceDecimal.compareTo(betAmount) < 0) {
-                log.warn("[Betting] 포인트 부족 = userId={}, current={}, required={}", userId, currentBalance, betAmount);
-                throw new BusinessException(BettingErrorCode.INSUFFICIENT_BALANCE);
-            }
-
-            // 생성
-            Betting betting = Betting.createBetting(
-                    userId,
-                    requestDto.gameId(),
-                    requestDto.betAmount(),
-                    requestDto.odds(),
-                    requestDto.betType()
-            );
-
-            // todo Redis에 베팅 내역 저장
-            // todo 베팅 저장되면서 포인트 차감 처리
-
-            // 저장
-            bettingRepository.save(betting);
-
-            log.info("[Betting] 베팅 생성 완료 - betId={}, sagaId={}", betting.getId(), sagaId);
-
-            UpdateBalanceRequest updateRequest = new UpdateBalanceRequest(
-                    sagaId,
-                    betAmount.longValue(),
-                    PointType.DEBIT,
-                    betting.getId()
-            );
-            ApiResponse<BalanceResponse> updateResponse = userServiceClient.updateBalance(userId, updateRequest);
-
-            if(!updateResponse.success()){
-                log.error("[Betting] 포인트 차감 실패 - betId={}, sagaId={}", betting.getId(), sagaId);
-                throw new BusinessException(BettingErrorCode.POINT_DEDUCTION_FAILED);
-            }
-
-            Long newBalance = updateResponse.data().pointBalance();
-
-            log.info("[Betting] 베팅 완료 - betId={}, sagaId={}, newBalance={}", betting.getId(), sagaId, updateResponse.data().pointBalance());
-
-            return BettingResponseDto.from(betting, newBalance);
-        } catch (BusinessException e) {
-            // 비즈니스 예외는 그대로 전파
-            log.error("[Betting] 비즈니스 예외 - userId={}, error={}", userId, e.getMessage());
-            throw e;
-        } catch (FeignException e) {
-            log.error("[Betting] User Service 호출 실패 - userId={}, sagaId={}, status={}, error={}",
-                    userId, sagaId, e.status(), e.getMessage());
-            throw new BusinessException(BettingErrorCode.USER_SERVICE_ERROR);
-        } catch (Exception e) {
-            log.error("[Betting] 예상치 못한 오류 - userId={}, sagaId={}", userId, sagaId, e);
-            throw new BusinessException(BettingErrorCode.BETTING_UPDATE_ERROR);
+        // 잔액 검증
+        if (currentBalanceDecimal.compareTo(betAmount) < 0) {
+            log.warn("[Betting] 포인트 부족 - userId={}, current={}, required={}",
+                    userId, currentBalance, betAmount);
+            throw new BusinessException(BettingErrorCode.INSUFFICIENT_BALANCE);
         }
+
+        // 생성
+        Betting betting = Betting.createBetting(
+                userId,
+                requestDto.gameId(),
+                requestDto.betAmount(),
+                requestDto.odds(),
+                requestDto.betType()
+        );
+
+        // todo Redis에 베팅 내역 저장
+        // todo 베팅 저장되면서 포인트 차감 처리
+
+        // 저장
+        bettingRepository.save(betting);
+
+        log.info("[Betting] 베팅 생성 완료 - betId={}, userId={}", betting.getId(), userId);
+        return  BettingResponseDto.from(betting);
     }
 
     // 베팅 수정

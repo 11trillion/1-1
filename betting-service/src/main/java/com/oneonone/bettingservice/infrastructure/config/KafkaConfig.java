@@ -1,7 +1,7 @@
 package com.oneonone.bettingservice.infrastructure.config;
 
-import com.oneonone.bettingservice.infrastructure.event.BettingEvent;
-import com.oneonone.bettingservice.infrastructure.event.GameCompletedEvent;
+import com.oneonone.bettingservice.domain.event.BettingEvent;
+import com.oneonone.bettingservice.domain.event.GameCompletedEvent;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;

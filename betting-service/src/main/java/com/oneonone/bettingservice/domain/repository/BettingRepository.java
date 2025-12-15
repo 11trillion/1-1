@@ -1,5 +1,6 @@
-package com.oneonone.bettingservice.domain;
+package com.oneonone.bettingservice.domain.repository;
 
+import com.oneonone.bettingservice.domain.entity.Betting;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

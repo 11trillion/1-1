@@ -1,5 +1,6 @@
-package com.oneonone.bettingservice.domain;
+package com.oneonone.bettingservice.domain.entity;
 
+import com.oneonone.bettingservice.domain.vo.BetResult;
 import com.oneonone.common.enums.GameResult;
 import com.oneonone.common.model.BaseEntity;
 import jakarta.persistence.*;

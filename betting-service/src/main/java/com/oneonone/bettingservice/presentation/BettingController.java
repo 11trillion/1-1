@@ -1,9 +1,9 @@
 package com.oneonone.bettingservice.presentation;
 
-import com.oneonone.bettingservice.application.service.BettingService;
-import com.oneonone.bettingservice.infrastructure.event.GameCompletedEvent;
-import com.oneonone.bettingservice.presentation.dto.BettingRequestDto;
-import com.oneonone.bettingservice.presentation.dto.BettingResponseDto;
+import com.oneonone.bettingservice.domain.service.BettingService;
+import com.oneonone.bettingservice.domain.event.GameCompletedEvent;
+import com.oneonone.bettingservice.application.dto.BettingRequestDto;
+import com.oneonone.bettingservice.application.dto.BettingResponseDto;
 import com.oneonone.common.enums.GameResult;
 import com.oneonone.common.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;

@@ -1,13 +1,13 @@
-package com.oneonone.bettingservice.application.service;
+package com.oneonone.bettingservice.domain.service;
 
-import com.oneonone.bettingservice.domain.BetResult;
-import com.oneonone.bettingservice.domain.Betting;
-import com.oneonone.bettingservice.domain.BettingErrorCode;
-import com.oneonone.bettingservice.domain.BettingRepository;
-import com.oneonone.bettingservice.infrastructure.event.BettingEvent;
-import com.oneonone.bettingservice.infrastructure.event.GameCompletedEvent;
-import com.oneonone.bettingservice.presentation.dto.BettingRequestDto;
-import com.oneonone.bettingservice.presentation.dto.BettingResponseDto;
+import com.oneonone.bettingservice.domain.vo.BetResult;
+import com.oneonone.bettingservice.domain.entity.Betting;
+import com.oneonone.bettingservice.domain.vo.BettingErrorCode;
+import com.oneonone.bettingservice.domain.repository.BettingRepository;
+import com.oneonone.bettingservice.domain.event.BettingEvent;
+import com.oneonone.bettingservice.domain.event.GameCompletedEvent;
+import com.oneonone.bettingservice.application.dto.BettingRequestDto;
+import com.oneonone.bettingservice.application.dto.BettingResponseDto;
 import com.oneonone.common.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -71,6 +71,8 @@ public class BettingService {
     // 베팅 생성
     @Transactional
     public BettingResponseDto createBetting(Long userId ,BettingRequestDto requestDto){
+        // todo 종료된 경기에는 베팅을 하지 못하도록 차단 -> 게임한테 경기정보를 받아와야할 것 같음
+
         // todo 회원에서 현재 포인트 받아와서 정보 가지고 있기
 
         // 생성

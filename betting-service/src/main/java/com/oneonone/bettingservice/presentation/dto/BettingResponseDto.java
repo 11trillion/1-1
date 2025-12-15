@@ -14,16 +14,39 @@ public record BettingResponseDto (
         BigDecimal betAmount,
         BigDecimal odds,
         GameResult betType,
-        BetResult betResult
+        BetResult betResult,
+        Long remainingPoint
 ){
-    public static BettingResponseDto from (Betting betting){
-        return new BettingResponseDto (
+    /**
+     * 베팅 생성 시 사용 (포인트 정보 포함)
+     */
+    public static BettingResponseDto from(Betting betting, Long remainingPoint) {
+        return new BettingResponseDto(
                 betting.getId(),
                 betting.getUserId(),
                 betting.getGameId(),
                 betting.getBetAmount(),
                 betting.getOdds(),
                 betting.getBetType(),
-                betting.getBetResult());
+                betting.getBetResult(),
+                remainingPoint
+        );
+    }
+
+
+    /**
+     * 조회 시 사용 (포인트 정보 없음)
+     */
+    public static BettingResponseDto from(Betting betting) {
+        return new BettingResponseDto(
+                betting.getId(),
+                betting.getUserId(),
+                betting.getGameId(),
+                betting.getBetAmount(),
+                betting.getOdds(),
+                betting.getBetType(),
+                betting.getBetResult(),
+                null
+        );
     }
 }

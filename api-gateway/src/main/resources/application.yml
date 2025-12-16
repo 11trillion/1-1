@@ -1,5 +1,5 @@
 server:
-  port: 8050
+  port: 8080
 eureka:
   client:
     service-url:
@@ -78,7 +78,7 @@ spring:
             - RewritePath=/v3/api-docs/betting-service,/v3/api-docs
   data:
     redis:
-#      host: redis      # docker-compose 서비스 이름
+      host: redis      # docker-compose 서비스 이름
       port: 6379
 
 springdoc:

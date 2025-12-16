@@ -5,8 +5,8 @@ spring:
   application:
     name: betting-service
   datasource:
-#    url: jdbc:postgresql://postgres:5432/oneonone
-    url: jdbc:postgresql://localhost:5432/oneonone
+    url: jdbc:postgresql://postgres:5432/oneonone
+#    url: jdbc:postgresql://localhost:5432/oneonone
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
@@ -36,8 +36,8 @@ spring:
       # DB 연결이 준비 상태(up)가 될 때까지 기다립니다.
       enabled: true
   kafka:
-    bootstrap-servers: localhost:9092
-#    bootstrap-servers: kafka:29092
+#    bootstrap-servers: localhost:9092
+    bootstrap-servers: kafka:29092
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
@@ -47,5 +47,5 @@ spring:
       value-serializer: org.springframework.kafka.support.serializer.JsonDeserializer
   data:
     redis:
-#      host: redis      # docker-compose 서비스 이름
+      host: redis      # docker-compose 서비스 이름
       port: 6379

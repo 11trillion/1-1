@@ -7,7 +7,6 @@ spring:
   datasource:
     #docker setting (얘도 docker 주소에요)
     url: jdbc:postgresql://postgres:5432/oneonone
-#    url: jdbc:postgresql://localhost:5432/oneonone
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
@@ -40,7 +39,6 @@ spring:
       enabled: true
 
   kafka:
-#    bootstrap-servers: localhost:9092
     bootstrap-servers: kafka:29092
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer

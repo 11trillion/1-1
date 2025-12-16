@@ -52,3 +52,5 @@ env.properties
 
 *.tar
 *.class
+
+grafana/

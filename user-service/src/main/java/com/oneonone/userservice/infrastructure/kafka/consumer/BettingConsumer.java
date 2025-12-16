@@ -50,7 +50,6 @@ public class BettingConsumer {
             log.info("[KAFKA-CONSUME] [Betting] PointBalance Before Update for userId={}, pointBalance={}", user.getUserId(), user.getPointBalance());
             user.updateBalance(event.amount(), PointType.CREDIT);
             log.info("[KAFKA-CONSUME] [Betting] PointBalance After Update userId={}, pointBalance={}", user.getUserId(), user.getPointBalance());
-            String sagaId = UUID.randomUUID().toString(); // TODO: 임시 sagaId
             BalanceEvent balanceEvent = new BalanceEvent(
                     event.sagaId(), // Betting Service에서 생성한 sagaId
                     event.eventId(),
@@ -61,7 +60,7 @@ public class BettingConsumer {
             );
             String payload = objectMapper.writeValueAsString(balanceEvent);
             OutboxEvent outboxEvent = new OutboxEvent(
-                    UUID.fromString(sagaId), // TODO: DLT TEST -> null 처리
+                    UUID.fromString(event.sagaId()), // TODO: DLT TEST -> null 처리
                     UUID.fromString(event.eventId()),
                     event.userId(),
                     payload

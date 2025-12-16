@@ -54,3 +54,5 @@ env.properties
 *.class
 
 grafana/
+
+.DS_Store

@@ -52,7 +52,7 @@ public class KafkaConfig {
         configProps.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, JsonDeserializer.class);
         configProps.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
         configProps.put(JsonDeserializer.VALUE_DEFAULT_TYPE,
-                "com.oneonone.bettingservice.infrastructure.event.GameCompletedEvent");
+                "com.oneonone.bettingservice.domain.event.GameCompletedEvent");
         configProps.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
         // 설정된 프로퍼티로 DefaultKafkaConsumerFactory를 생성하여 반환합니다.
         return new DefaultKafkaConsumerFactory<>(configProps);

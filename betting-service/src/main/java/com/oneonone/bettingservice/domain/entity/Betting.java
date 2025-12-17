@@ -88,4 +88,24 @@ public class Betting extends BaseEntity {
                 .multiply(odds)
                 .longValue();
     }
+
+    // Redis 데이터 -> betting 생성
+    public static Betting fromRedis(
+            UUID betId,
+            Long userId,
+            UUID gameId,
+            BigDecimal betAmount,
+            BigDecimal odds,
+            GameResult betType
+    ) {
+        Betting betting = new Betting();
+        betting.setId(betId);          // Redis에 이미 생성된 betId 사용
+        betting.setUserId(userId);
+        betting.setGameId(gameId);
+        betting.setBetAmount(betAmount);
+        betting.setOdds(odds);
+        betting.setBetType(betType);
+        betting.setBetResult(BetResult.PENDING); // 경기 전 기본 상태
+        return betting;
+    }
 }

@@ -18,8 +18,13 @@ public enum UserErrorCode implements ErrorCode {
     INVALID_REFRESH_TOKEN(HttpStatus.FORBIDDEN, "U007", "유효하지 않은 토큰입니다."),
     INVALID_POINT_TYPE(HttpStatus.BAD_REQUEST, "U008", "포인트 타입은 DEBIT 또는 CREDIT이어야 합니다."),
     OUTBOX_PAYLOAD_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "U009", "Outbox payload 생성에 실패했습니다."),
-    INVALID_EMAIL_VERIFICATION_CODE(HttpStatus.BAD_REQUEST, "U010", "유효하지 않은 인증 코드입니다.");
+    INVALID_EMAIL_VERIFICATION_CODE(HttpStatus.BAD_REQUEST, "U010", "유효하지 않은 인증 코드입니다."),
 
+    INVALID_STRATEGY(HttpStatus.BAD_REQUEST, "U100", "유효하지 않은 락 전략입니다."),
+    LOCK_ACQUISITION_FAILED(HttpStatus.CONFLICT, "U101", "락 획득에 실패했습니다."),
+    LOCK_INTERRUPTED(HttpStatus.INTERNAL_SERVER_ERROR, "U102", "락 획득 중 인터럽트가 발생했습니다.")
+
+    ;
     private final HttpStatus httpStatus;
     private final String code;
     private final String message;

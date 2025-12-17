@@ -242,16 +242,29 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.success(response, "사용자 포인트 조회 성공"));
     }
 
+    /**
+     * Balance 업데이트 - 락 전략 선택 가능
+     *
+     * @param userId 사용자 ID
+     * @param request 업데이트 요청
+     * @param lockStrategy 락 전략 (nolock, optimisticlock, pessimisticlock, distributedlock)
+     */
     @Operation(
             summary = "사용자 포인트 잔액 수정 - 관리자 전용",
             description = """
-                    관리자가 사용자의 포인트를 직접 증가/감소시킵니다.
-                    - 수동 보상 지급
-                    - 패널티 차감
-                    - 데이터 정정
-                    
-                    서비스 간 통신(Betting Service)은 /api/v1/internal/users/{userId}/balance 사용
-                    """
+                관리자가 사용자의 포인트를 직접 증가/감소시킵니다.
+                - 수동 보상 지급
+                - 패널티 차감
+                - 데이터 정정
+                
+                락 전략 선택 가능:
+                - nolock: 락 없음 (기본값)
+                - optimisticlock: 낙관적 락
+                - pessimisticlock: 비관적 락
+                - distributedlock: 분산 락 (Redis)
+                
+                서비스 간 통신(Betting Service)은 /api/v1/internal/users/{userId}/balance 사용
+                """
     )
     @PreAuthorize("hasRole('MASTER')")
     @PatchMapping("/{userId}/balance")
@@ -259,7 +272,11 @@ public class UserController {
             @Parameter(description = "포인트 잔액을 수정할 사용자 ID", required = true)
             @PathVariable Long userId,
             @Parameter(description = "포인트 증감량(증가: 양수, 감소: 음수)", required = true)
-            @RequestBody UpdateBalanceRequest request) {
+            @RequestBody UpdateBalanceRequest request,
+            @Parameter(description = "락 전략 (nolock, optimisticlock, pessimisticlock, distributedlock)")
+            @RequestParam(defaultValue = "nolock") String lockStrategy
+
+    ) {
 
         if (request.sagaId() != null) {
             throw new IllegalArgumentException("Admin API는 sagaId를 보내면 안 됩니다");
@@ -267,6 +284,7 @@ public class UserController {
 
         // 새로운 Saga 시작
         UUID sagaId = UUID.randomUUID();
+        UUID eventId = UUID.randomUUID();
         log.info("[ADMIN-API] Balance adjustment - sagaId={}, userId={}, amount={}",
                 sagaId, userId, request.amount());
 
@@ -274,10 +292,11 @@ public class UserController {
                 sagaId,
                 request.amount(),
                 request.type(),
-                UUID.randomUUID(),
+                eventId,
                 null
         );
-        BalanceResponse response = userService.updateBalance(userId, command);
+        BalanceResponse response =
+                userService.updateBalance(userId, command, lockStrategy);
         return ResponseEntity.ok(ApiResponse.success(response, "사용자 포인트 밸런스 수정 성공"));
     }
 }

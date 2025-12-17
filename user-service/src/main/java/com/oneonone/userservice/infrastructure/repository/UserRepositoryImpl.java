@@ -45,4 +45,14 @@ public class UserRepositoryImpl implements UserRepository {
     public Page<UserInfo> findAllByDeletedAtIsNull(Pageable pageable) {
         return jpaUserRepository.findAllByDeletedAtIsNull(pageable);
     }
+
+    @Override
+    public Optional<User> findByIdWithOptimisticLock(Long userId) {
+        return jpaUserRepository.findByIdWithOptimisticLock(userId);
+    }
+
+    @Override
+    public Optional<User> findByIdWithPessimisticLock(Long userId) {
+        return jpaUserRepository.findByIdWithPessimisticLock(userId);
+    }
 }

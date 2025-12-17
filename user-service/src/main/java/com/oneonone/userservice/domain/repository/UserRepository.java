@@ -19,4 +19,10 @@ public interface UserRepository {
     boolean existsByNicknameAndDeletedAtIsNull(String nickname);
 
     Page<UserInfo> findAllByDeletedAtIsNull(Pageable pageable);
+
+    // 낙관적 락 - BaseEntity의 @Version 필드 사용
+    Optional<User> findByIdWithOptimisticLock(Long userId);
+
+    // 비관적 락 - DB row lock
+    Optional<User> findByIdWithPessimisticLock(Long userId);
 }

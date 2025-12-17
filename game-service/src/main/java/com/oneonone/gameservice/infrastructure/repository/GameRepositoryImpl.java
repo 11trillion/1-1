@@ -32,4 +32,9 @@ public class GameRepositoryImpl implements GameRepository {
     public Optional<Game> findByGameIdAndDeletedAtIsNull(UUID gameId) {
         return gameJPARepository.findByGameIdAndDeletedAtIsNull(gameId);
     }
+    @Override
+    public Optional<Game> findByGameIdForUpdate(UUID gameId) {
+        return gameJPARepository.findByGameIdForUpdate(gameId);
+    }
+
 }

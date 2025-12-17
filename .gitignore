@@ -52,3 +52,7 @@ env.properties
 
 *.tar
 *.class
+
+grafana/
+
+.DS_Store

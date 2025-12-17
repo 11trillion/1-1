@@ -1,6 +1,6 @@
 jwt:
   secret:
-    key: d2Y5ZjJrM2oyZjAyMzlqZjIwMzlqZnNkbGZrajIzMDlzZGZsa2oyMzA5YWJjMTIzNDU2Nzg5MA==  # Base64 인코딩된 키
+    key: ${JWT_SECRET_KEY}
   token:
     expiration: 900000
   refresh:
@@ -10,7 +10,10 @@ management:
   endpoints:
     web:
       exposure:
-        include: refresh
+        include: refresh, health, info, prometheus
+  metrics:
+    tags:
+      application: ${spring.application.name}
 
 eureka:
   client:

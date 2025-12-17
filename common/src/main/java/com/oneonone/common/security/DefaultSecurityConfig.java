@@ -24,7 +24,12 @@ public class DefaultSecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class);
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(
+                                "/actuator/prometheus",
+                                "/actuator/health"
+                        ).permitAll()
+        ).addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class);
         for (SecurityConfigurer c : configurers) {
             c.configure(http);
         }

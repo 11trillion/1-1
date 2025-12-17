@@ -141,13 +141,21 @@ public class UserService {
             return new BalanceResponse(userId, user.getPointBalance());
         }
 
-        User user = findUserById(userId);
+        // 성능 개선을 위해 락 없이 먼저 구현, 나중에 낙관적/비관적 락 구현
+//        User user = findUserById(userId);
+
+        // 비관적 락으로 사용자 조회
+        // 포인트 차감은 동시성 충돌 가능성이 높아
+        // PESSIMISTIC_WRITE 락을 사용하여
+        // 동일 사용자에 대한 Balance 업데이트를 직렬화함
+        User user = userRepository.findByUserIdForUpdate(userId)
+                .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
 
         // Balance 업데이트
-        // 성능 개선을 위해 락 없이 먼저 구현, 나중에 낙관적/비관적 락 구현
-        // User 조회 및 Balance 업데이트
         user.updateBalance(command.amount(), command.type());
-        log.info("업데이트 완료");
+        log.info("[BALANCE-UPDATE] Balance updated. userId={}, balance={}",
+                userId, user.getPointBalance());
+
         // Outbox payload 생성
         BalanceEventPayload event = new BalanceEventPayload(
                 command.sagaId().toString(),

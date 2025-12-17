@@ -4,11 +4,17 @@ import com.oneonone.bettingservice.domain.BetResult;
 import com.oneonone.bettingservice.domain.Betting;
 import com.oneonone.bettingservice.domain.BettingErrorCode;
 import com.oneonone.bettingservice.domain.BettingRepository;
+import com.oneonone.bettingservice.infrastructure.client.UserServiceClient;
+import com.oneonone.bettingservice.infrastructure.client.dto.BalanceResponse;
+import com.oneonone.bettingservice.infrastructure.client.dto.UpdateBalanceRequest;
 import com.oneonone.bettingservice.infrastructure.event.BettingEvent;
 import com.oneonone.bettingservice.infrastructure.event.GameCompletedEvent;
 import com.oneonone.bettingservice.presentation.dto.BettingRequestDto;
 import com.oneonone.bettingservice.presentation.dto.BettingResponseDto;
+import com.oneonone.common.enums.PointType;
 import com.oneonone.common.exception.BusinessException;
+import com.oneonone.common.response.ApiResponse;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -17,6 +23,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -27,6 +34,7 @@ import java.util.UUID;
 public class BettingService {
     private final BettingRepository bettingRepository;
     private final KafkaTemplate<String, BettingEvent> kafkaPointReward;
+    private final UserServiceClient userServiceClient;
 
     // 베팅 내역 조회
     public Betting betting (UUID bettingId){
@@ -72,6 +80,20 @@ public class BettingService {
     @Transactional
     public BettingResponseDto createBetting(Long userId ,BettingRequestDto requestDto){
         // todo 회원에서 현재 포인트 받아와서 정보 가지고 있기
+        UUID sagaId = UUID.randomUUID();
+
+        // 잔액 조회
+        ApiResponse<BalanceResponse> balanceResponse = userServiceClient.getBalance(userId);
+        Long currentBalance = balanceResponse.data().pointBalance();
+        BigDecimal betAmount = requestDto.betAmount();
+        BigDecimal currentBalanceDecimal = BigDecimal.valueOf(currentBalance);
+
+        // 잔액 검증
+        if (currentBalanceDecimal.compareTo(betAmount) < 0) {
+            log.warn("[Betting] 포인트 부족 - userId={}, current={}, required={}",
+                    userId, currentBalance, betAmount);
+            throw new BusinessException(BettingErrorCode.INSUFFICIENT_BALANCE);
+        }
 
         // 생성
         Betting betting = Betting.createBetting(
@@ -88,6 +110,7 @@ public class BettingService {
         // 저장
         bettingRepository.save(betting);
 
+        log.info("[Betting] 베팅 생성 완료 - betId={}, userId={}", betting.getId(), userId);
         return  BettingResponseDto.from(betting);
     }
 

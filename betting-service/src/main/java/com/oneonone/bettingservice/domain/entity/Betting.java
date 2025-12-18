@@ -99,7 +99,7 @@ public class Betting extends BaseEntity {
             GameResult betType
     ) {
         Betting betting = new Betting();
-        betting.setId(betId);          // Redis에 이미 생성된 betId 사용
+        // 새로 Insert 해야하는 엔티티라는 걸 알려주기 위해 null로 처리
         betting.setUserId(userId);
         betting.setGameId(gameId);
         betting.setBetAmount(betAmount);

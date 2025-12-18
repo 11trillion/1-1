@@ -1,10 +1,15 @@
 package com.oneonone.bettingservice.domain.event;
 
+import com.oneonone.common.enums.PointType;
+
+import java.util.UUID;
+
 public record BettingEvent(
         String sagaId,
         String eventId,
         Long userId,
         Long amount,
-        String betId
+        PointType pointType,
+        UUID betId
 ) {
 }

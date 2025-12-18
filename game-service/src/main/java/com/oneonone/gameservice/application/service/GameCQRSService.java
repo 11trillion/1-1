@@ -42,8 +42,8 @@ public class GameCQRSService {
 
     @Transactional
     public GameUpdateResponse updateGame(UUID gameId, UpdateGameCommand command) {
-        Game game = gameRepository.findByGameIdAndDeletedAtIsNull(gameId)
-                .orElseThrow(() -> new BusinessException(GameErrorCode.GAME_NOT_FOUND));
+        Game game = gameRepository.findByGameIdForUpdate(gameId)
+                .orElseThrow(() ->  new BusinessException(GameErrorCode.GAME_NOT_FOUND));
 
         GameStatus prevStatus = game.getStatus();
 

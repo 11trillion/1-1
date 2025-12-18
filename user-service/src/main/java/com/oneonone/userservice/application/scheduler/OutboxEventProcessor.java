@@ -6,12 +6,15 @@ import com.oneonone.userservice.domain.repository.OutboxRepository;
 import com.oneonone.userservice.infrastructure.kafka.event.BalanceCompensationEvent;
 import com.oneonone.userservice.infrastructure.kafka.event.BalanceEvent;
 import com.oneonone.userservice.infrastructure.kafka.producer.UserKafkaProducer;
+import com.oneonone.userservice.infrastructure.persistence.entity.ProcessedBettingEvent;
+import com.oneonone.userservice.infrastructure.persistence.repository.ProcessedBettingEventRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Component
@@ -21,6 +24,7 @@ public class OutboxEventProcessor {
     private final OutboxRepository outboxRepository;
     private final UserKafkaProducer kafkaProducer;
     private final ObjectMapper objectMapper;
+    private final ProcessedBettingEventRepository processedBettingEventRepository;
 
     /**
      * 개별 이벤트를 처리하는 메서드
@@ -28,17 +32,7 @@ public class OutboxEventProcessor {
      * @Transactional이 프록시를 통해 정상 작동함
      */
     @Transactional
-    public void processEvent(OutboxEvent event) {
-        // 재시도 가능 여부 확인
-        if (!event.canRetry()) {
-            event.markAsFailed();
-            outboxRepository.save(event);
-            compensateEvent(event);
-            throw new MaxRetriesExceededException(
-                    "Max retries exceeded for eventId: " + event.getEventId()
-            );
-        }
-
+    public boolean processEvent(OutboxEvent event) {
         try {
             // Kafka로 이벤트 발행 (동기 방식)
             // send(비동기) 쓰면 응답 기다리지 않고 바로 처리 -> 유실 가능 BUT 대부분 성공
@@ -50,10 +44,16 @@ public class OutboxEventProcessor {
             // 발행 성공 시 상태 업데이트
             event.markAsSuccess();
             outboxRepository.save(event);
+            processedBettingEventRepository.save(ProcessedBettingEvent.of(
+                    UUID.fromString(balanceEvent.eventId()),
+                    balanceEvent.userId(),
+                    UUID.fromString(balanceEvent.betId()),
+                    balanceEvent.amount()
+            ));
 
             log.info("[OUTBOX-SENT] Successfully published - eventId={}, userId={}",
                     event.getEventId(), event.getUserId());
-
+            return true;
         } catch (Exception e) {
             // 발행 실패 시 재시도 카운트 증가
             event.increaseRetry();
@@ -61,6 +61,7 @@ public class OutboxEventProcessor {
 
             log.warn("[OUTBOX-FAILED] Failed to publish (retry: {}/{}) - eventId={}, reason={}",
                     event.getRetryCount(), 3, event.getEventId(), e.getMessage());
+            return false;
         }
     }
 
@@ -78,7 +79,8 @@ public class OutboxEventProcessor {
                     originalEvent.userId(),
                     originalEvent.amount(),
                     originalEvent.type(),
-                    originalEvent.betId()
+                    originalEvent.betId(),
+                    originalEvent.publishedAt()
             );
 
             kafkaProducer.sendSync(compensationEvent);

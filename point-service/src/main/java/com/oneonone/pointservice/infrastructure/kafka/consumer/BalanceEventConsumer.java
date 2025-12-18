@@ -8,6 +8,9 @@ import com.oneonone.pointservice.infrastructure.kafka.event.BalanceEvent;
 import com.oneonone.pointservice.infrastructure.kafka.event.CompensationEvent;
 import com.oneonone.pointservice.infrastructure.kafka.event.CompensationResultEvent;
 import com.oneonone.pointservice.infrastructure.kafka.producer.CompensationProducer;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
@@ -18,6 +21,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 // class 이름은 발생한 event를 따라감
 @Slf4j
@@ -26,6 +30,16 @@ import java.util.UUID;
 public class BalanceEventConsumer {
     private final PointRepository pointRepository;
     private final CompensationProducer compensationProducer;
+    private final MeterRegistry meterRegistry;
+    private Timer timer;
+
+    @PostConstruct
+    void init() {
+        this.timer = Timer.builder("betting.reward.latency")
+                .description("Betting reward processing")
+                .publishPercentiles(0.5, 0.95, 0.99)
+                .register(meterRegistry);
+    }
 
     @KafkaListener(
             topics = "point-update-event",
@@ -59,6 +73,9 @@ public class BalanceEventConsumer {
             pointRepository.save(point);
             point.markSuccess();
             log.info("[KAFKA-CONSUME] Point saved successfully - eventId={}, userId={}, amount={}", event.eventId(), event.userId(), event.amount());
+            long latency = System.currentTimeMillis() - event.publishedAt();
+            timer.record(latency, TimeUnit.MILLISECONDS);
+            log.info("[E2E-LATENCY] eventId={}, latency={}ms", event.eventId(), latency);
         } catch (DuplicateKeyException e) {
             // 중복 키 오류 → 이미 처리됨 → 무시
             log.warn("[KAFKA-CONSUME] Duplicate key detected - eventId={}",

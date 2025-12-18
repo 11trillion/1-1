@@ -37,18 +37,18 @@ public class OutboxEventPoller {
 
         int successCount = 0;
         int failedCount = 0;
-        int maxRetriesCount = 0;
 
         for (OutboxEvent event : events) {
-            try {
-                processor.processEvent(event); successCount++;
-            } catch (OutboxEventProcessor.MaxRetriesExceededException e) {
-                maxRetriesCount++;
-                log.error("[OUTBOX-POLLER] Max retries exceeded: eventId={}, userId={}", event.getEventId(), event.getUserId());
+            if (!event.canRetry()) {
+                event.markAsFailed();
+                outboxRepository.save(event);
                 processor.compensateEvent(event);
+                failedCount++;
+                continue;
             }
+            boolean success = processor.processEvent(event);
+            if (success) successCount++;
         }
-
-        log.info("[OUTBOX-POLLER] Completed - Success: {}, Failed: {}, MaxRetries: {}", successCount, failedCount, maxRetriesCount);
+        log.info("[OUTBOX-POLLER] Completed - Success: {}, Failed: {}", successCount, failedCount);
     }
 }

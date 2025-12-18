@@ -8,6 +8,7 @@ public record BalanceEvent(
         Long userId,
         Long amount,
         PointType type,   // CREDIT / DEBIT
-        String betId     // nullable
+        String betId,     // nullable
+        Long publishedAt
 ) {
 }

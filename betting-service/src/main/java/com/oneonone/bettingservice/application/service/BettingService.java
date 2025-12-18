@@ -174,7 +174,8 @@ public class BettingService {
                             eventId,
                             b.getUserId(),
                             b.calculateReward(),
-                            b.getId().toString()
+                            b.getId().toString(),
+                            System.currentTimeMillis()
                     );
                 })
                 .toList();

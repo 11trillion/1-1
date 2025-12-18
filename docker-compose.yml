@@ -113,13 +113,12 @@ services:
     networks:
       - promnet
   grafana:
-    user: "root"
     image: grafana/grafana
     container_name: oneonone-grafana
     ports:
       - 3000:3000
     volumes:
-      - ./grafana/volume:/var/lib/grafana
+      - grafana_data:/var/lib/grafana
     restart: always
     networks:
       - promnet
@@ -128,6 +127,7 @@ services:
     build:
       context: .
       dockerfile: ./eureka-server/Dockerfile
+    platform: linux/x86_64
     container_name: eureka-server
     ports:
       - "8761:8761"
@@ -148,6 +148,7 @@ services:
     build:
       context: .
       dockerfile: ./config-server/Dockerfile
+    platform: linux/x86_64
     container_name: config-server
     ports:
       - "8888:8888"
@@ -175,6 +176,7 @@ services:
     build:
       context: .
       dockerfile: ./betting-service/Dockerfile
+    platform: linux/x86_64
     container_name: betting-service
     environment:
       #유레카 호스트 설정
@@ -193,10 +195,32 @@ services:
     networks:
       - promnet
 
+  betting-service-load-test:
+    profiles: ["load-test"]
+    build:
+      context: .
+      dockerfile: ./betting-service/Dockerfile
+    platform: linux/x86_64
+    container_name: betting-service-load-test
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+      SPRING_PROFILES_ACTIVE: load-test
+    env_file:
+      - .env
+    depends_on:
+      kafka:
+        condition: service_started
+      config-server:
+        condition: service_healthy
+    networks:
+      - promnet
+
   user-service:
     build:
       context: .
       dockerfile: ./user-service/Dockerfile
+    platform: linux/x86_64
     container_name: user-service
     environment:
       #유레카 호스트 설정
@@ -219,6 +243,7 @@ services:
     build:
       context: .
       dockerfile: ./game-service/Dockerfile
+    platform: linux/x86_64
     container_name: game-service
     environment:
       #유레카 호스트 설정
@@ -241,6 +266,7 @@ services:
     build:
       context: .
       dockerfile: ./point-service/Dockerfile
+    platform: linux/x86_64
     container_name: point-service
     environment:
       #유레카 호스트 설정
@@ -263,6 +289,7 @@ services:
     build:
       context: .
       dockerfile: ./api-gateway/Dockerfile
+    platform: linux/x86_64
     container_name: gateway
     ports:
       - "8080:8080"
@@ -285,6 +312,7 @@ services:
 
 volumes:
   redis_data:
+  grafana_data:
 
 networks:
   promnet:

@@ -14,6 +14,9 @@ import com.oneonone.userservice.infrastructure.kafka.event.BalanceEvent;
 import com.oneonone.userservice.infrastructure.kafka.event.BettingEvent;
 import com.oneonone.userservice.infrastructure.persistence.entity.ProcessedBettingEvent;
 import com.oneonone.userservice.infrastructure.persistence.repository.ProcessedBettingEventRepository;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -21,6 +24,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Component
@@ -31,6 +35,8 @@ public class BettingConsumer {
     private final ProcessedBettingEventRepository processedBettingEventRepository;
     private final OutboxRepository outboxRepository;
     private final ObjectMapper objectMapper;
+    private final MeterRegistry meterRegistry;
+    private Timer timer;
 
     @KafkaListener(
             topics = "${spring.kafka.topics.betting-reward}",
@@ -56,7 +62,8 @@ public class BettingConsumer {
                     event.userId(),
                     event.amount(),
                     PointType.CREDIT,
-                    event.betId()
+                    event.betId(),
+                    event.publishedAt()
             );
             String payload = objectMapper.writeValueAsString(balanceEvent);
             OutboxEvent outboxEvent = new OutboxEvent(
@@ -66,9 +73,7 @@ public class BettingConsumer {
                     payload
             );
             outboxRepository.save(outboxEvent);
-            log.info("[KAKFA-CONUSME] [Betting] Outbox saved - outboxId={}, balanceEventId={}", outboxEvent.getOutboxId(), balanceEvent.eventId());
-            processedBettingEventRepository.save(ProcessedBettingEvent.of(UUID.fromString(event.eventId()), event.userId(), UUID.fromString(event.betId()), event.amount()));
-            log.info("[KAFKA-CONSUME] [Betting] Successfully processed eventId={}", event.eventId());
+            log.info("[KAFKA-CONSUME] [Betting] Outbox saved - outboxId={}, balanceEventId={}", outboxEvent.getOutboxId(), balanceEvent.eventId());
         } catch (BusinessException e) {
             log.error("[KAFKA-CONSUME] [Betting] Business error - eventId={}, errorCode={}", event.eventId(), e.getErrorCode(), e);
             throw e;

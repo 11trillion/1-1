@@ -5,6 +5,7 @@ public record BettingEvent(
         String eventId,
         Long userId,
         Long amount,
-        String betId
+        String betId,
+        long publishedAt
 ) {
 }

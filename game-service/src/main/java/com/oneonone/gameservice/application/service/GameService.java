@@ -52,7 +52,7 @@ public class GameService {
 
     @Transactional
     public GameUpdateResponse updateGame(UUID gameId, GameUpdateRequest gameUpdateRequest) {
-        Game game = gameRepository.findByGameIdAndDeletedAtIsNull(gameId)
+        Game game = gameRepository.findByGameIdForUpdate(gameId)
                 .orElseThrow(() ->  new BusinessException(GameErrorCode.GAME_NOT_FOUND));
         //들어오는 게임의 이벤트 중복을 방지하기 위해
         GameStatus prevStatus = game.getStatus();

@@ -12,6 +12,5 @@ public interface GameRepository {
     Optional<Game> findById(UUID id);
     Page<Game> findAllByDeletedAtIsNull(Pageable pageable);
     Optional<Game> findByGameIdAndDeletedAtIsNull(UUID gameId);
-
-
+    Optional<Game> findByGameIdForUpdate(UUID gameId);
 }

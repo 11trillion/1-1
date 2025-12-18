@@ -35,8 +35,6 @@ public class BettingConsumer {
     private final ProcessedBettingEventRepository processedBettingEventRepository;
     private final OutboxRepository outboxRepository;
     private final ObjectMapper objectMapper;
-    private final MeterRegistry meterRegistry;
-    private Timer timer;
 
     @KafkaListener(
             topics = "${spring.kafka.topics.betting-reward}",

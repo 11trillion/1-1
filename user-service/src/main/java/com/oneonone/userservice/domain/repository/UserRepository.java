@@ -19,4 +19,6 @@ public interface UserRepository {
     boolean existsByNicknameAndDeletedAtIsNull(String nickname);
 
     Page<UserInfo> findAllByDeletedAtIsNull(Pageable pageable);
+
+    Optional<User> findByUserIdForUpdate(Long userId);
 }

@@ -52,7 +52,7 @@ jobs:
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           script: |
             cd /home/ubuntu/oneonone
-            docker compose -f docker-compose.prod.yml pull eureka-server config-server api-gateway
-            docker compose -f docker-compose.prod.yml up -d eureka-server config-server api-gateway
-            sleep 30
-            docker compose -f docker-compose.prod.yml restart betting-service user-service point-service game-service
+            docker compose pull eureka-server config-server api-gateway
+            docker compose up -d eureka-server
+            docker compose restart config-server
+            docker compose up -d --no-deps api-gateway

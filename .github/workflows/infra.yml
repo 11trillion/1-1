@@ -53,7 +53,6 @@ jobs:
           script: |
             cd /home/ubuntu/oneonone
             docker compose -f docker-compose.prod.yml pull eureka-server config-server api-gateway
-            docker compose -f docker-compose.prod.yml stop eureka-server config-server api-gateway
-            docker compose -f docker-compose.prod.yml rm -f eureka-server config-server api-gateway
-            docker compose -f docker-compose.prod.yml up -d eureka-server config-server api-gateway
-            docker compose restart betting-service user-service game-service point-service
+            docker compose -f docker-compose.prod.yml up -d --no-deps --force-recreate eureka-server config-server
+            sleep 15
+            docker compose -f docker-compose.prod.yml up -d --no-deps --force-recreate api-gateway

@@ -3,7 +3,6 @@
   services:
     redis:
       image: redis:7.2
-      container_name: oneonone-redis
       ports:
         - "6379:6379"
       restart: always
@@ -24,7 +23,6 @@
 
     zookeeper:
       image: wurstmeister/zookeeper:latest
-      container_name: oneonone-zookeeper
       platform: linux/amd64
       ports:
         - "2181:2181"
@@ -43,7 +41,6 @@
 
     kafka:
       image: wurstmeister/kafka:latest
-      container_name: oneonone-kafka
       platform: linux/amd64
         #ports:
       # - "9092:9092"
@@ -76,7 +73,6 @@
 
     kafka-ui:
       image: provectuslabs/kafka-ui:latest
-      container_name: oneonone-kafka-ui
       platform: linux/amd64
       ports:
         - "9093:8080"
@@ -103,7 +99,6 @@
 
     zipkin:
       image: openzipkin/zipkin:latest
-      container_name: oneonone-zipkin
       platform: linux/amd64
       ports:
         - "9411:9411"
@@ -128,7 +123,6 @@
 
     prometheus:
       image: prom/prometheus
-      container_name: oneonone-prometheus
       ports:
         - "9090:9090"
       volumes:
@@ -151,7 +145,6 @@
     grafana:
       user: "root"
       image: grafana/grafana
-      container_name: oneonone-grafana
       ports:
         - 3100:3000
       volumes:
@@ -172,7 +165,6 @@
 
     eureka-server:
       image: ${ECR_REGISTRY}/eureka-server:latest
-      container_name: eureka-server
       ports:
         - "8761:8761"
       environment:
@@ -197,7 +189,6 @@
 
     config-server:
       image: ${ECR_REGISTRY}/config-server:latest
-      container_name: config-server
       ports:
         - "8888:8888"
       environment:
@@ -235,7 +226,6 @@
 
     betting-service:
       image: ${ECR_REGISTRY}/betting-service:latest
-      container_name: betting-service
       environment:
         #유레카 호스트 설정
         #EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
@@ -267,7 +257,6 @@
 
     user-service:
       image: ${ECR_REGISTRY}/user-service:latest
-      container_name: user-service
       environment:
         #유레카 호스트 설정
         #EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
@@ -299,7 +288,6 @@
 
     game-service:
       image: ${ECR_REGISTRY}/game-service:latest
-      container_name: game-service
       environment:
         #유레카 호스트 설정
         #EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
@@ -331,7 +319,6 @@
 
     point-service:
       image: ${ECR_REGISTRY}/point-service:latest
-      container_name: point-service
       environment:
         #유레카 호스트 설정
         #EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
@@ -363,7 +350,6 @@
 
     api-gateway:
       image: ${ECR_REGISTRY}/api-gateway:latest
-      container_name: gateway
       ports:
         - "8080:8080"
       environment:

@@ -1,0 +1,93 @@
+name: Infrastructure Services CI/CD
+
+on:
+  push:
+    branches: ["main", "dev", "release"]
+    paths:
+      - 'config-server/**'
+      - 'eureka-server/**'
+      - 'api-gateway/**'
+      - 'common/**'
+      - '.github/workflows/infrastructure.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build-all-infrastructure:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [eureka-server, config-server, api-gateway]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Make executable gradlew
+        run: chmod +x ./gradlew
+
+      - name: Build ${{ matrix.service }}
+        run: ./gradlew :${{ matrix.service }}:clean :${{ matrix.service }}:build -x test
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Login to Amazon ECR Public
+        run: |
+          aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
+
+      - name: Docker build and push ${{ matrix.service }}
+        run: |
+          docker build -t ${{ secrets.ECR_REGISTRY }}/${{ matrix.service }}:latest -f ./${{ matrix.service }}/Dockerfile .
+          docker push ${{ secrets.ECR_REGISTRY }}/${{ matrix.service }}:latest
+
+  deploy-infrastructure:
+    runs-on: ubuntu-latest
+    needs: build-all-infrastructure
+    steps:
+      - name: Deploy Infrastructure Services to EC2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          script: |
+            cd /home/ubuntu/oneonone
+            aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
+            
+            echo "=== Pulling latest infrastructure images ==="
+            docker-compose pull eureka-server config-server api-gateway
+            
+            echo "=== Stopping infrastructure services ==="
+            docker-compose stop eureka-server config-server api-gateway
+            
+            echo "=== Starting Eureka Server ==="
+            docker-compose up -d eureka-server
+            sleep 30
+            
+            echo "=== Starting Config Server ==="
+            docker-compose up -d config-server
+            sleep 20
+            
+            echo "=== Starting API Gateway ==="
+            docker-compose up -d api-gateway
+            sleep 10
+            
+            echo "=== Restarting business services ==="
+            docker-compose restart betting-service user-service game-service point-service
+            
+            echo "=== Cleaning up unused images ==="
+            docker image prune -f
+            
+            echo "=== Deployment completed ==="
+            docker-compose ps

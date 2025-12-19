@@ -1,4 +1,4 @@
-name: Infrastructure Deploy
+name: Infra Deploy
 
 on:
   push:
@@ -48,7 +48,7 @@ jobs:
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           script: |
             cd /home/ubuntu/oneonone
-            docker-compose -f docker-compose.prod.yml pull eureka-server config-server api-gateway
-            docker-compose -f docker-compose.prod.yml stop eureka-server config-server api-gateway
-            docker-compose -f docker-compose.prod.yml rm -f eureka-server config-server api-gateway
-            docker-compose -f docker-compose.prod.yml up -d eureka-server config-server api-gateway
+            docker compose -f docker-compose.prod.yml pull eureka-server config-server api-gateway
+            docker compose -f docker-compose.prod.yml stop eureka-server config-server api-gateway
+            docker compose -f docker-compose.prod.yml rm -f eureka-server config-server api-gateway
+            docker compose -f docker-compose.prod.yml up -d eureka-server config-server api-gateway

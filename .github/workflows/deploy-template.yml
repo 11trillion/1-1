@@ -25,7 +25,7 @@ jobs:
         run: |
           cd ${{ inputs.service }}
           chmod +x ./gradlew
-          ./gradlew :${{ inputs.service }}:clean :${{ inputs.service }}:build -x test
+          ./gradlew clean build -x test
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -56,6 +56,7 @@ jobs:
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           script: |
             cd /home/ubuntu/oneonone
-
             docker compose -f docker-compose.prod.yml pull ${{ inputs.service }}
+            docker compose -f docker-compose.prod.yml stop ${{ inputs.service }}
+            docker compose -f docker-compose.prod.yml rm -f ${{ inputs.service }}
             docker compose -f docker-compose.prod.yml up -d --no-deps ${{ inputs.service }}

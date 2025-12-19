@@ -149,14 +149,17 @@ public class BettingService {
         UUID gameId = requestDto.gameId();
         String key = buildKey(betId);
 
-        hashOps().put(key, "gameId", gameId.toString());
-        hashOps().put(key, "betId", betId.toString());
-        hashOps().put(key, "userId", userId.toString());
-        hashOps().put(key, "betAmount", requestDto.betAmount().toPlainString());
-        hashOps().put(key, "odds", requestDto.odds().toPlainString());
-        hashOps().put(key, "betType", requestDto.betType().name());
-        hashOps().put(key, "betResult", BetResult.PENDING.name());
-        hashOps().put(key, "remainingPoint", Long.toString(remainingPoint));
+        Map<String,String> values = new HashMap<>();
+        values.put("gameId", gameId.toString());
+        values.put("userId", userId.toString());
+        values.put("betId", betId.toString());
+        values.put("betAmount", requestDto.betAmount().toPlainString());
+        values.put("odds", requestDto.odds().toPlainString());
+        values.put("betType", requestDto.betType().name());
+        values.put("betResult", BetResult.PENDING.name());
+        values.put("remainingPoint", Long.toString(remainingPoint));
+
+        hashOps().putAll(key, values);
 
         // 2) gameId별 betId 목록 인덱스
         String indexKey = buildGameIndexKey(gameId);

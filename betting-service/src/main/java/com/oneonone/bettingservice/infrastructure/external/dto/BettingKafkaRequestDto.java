@@ -1,4 +1,4 @@
-package com.oneonone.bettingservice.presentation.dto;
+package com.oneonone.bettingservice.infrastructure.external.dto;
 
 import com.oneonone.common.enums.GameResult;
 

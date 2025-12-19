@@ -1,5 +1,6 @@
-package com.oneonone.bettingservice.domain;
+package com.oneonone.bettingservice.domain.entity;
 
+import com.oneonone.bettingservice.domain.vo.BetResult;
 import com.oneonone.common.enums.GameResult;
 import com.oneonone.common.model.BaseEntity;
 import jakarta.persistence.*;
@@ -86,5 +87,25 @@ public class Betting extends BaseEntity {
         return betAmount
                 .multiply(odds)
                 .longValue();
+    }
+
+    // Redis 데이터 -> betting 생성
+    public static Betting fromRedis(
+            UUID betId,
+            Long userId,
+            UUID gameId,
+            BigDecimal betAmount,
+            BigDecimal odds,
+            GameResult betType
+    ) {
+        Betting betting = new Betting();
+        // 새로 Insert 해야하는 엔티티라는 걸 알려주기 위해 null로 처리
+        betting.setUserId(userId);
+        betting.setGameId(gameId);
+        betting.setBetAmount(betAmount);
+        betting.setOdds(odds);
+        betting.setBetType(betType);
+        betting.setBetResult(BetResult.PENDING); // 경기 전 기본 상태
+        return betting;
     }
 }

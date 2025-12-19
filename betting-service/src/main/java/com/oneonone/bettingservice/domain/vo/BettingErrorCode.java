@@ -1,4 +1,4 @@
-package com.oneonone.bettingservice.domain;
+package com.oneonone.bettingservice.domain.vo;
 
 import com.oneonone.common.exception.ErrorCode;
 import lombok.Getter;
@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 public enum BettingErrorCode implements ErrorCode {
     BETTING_NOT_FOUND(HttpStatus.NOT_FOUND, "B001","유효하지 않은 베팅 ID 입니다."),
     BETTING_UPDATE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "B002", "베팅 수정 데이터 오류"),
+    BETTING_CLOSED(HttpStatus.NOT_FOUND, "B003","베팅이 종료된 경기입니다."),
+    BETTING_REDIS_ERROR(HttpStatus.INTERNAL_SERVER_ERROR,"B004","Redis 조회 실패"),
 
     // 포인트 관련 에러
     POINT_QUERY_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "B101", "포인트 조회에 실패했습니다."),

@@ -1,4 +1,4 @@
-package com.oneonone.bettingservice.domain;
+package com.oneonone.bettingservice.domain.vo;
 
 import lombok.Getter;
 

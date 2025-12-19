@@ -45,5 +45,13 @@ spring:
       value-serializer: org.springframework.kafka.support.serializer.JsonDeserializer
   data:
     redis:
-      host: redis      # docker-compose 서비스 이름
+      host: host.docker.internal      # docker-compose 서비스 이름
       port: 6379
+      database: 0
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: refresh

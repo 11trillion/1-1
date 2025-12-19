@@ -31,6 +31,9 @@ dependencies {
     // Spring Cloud OpenFeign
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+
+    // Redis
+    implementation "org.springframework.boot:spring-boot-starter-data-redis-reactive"
 }
 
 tasks.named('test') {

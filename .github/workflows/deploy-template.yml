@@ -8,7 +8,7 @@ on:
         type: string
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -47,7 +47,10 @@ jobs:
           docker tag ${{ inputs.service }}:latest \
             ${{ secrets.ECR_URL }}/${{ inputs.service }}:latest
           docker push ${{ secrets.ECR_URL }}/${{ inputs.service }}:latest
-
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
       - name: Deploy to EC2 (Ubuntu)
         uses: appleboy/ssh-action@master
         with:

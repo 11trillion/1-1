@@ -9,6 +9,7 @@ on:
       - 'common/**'
       - 'docker-compose.prod.yml'
       - '.github/workflows/infra.yml'
+      - '.github/workflows/deploy-template.yml'
     branches: [ main, dev, release ]
 
 jobs:

@@ -9,7 +9,7 @@ on:
       - 'common/**'
       - 'docker-compose.prod.yml'
       - '.github/workflows/infra.yml'
-    branches: [ main ]
+    branches: [ main, dev, release ]
 
 jobs:
   deploy-infra:

@@ -1,0 +1,13 @@
+name: Point Service Deploy
+
+on:
+  push:
+    paths:
+      - point-service/**
+    branches: [ main, dev, release ]
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/deploy-template.yml
+    with:
+      service: point-service

@@ -48,15 +48,15 @@ public class BettingConsumer {
             User user = userRepository.findByUserIdAndDeletedAtIsNull(event.userId())
                     .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
             log.info("[KAFKA-CONSUME] [Betting] PointBalance Before Update for userId={}, pointBalance={}", user.getUserId(), user.getPointBalance());
-            user.updateBalance(event.amount(), PointType.CREDIT);
+            user.updateBalance(event.amount(), event.pointType());
             log.info("[KAFKA-CONSUME] [Betting] PointBalance After Update userId={}, pointBalance={}", user.getUserId(), user.getPointBalance());
             BalanceEvent balanceEvent = new BalanceEvent(
                     event.sagaId(), // Betting Service에서 생성한 sagaId
                     event.eventId(),
                     event.userId(),
                     event.amount(),
-                    PointType.CREDIT,
-                    event.betId()
+                    event.pointType(),
+                    event.betId().toString()
             );
             String payload = objectMapper.writeValueAsString(balanceEvent);
             OutboxEvent outboxEvent = new OutboxEvent(
@@ -66,8 +66,8 @@ public class BettingConsumer {
                     payload
             );
             outboxRepository.save(outboxEvent);
-            log.info("[KAKFA-CONUSME] [Betting] Outbox saved - outboxId={}, balanceEventId={}", outboxEvent.getOutboxId(), balanceEvent.eventId());
-            processedBettingEventRepository.save(ProcessedBettingEvent.of(UUID.fromString(event.eventId()), event.userId(), UUID.fromString(event.betId()), event.amount()));
+            log.info("[KAFKA-CONSUME] [Betting] Outbox saved - outboxId={}, balanceEventId={}", outboxEvent.getOutboxId(), balanceEvent.eventId());
+            processedBettingEventRepository.save(ProcessedBettingEvent.of(UUID.fromString(event.eventId()), event.userId(), event.betId(), event.amount()));
             log.info("[KAFKA-CONSUME] [Betting] Successfully processed eventId={}", event.eventId());
         } catch (BusinessException e) {
             log.error("[KAFKA-CONSUME] [Betting] Business error - eventId={}, errorCode={}", event.eventId(), e.getErrorCode(), e);

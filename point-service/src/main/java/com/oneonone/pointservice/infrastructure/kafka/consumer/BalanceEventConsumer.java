@@ -38,7 +38,7 @@ public class BalanceEventConsumer {
             // 중복 이벤트 처리 방지
             // 멱등성 체크
             if (pointRepository.existsByEventId(UUID.fromString(event.eventId())) ||
-            pointRepository.existsByBetId(event.betId())) {
+                    (event.betId() != null && pointRepository.existsByBetId(event.betId()))) {
                 log.warn("[KAFKA-CONSUME] Duplicate event - eventId={}", event.eventId());
                 return;
             }

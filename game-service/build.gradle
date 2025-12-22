@@ -13,8 +13,13 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'//valid
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
+    // Monitoring
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'io.micrometer:micrometer-tracing-bridge-brave'
+    implementation 'io.github.openfeign:feign-micrometer'
+    implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
     runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
+
     // Test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.kafka:spring-kafka-test'

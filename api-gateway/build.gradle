@@ -16,6 +16,8 @@ dependencies {
 
     // Monitoring
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'io.micrometer:micrometer-tracing-bridge-brave'
+    implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
     runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
 
     // Eureka Client (Service Discovery)
@@ -35,6 +37,7 @@ dependencies {
     // Test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
 }
 
 tasks.named('test') {

@@ -71,3 +71,15 @@ spring:
     service-bindings:
       # DB 연결이 준비 상태(up)가 될 때까지 기다립니다.
       enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  zipkin:
+    tracing:
+      endpoint: "http://zipkin:9411/api/v2/spans"
+  tracing:
+    sampling:
+      probability: 1.0

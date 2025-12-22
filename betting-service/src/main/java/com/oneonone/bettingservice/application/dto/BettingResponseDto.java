@@ -1,10 +1,11 @@
-package com.oneonone.bettingservice.presentation.dto;
+package com.oneonone.bettingservice.application.dto;
 
-import com.oneonone.bettingservice.domain.BetResult;
-import com.oneonone.bettingservice.domain.Betting;
+import com.oneonone.bettingservice.domain.entity.Betting;
+import com.oneonone.bettingservice.domain.vo.BetResult;
 import com.oneonone.common.enums.GameResult;
 
 import java.math.BigDecimal;
+import java.util.Map;
 import java.util.UUID;
 
 public record BettingResponseDto (
@@ -49,4 +50,20 @@ public record BettingResponseDto (
                 null
         );
     }
+
+    // Redis용
+    public static BettingResponseDto fromHash(Map<String, String> map) {
+        return new BettingResponseDto(
+                UUID.fromString(map.get("betId")),
+                Long.valueOf(map.get("userId")),
+                UUID.fromString(map.get("gameId")),
+                new BigDecimal(map.get("betAmount")),
+                new BigDecimal(map.get("odds")),
+                GameResult.valueOf(map.get("betType")),
+                BetResult.valueOf(map.get("betResult")),
+                Long.valueOf(map.get("remainingPoint"))
+        );
+    }
+
+
 }

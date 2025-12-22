@@ -1,7 +1,7 @@
 package com.oneonone.bettingservice.infrastructure.config;
 
-import com.oneonone.bettingservice.infrastructure.event.BettingEvent;
-import com.oneonone.bettingservice.infrastructure.event.GameCompletedEvent;
+import com.oneonone.bettingservice.domain.event.BettingEvent;
+import com.oneonone.bettingservice.domain.event.GameCompletedEvent;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -52,7 +52,7 @@ public class KafkaConfig {
         configProps.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, JsonDeserializer.class);
         configProps.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
         configProps.put(JsonDeserializer.VALUE_DEFAULT_TYPE,
-                "com.oneonone.bettingservice.infrastructure.event.GameCompletedEvent");
+                "com.oneonone.bettingservice.domain.event.GameCompletedEvent");
         configProps.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
         // 설정된 프로퍼티로 DefaultKafkaConsumerFactory를 생성하여 반환합니다.
         return new DefaultKafkaConsumerFactory<>(configProps);

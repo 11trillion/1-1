@@ -1,4 +1,4 @@
-package com.oneonone.bettingservice.presentation.dto;
+package com.oneonone.bettingservice.application.dto;
 
 import com.oneonone.common.enums.GameResult;
 import jakarta.validation.constraints.DecimalMax;

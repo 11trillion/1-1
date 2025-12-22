@@ -1,6 +1,7 @@
 package com.oneonone.bettingservice.application.service;
 
-import com.oneonone.bettingservice.infrastructure.event.GameCompletedEvent;
+import com.oneonone.bettingservice.domain.service.BettingService;
+import com.oneonone.bettingservice.domain.event.GameCompletedEvent;
 import com.oneonone.common.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

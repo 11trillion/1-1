@@ -1,7 +1,5 @@
 package com.oneonone.bettingservice.domain.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oneonone.bettingservice.application.dto.BettingRequestDto;
 import com.oneonone.bettingservice.application.dto.BettingResponseDto;
 import com.oneonone.bettingservice.domain.entity.Betting;
@@ -22,7 +20,6 @@ import com.oneonone.common.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -31,7 +28,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.Duration;
 import java.util.*;
 
 @Slf4j
@@ -276,9 +272,6 @@ public class BettingService {
 
         // 3. JPA 저장
         bettingRepository.saveAll(bets);
-
-        // 유저별 최종 포인트 증감액 계산
-        Map<Long, Long> userDeltaMap = new HashMap<>();
 
         for(Betting betting : bets){
             String sagaId = UUID.randomUUID().toString();

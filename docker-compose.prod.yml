@@ -283,7 +283,7 @@
         MAIL_USERNAME: ${MAIL_USERNAME}
         MAIL_PASSWORD: ${MAIL_PASSWORD}
         SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL}
-      mem_limit: 384m
+      mem_limit: 512m
       cpus: "0.4"
       logging:
         driver: "json-file"
@@ -312,7 +312,7 @@
         MAIL_USERNAME: ${MAIL_USERNAME}
         MAIL_PASSWORD: ${MAIL_PASSWORD}
         SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL}
-      mem_limit: 384m
+      mem_limit: 512m
       cpus: "0.4"
       logging:
         driver: "json-file"

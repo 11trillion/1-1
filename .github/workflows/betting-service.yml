@@ -7,7 +7,7 @@ on:
     branches: [ main, dev, release ]
 
 jobs:
-  deploy:
+  betting-service:
     uses: ./.github/workflows/deploy-template.yml
     with:
       service: betting-service

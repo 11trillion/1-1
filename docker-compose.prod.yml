@@ -176,8 +176,8 @@
         timeout: 3s
         retries: 5
         start_period: 60s
-        networks:
-          - promnet
+      networks:
+        - promnet
 
     config-server:
       image: ${ECR_REGISTRY}/config-server:latest
@@ -211,14 +211,12 @@
       depends_on:
         eureka-server:
           condition: service_healthy
-        networks:
-          - promnet
+      networks:
+        - promnet
 
-    betting-service-blue:
+    betting-service:
       image: ${ECR_REGISTRY}/betting-service:latest
-      container_name: betting-service-blue
       environment:
-        SPRING_PROFILES_ACTIVE: blue
         EUREKA_DEFAULT_ZONE: ${EUREKA_DEFAULT_ZONE}
         SPRING_CLOUD_CONFIG_URI: http://config-server:8888
         DB_USERNAME: ${DB_USERNAME}
@@ -241,38 +239,8 @@
           condition: service_healthy
         eureka-server:
           condition: service_started
-        networks:
-          - promnet
-
-    betting-service-green:
-      image: ${ECR_REGISTRY}/betting-service:latest
-      container_name: betting-service-green
-      environment:
-        SPRING_PROFILES_ACTIVE: green
-        EUREKA_DEFAULT_ZONE: ${EUREKA_DEFAULT_ZONE}
-        SPRING_CLOUD_CONFIG_URI: http://config-server:8888
-        DB_USERNAME: ${DB_USERNAME}
-        DB_PASSWORD: ${DB_PASSWORD}
-        JWT_SECRET_KEY: ${JWT_SECRET_KEY}
-        MAIL_USERNAME: ${MAIL_USERNAME}
-        MAIL_PASSWORD: ${MAIL_PASSWORD}
-        SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL}
-      mem_limit: 512m
-      cpus: "0.5"
-      logging:
-        driver: "json-file"
-        options:
-          max-size: "10m"
-          max-file: "3"
-      env_file:
-        - .env
-      depends_on:
-        config-server:
-          condition: service_healthy
-        eureka-server:
-          condition: service_started
-        networks:
-          - promnet
+      networks:
+        - promnet
 
     user-service:
       image: ${ECR_REGISTRY}/user-service:latest
@@ -301,8 +269,8 @@
           condition: service_started
         config-server:
           condition: service_healthy
-        networks:
-          - promnet
+      networks:
+        - promnet
 
     game-service:
       image: ${ECR_REGISTRY}/game-service:latest
@@ -330,14 +298,12 @@
           condition: service_started
         config-server:
           condition: service_healthy
-        networks:
-          - promnet
+      networks:
+        - promnet
 
     point-service:
       image: ${ECR_REGISTRY}/point-service:latest
       environment:
-        #유레카 호스트 설정
-        #EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
         EUREKA_DEFAULT_ZONE: ${EUREKA_DEFAULT_ZONE}
         SPRING_CLOUD_CONFIG_URI: http://config-server:8888
         DB_USERNAME: ${DB_USERNAME}
@@ -360,8 +326,8 @@
           condition: service_started
         config-server:
           condition: service_healthy
-        networks:
-          - promnet
+      networks:
+        - promnet
 
     api-gateway:
       image: ${ECR_REGISTRY}/api-gateway:latest

@@ -51,6 +51,10 @@ public class BettingService {
     private String buildGameIndexKey(UUID gameId) {
         return "bets:game:" + gameId;
     }
+
+    private String buildUserIndexKey(Long userId) {
+        return "user:bets:" + userId;
+    }
     
     // 경기 상태 검증
     private void validateGame(UUID gameId){
@@ -132,11 +136,17 @@ public class BettingService {
         Long currentBalance = balanceResponse.data().pointBalance();
         BigDecimal betAmount = requestDto.betAmount();
         BigDecimal currentBalanceDecimal = BigDecimal.valueOf(currentBalance);
-        BigDecimal remainingDecimal = currentBalanceDecimal.subtract(betAmount);
+        // Redis에서
+        BigDecimal pendingBetAmount = getPendingBetAmount(userId);
+        // 남은 포인트 계산
+        BigDecimal remainingDecimal =
+                currentBalanceDecimal
+                        .subtract(pendingBetAmount)
+                        .subtract(betAmount);
         long remainingPoint = remainingDecimal.longValue(); // 소수점 없다는 전제
 
         // 잔액 검증
-        if (currentBalanceDecimal.compareTo(betAmount) < 0) {
+        if (remainingDecimal.compareTo(BigDecimal.ZERO)  < 0) {
             log.warn("[Betting] 포인트 부족 - userId={}, current={}, required={}",
                     userId, currentBalance, betAmount);
             throw new BusinessException(BettingErrorCode.INSUFFICIENT_BALANCE);
@@ -144,7 +154,6 @@ public class BettingService {
 
         // Redis에 베팅 내역 저장
         log.info("Redis 저장");
-        // Redis에 저장
         UUID betId = UUID.randomUUID();
         UUID gameId = requestDto.gameId();
         String key = buildKey(betId);
@@ -161,14 +170,16 @@ public class BettingService {
 
         hashOps().putAll(key, values);
 
-        // 2) gameId별 betId 목록 인덱스
-        String indexKey = buildGameIndexKey(gameId);
+        // gameId별 betId 목록 인덱스
+        String indexKey = buildGameIndexKey(gameId);        // "game:bets:" + gameId
         bettingHashRedisTemplate.opsForSet().add(indexKey, betId.toString());
 
-        Map<String, String> map = getBettingMap(key);
+        // userId별 BetId 인덱스
+        String userIndexKey = buildUserIndexKey(userId);     // "user:bets:" + userId
+        bettingHashRedisTemplate.opsForSet().add(userIndexKey, betId.toString());
 
         // 저장
-        return BettingResponseDto.fromHash(map);
+        return BettingResponseDto.fromHash(values);
     }
 
     // 베팅 수정 - Redis에 데이터가 있다는 전제
@@ -262,9 +273,6 @@ public class BettingService {
         // 3. JPA 저장
         bettingRepository.saveAll(bets);
 
-        // 유저별 최종 포인트 증감액 계산
-        Map<Long, Long> userDeltaMap = new HashMap<>();
-
         for(Betting betting : bets){
             String sagaId = UUID.randomUUID().toString();
             String eventId = UUID.randomUUID().toString();
@@ -353,5 +361,28 @@ public class BettingService {
             result.add(betting);
         }
         return result;
+    }
+
+    // Redis 베팅 내역 합계 구하기
+    private BigDecimal getPendingBetAmount(Long userId) {
+        String userIndexKey = buildUserIndexKey(userId);
+        Set<String> betIds = bettingHashRedisTemplate.opsForSet().members(userIndexKey);
+        if (betIds == null || betIds.isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+
+        BigDecimal sum = BigDecimal.ZERO;
+        for (String betIdStr : betIds) {
+            String betKey = buildKey(UUID.fromString(betIdStr));   // "bets:{betId}"
+            Map<String, String> map = hashOps().entries(betKey);
+            if (map.isEmpty()) {
+                continue;
+            }
+            String amountStr = map.get("betAmount");
+            if (amountStr != null) {
+                sum = sum.add(new BigDecimal(amountStr));
+            }
+        }
+        return sum;
     }
 }

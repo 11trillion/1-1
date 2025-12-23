@@ -11,4 +11,4 @@ jobs:
     uses: ./.github/workflows/deploy-template.yml
     with:
       service: point-service
-      secrets: inherit
+    secrets: inherit

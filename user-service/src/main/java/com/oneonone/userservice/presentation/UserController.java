@@ -230,7 +230,7 @@ public class UserController {
     }
 
     @Operation(
-            summary = "사용자 포인트 잔액 조회 - 관리자용",
+            summary = "사용자 포인트 잔액 조회 - 관리자 전용",
             description = "관리자가 특정 사용자의 포인트 잔액을 조회합니다."
     )
     @PreAuthorize("hasRole('MASTER')")
@@ -243,7 +243,7 @@ public class UserController {
     }
 
     @Operation(
-            summary = "사용자 포인트 잔액 수정 - 관리자용",
+            summary = "사용자 포인트 잔액 수정 - 관리자 전용",
             description = """
                     관리자가 사용자의 포인트를 직접 증가/감소시킵니다.
                     - 수동 보상 지급

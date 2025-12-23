@@ -42,9 +42,9 @@ jobs:
         run: |
           docker build \
           -f ${{ inputs.service }}/Dockerfile \
-          -t ${{ secrets.ECR_REGISTRY }}/user-service:latest \
+          -t ${{ secrets.ECR_REGISTRY }}/${{ inputs.service }}:latest \
           .
-          docker push ${{ secrets.ECR_REGISTRY }}/user-service:latest
+          docker push ${{ secrets.ECR_REGISTRY }}/${{ inputs.service }}:latest
 
   deploy:
     runs-on: ubuntu-latest

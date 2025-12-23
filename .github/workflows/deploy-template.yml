@@ -41,7 +41,7 @@ jobs:
       - name: Docker build & push
         run: |
           docker build \
-          -f user-service/Dockerfile \
+          -f ${{ inputs.service }}/Dockerfile \
           -t ${{ secrets.ECR_REGISTRY }}/user-service:latest \
           .
           docker push ${{ secrets.ECR_REGISTRY }}/user-service:latest

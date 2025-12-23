@@ -8,8 +8,8 @@
       restart: always
       volumes:
         - redis_data:/data
-      networks:
-        - promnet
+#      networks:
+#        - promnet
       deploy:
         resources:
           limits:
@@ -30,8 +30,8 @@
         ZOOKEEPER_CLIENT_PORT: 2181
         ZOOKEEPER_TICK_TIME: 2000
       restart: always
-      networks:
-        - promnet
+#      networks:
+#        - promnet
       mem_limit: 256m
       logging:
         driver: "json-file"
@@ -55,8 +55,8 @@
       depends_on:
         - zookeeper
       restart: always
-      networks:
-        - promnet
+#      networks:
+#        - promnet
       mem_limit: 768m
       logging:
         driver: "json-file"
@@ -87,8 +87,8 @@
       depends_on:
         - kafka
       restart: always
-      networks:
-        - promnet
+#      networks:
+#        - promnet
 
     zipkin:
       image: openzipkin/zipkin:latest
@@ -98,8 +98,8 @@
       environment:
         STORAGE_TYPE: mem
       restart: always
-      networks:
-        - promnet
+#      networks:
+#        - promnet
       deploy:
         resources:
           limits:
@@ -122,8 +122,8 @@
         - ./prometheus:/etc/prometheus
       command:
         - '--config.file=/etc/prometheus/prometheus.yml'
-      networks:
-        - promnet
+#      networks:
+#        - promnet
       deploy:
         resources:
           limits:
@@ -143,8 +143,8 @@
       volumes:
         - ./grafana/volume:/var/lib/grafana
       restart: always
-      networks:
-        - promnet
+#      networks:
+#        - promnet
       deploy:
         resources:
           limits:
@@ -176,8 +176,8 @@
         timeout: 3s
         retries: 5
         start_period: 60s
-      networks:
-        - promnet
+#      networks:
+#        - promnet
 
     config-server:
       image: ${ECR_REGISTRY}/config-server:latest
@@ -211,8 +211,8 @@
       depends_on:
         eureka-server:
           condition: service_healthy
-      networks:
-        - promnet
+#      networks:
+#        - promnet
 
     betting-service:
       image: ${ECR_REGISTRY}/betting-service:latest
@@ -239,8 +239,8 @@
           condition: service_healthy
         eureka-server:
           condition: service_started
-      networks:
-        - promnet
+#      networks:
+#        - promnet
 
     user-service:
       image: ${ECR_REGISTRY}/user-service:latest
@@ -269,8 +269,8 @@
           condition: service_started
         config-server:
           condition: service_healthy
-      networks:
-        - promnet
+#      networks:
+#        - promnet
 
     game-service:
       image: ${ECR_REGISTRY}/game-service:latest
@@ -298,8 +298,8 @@
           condition: service_started
         config-server:
           condition: service_healthy
-      networks:
-        - promnet
+#      networks:
+#        - promnet
 
     point-service:
       image: ${ECR_REGISTRY}/point-service:latest
@@ -326,8 +326,8 @@
           condition: service_started
         config-server:
           condition: service_healthy
-      networks:
-        - promnet
+#      networks:
+#        - promnet
 
     api-gateway:
       image: ${ECR_REGISTRY}/api-gateway:latest
@@ -353,12 +353,12 @@
         - user-service
         - game-service
         - point-service
-      networks:
-        - promnet
+#      networks:
+#        - promnet
 
   volumes:
     redis_data:
-
-  networks:
-    promnet:
-      driver: bridge
+#
+#  networks:
+#    promnet:
+#      driver: bridge

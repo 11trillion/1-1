@@ -58,7 +58,7 @@ public class GameControllerV2 {
 
     }
 
-    @Operation(summary = "게임 단건 조회" , description = "한 게임의 대한 정보를 조회한다.")
+    @Operation(summary = "게임 단건 조회" , description = "한 게임에 대한 정보를 조회한다.")
     @PreAuthorize("hasAnyRole('USER', 'MASTER')")
     @GetMapping("/{gameId}")
     public ResponseEntity<ApiResponse<GameResponse>> getGameById(

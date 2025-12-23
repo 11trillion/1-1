@@ -6,6 +6,9 @@ on:
       service:
         required: true
         type: string
+    active-color:
+      required: true
+      type: string
 
 jobs:
   build:
@@ -58,7 +61,10 @@ jobs:
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           script: |
             cd /home/ubuntu/oneonone
-            docker compose -f docker-compose.prod.yml pull ${{ inputs.service }}
-            docker compose -f docker-compose.prod.yml stop ${{ inputs.service }}
-            docker compose -f docker-compose.prod.yml rm -f ${{ inputs.service }}
-            docker compose -f docker-compose.prod.yml up -d --no-deps ${{ inputs.service }}
+            SERVICE_NAME="${{ inputs.service }}-${{ inputs.active-color }}"
+            docker compose -f docker-compose.prod.yml pull $SERVICE_NAME
+            docker compose -f docker-compose.prod.yml stop $SERVICE_NAME || true
+            docker compose -f docker-compose.prod.yml rm -f $SERVICE_NAME || true
+            docker compose -f docker-compose.prod.yml up -d --no-deps $SERVICE_NAME
+            sed -i "s|lb://.*|lb://$SERVICE_NAME|g" /home/ubuntu/oneonone/api-gateway/config/application.yml
+            docker compose -f docker-compose.prod.yml restart api-gateway

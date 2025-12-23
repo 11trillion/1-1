@@ -64,13 +64,13 @@ spring:
             - RewritePath=/v3/api-docs/point-service,/v3/api-docs
         # Betting Service Routes
         - id: betting-service
-          uri: lb://betting-service
+          uri: lb://betting-service-blue
           predicates:
             - Path=/api/v1/bets/**
           filters:
             - AuthenticationFilter
         - id: betting-service-openapi
-          uri: lb://betting-service
+          uri: lb://betting-service-blue
           predicates:
             - Path=/v3/api-docs/betting-service
           filters:

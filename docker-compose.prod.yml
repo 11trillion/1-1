@@ -8,8 +8,8 @@
       restart: always
       volumes:
         - redis_data:/data
-      #    networks:
-      #      - promnet
+      networks:
+        - promnet
       deploy:
         resources:
           limits:
@@ -30,8 +30,8 @@
         ZOOKEEPER_CLIENT_PORT: 2181
         ZOOKEEPER_TICK_TIME: 2000
       restart: always
-      #    networks:
-      #      - promnet
+      networks:
+        - promnet
       mem_limit: 256m
       logging:
         driver: "json-file"
@@ -42,18 +42,11 @@
     kafka:
       image: wurstmeister/kafka:latest
       platform: linux/amd64
-        #ports:
-      # - "9092:9092"
       environment:
         KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
-        # 리스너 설정: OUTSIDE (호스트 접근), INSIDE (도커 내부 접근)
-        #20251227 => 외부에서 붙을일없어서 제거 가능
         KAFKA_LISTENERS: INSIDE://0.0.0.0:29092
-        #,OUTSIDE://0.0.0.0:9092
-        # 광고 주소 설정: INSIDE는 서비스 이름, OUTSIDE는 호스트 접근 주소
         KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka:29092
         KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT
-        #,OUTSIDE:PLAINTEXT
         KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
         KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
         KAFKA_HEAP_OPTS: "-Xmx512M -Xms256M"
@@ -62,8 +55,8 @@
       depends_on:
         - zookeeper
       restart: always
-      #    networks:
-      #      - promnet
+      networks:
+        - promnet
       mem_limit: 768m
       logging:
         driver: "json-file"
@@ -94,8 +87,8 @@
       depends_on:
         - kafka
       restart: always
-    #    networks:
-    #      - promnet
+      networks:
+        - promnet
 
     zipkin:
       image: openzipkin/zipkin:latest
@@ -105,8 +98,8 @@
       environment:
         STORAGE_TYPE: mem
       restart: always
-      #    networks:
-      #      - promnet
+      networks:
+        - promnet
       deploy:
         resources:
           limits:
@@ -129,8 +122,8 @@
         - ./prometheus:/etc/prometheus
       command:
         - '--config.file=/etc/prometheus/prometheus.yml'
-      #    networks:
-      #      - promnet
+      networks:
+        - promnet
       deploy:
         resources:
           limits:
@@ -150,8 +143,8 @@
       volumes:
         - ./grafana/volume:/var/lib/grafana
       restart: always
-      #    networks:
-      #      - promnet
+      networks:
+        - promnet
       deploy:
         resources:
           limits:
@@ -168,7 +161,6 @@
       ports:
         - "8761:8761"
       environment:
-        # 유레카는 중앙 서버이므로, 자기 자신에게는 등록하지 않도록 설정
         EUREKA_CLIENT_REGISTER_WITH_EUREKA: "false"
         EUREKA_CLIENT_FETCH_REGISTRY: "false"
       mem_limit: 384m
@@ -184,16 +176,14 @@
         timeout: 3s
         retries: 5
         start_period: 60s
-    #    networks:
-    #      - promnet
+        networks:
+          - promnet
 
     config-server:
       image: ${ECR_REGISTRY}/config-server:latest
       ports:
         - "8888:8888"
       environment:
-        #유레카 호스트 설정
-        #EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
         EUREKA_DEFAULT_ZONE: ${EUREKA_DEFAULT_ZONE}
         SPRING_CLOUD_CONFIG_URI: http://config-server:8888
         DB_USERNAME: ${DB_USERNAME}
@@ -217,18 +207,18 @@
         interval: 5s
         timeout: 3s
         retries: 5
-        start_period: 20s # Spring Boot가 부팅할 시간을 충분히 줍니다.
+        start_period: 20s
       depends_on:
         eureka-server:
           condition: service_healthy
-    #    networks:
-    #      - promnet
+        networks:
+          - promnet
 
-    betting-service:
+    betting-service-blue:
       image: ${ECR_REGISTRY}/betting-service:latest
+      container_name: betting-service-blue
       environment:
-        #유레카 호스트 설정
-        #EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+        SPRING_PROFILES_ACTIVE: blue
         EUREKA_DEFAULT_ZONE: ${EUREKA_DEFAULT_ZONE}
         SPRING_CLOUD_CONFIG_URI: http://config-server:8888
         DB_USERNAME: ${DB_USERNAME}
@@ -244,7 +234,6 @@
         options:
           max-size: "10m"
           max-file: "3"
-      # .env 파일의 내용을 환경 변수로 컨테이너에 주입 (배포에선 삭제)
       env_file:
         - .env
       depends_on:
@@ -252,8 +241,38 @@
           condition: service_healthy
         eureka-server:
           condition: service_started
-    #    networks:
-    #      - promnet
+        networks:
+          - promnet
+
+    betting-service-green:
+      image: ${ECR_REGISTRY}/betting-service:latest
+      container_name: betting-service-green
+      environment:
+        SPRING_PROFILES_ACTIVE: green
+        EUREKA_DEFAULT_ZONE: ${EUREKA_DEFAULT_ZONE}
+        SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+        DB_USERNAME: ${DB_USERNAME}
+        DB_PASSWORD: ${DB_PASSWORD}
+        JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+        MAIL_USERNAME: ${MAIL_USERNAME}
+        MAIL_PASSWORD: ${MAIL_PASSWORD}
+        SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL}
+      mem_limit: 512m
+      cpus: "0.5"
+      logging:
+        driver: "json-file"
+        options:
+          max-size: "10m"
+          max-file: "3"
+      env_file:
+        - .env
+      depends_on:
+        config-server:
+          condition: service_healthy
+        eureka-server:
+          condition: service_started
+        networks:
+          - promnet
 
     user-service:
       image: ${ECR_REGISTRY}/user-service:latest
@@ -275,7 +294,6 @@
         options:
           max-size: "10m"
           max-file: "3"
-      # .env 파일의 내용을 환경 변수로 컨테이너에 주입
       env_file:
         - .env
       depends_on:
@@ -283,14 +301,12 @@
           condition: service_started
         config-server:
           condition: service_healthy
-    #    networks:
-    #      - promnet
+        networks:
+          - promnet
 
     game-service:
       image: ${ECR_REGISTRY}/game-service:latest
       environment:
-        #유레카 호스트 설정
-        #EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
         EUREKA_DEFAULT_ZONE: ${EUREKA_DEFAULT_ZONE}
         SPRING_CLOUD_CONFIG_URI: http://config-server:8888
         DB_USERNAME: ${DB_USERNAME}
@@ -314,8 +330,8 @@
           condition: service_started
         config-server:
           condition: service_healthy
-    #    networks:
-    #      - promnet
+        networks:
+          - promnet
 
     point-service:
       image: ${ECR_REGISTRY}/point-service:latest
@@ -337,7 +353,6 @@
         options:
           max-size: "10m"
           max-file: "3"
-      # .env 파일의 내용을 환경 변수로 컨테이너에 주입
       env_file:
         - .env
       depends_on:
@@ -345,19 +360,16 @@
           condition: service_started
         config-server:
           condition: service_healthy
-    #    networks:
-    #      - promnet
+        networks:
+          - promnet
 
     api-gateway:
       image: ${ECR_REGISTRY}/api-gateway:latest
       ports:
         - "8080:8080"
       environment:
-        #유레카 호스트 설정
-        #EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
         EUREKA_DEFAULT_ZONE: ${EUREKA_DEFAULT_ZONE}
         SPRING_CLOUD_CONFIG_URI: http://config-server:8888
-        #20251217 추가
         JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       mem_limit: 512m
       cpus: "0.5"
@@ -375,12 +387,12 @@
         - user-service
         - game-service
         - point-service
-  #    networks:
-  #      - promnet
+      networks:
+        - promnet
 
   volumes:
     redis_data:
-  #
-  #networks:
-  #  promnet:
-  #    driver: bridge
+
+  networks:
+    promnet:
+      driver: bridge

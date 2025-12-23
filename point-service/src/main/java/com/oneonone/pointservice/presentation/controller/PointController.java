@@ -66,7 +66,7 @@ public class PointController {
     )
     @PreAuthorize("hasRole('MASTER')")
     public ResponseEntity<ApiResponse<PointResponse>> updatePointStatus(
-            @Parameter(description = "포인트 ID", example = "3fa85f64-5717-4562-b3fc-2c963f66afa8")
+            @Parameter(description = "포인트 ID", example = "3fa85f64-5717-4562-b3fc-2c963f66afa9")
             @PathVariable UUID pointId,
 
             @Parameter(description = "변경할 포인트 상태", required = true)

@@ -41,9 +41,10 @@ jobs:
       - name: Docker build & push
         run: |
           docker build \
-          -f ${{ inputs.service }}/Dockerfile \
-          -t ${{ secrets.ECR_URL }}/${{ inputs.service }}:latest .
-          docker push ${{ secrets.ECR_URL }}/${{ inputs.service }}:latest
+          -f user-service/Dockerfile \
+          -t ${{ secrets.ECR_URL }}/user-service:latest \
+          .
+          docker push ${{ secrets.ECR_URL }}/user-service:latest
 
   deploy:
     runs-on: ubuntu-latest

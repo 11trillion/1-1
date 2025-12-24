@@ -7,7 +7,6 @@ on:
       - 'config-server/**'
       - 'api-gateway/**'
       - 'common/**'
-      - 'docker-compose.prod.yml'
     branches: [ main, dev, release ]
 
 jobs:

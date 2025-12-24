@@ -105,16 +105,4 @@ public class BettingController {
         bettingService.deleteBetting(betId, userId);
         return ResponseEntity.ok(ApiResponse.success("베팅 삭제 성공"));
     }
-
-    // todo kafka 테스트 - 추후 삭제 예정
-    @GetMapping("/kafkaTest")
-    public void kafkaTest(){
-        UUID uuid = UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
-        GameResult result = GameResult.HOME_WIN;
-
-        GameCompletedEvent requestDto =
-                new GameCompletedEvent(uuid, "Seoul", "Busan", 2,1, result);
-
-        bettingService.updateGameResult(requestDto);
-    }
 }

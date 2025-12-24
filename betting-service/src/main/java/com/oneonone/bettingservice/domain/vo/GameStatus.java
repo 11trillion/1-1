@@ -18,4 +18,8 @@ public enum GameStatus {
     public boolean isScheduled() {
         return this == SCHEDULED;
     }
+
+    public boolean isEnd() {
+        return this == END;
+    }
 }

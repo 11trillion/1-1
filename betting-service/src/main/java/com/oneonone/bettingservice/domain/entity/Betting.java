@@ -18,7 +18,7 @@ import java.util.UUID;
 @Table(name = "p_bettings")
 public class Betting extends BaseEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+//    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "bet_id")
     private UUID id;
 
@@ -100,6 +100,7 @@ public class Betting extends BaseEntity {
     ) {
         Betting betting = new Betting();
         // 새로 Insert 해야하는 엔티티라는 걸 알려주기 위해 null로 처리
+        betting.setId(betId);
         betting.setUserId(userId);
         betting.setGameId(gameId);
         betting.setBetAmount(betAmount);
@@ -108,4 +109,5 @@ public class Betting extends BaseEntity {
         betting.setBetResult(BetResult.PENDING); // 경기 전 기본 상태
         return betting;
     }
+
 }

@@ -20,6 +20,7 @@ import com.oneonone.common.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -67,7 +68,16 @@ public class BettingService {
         if (!status.isScheduled()) {            // SCHEDULED 일 때만 베팅 생성, 수정 허용
             throw new BusinessException(BettingErrorCode.BETTING_CLOSED);
         }
+    }
 
+    private boolean isGameEnd(UUID gameId){
+        ApiResponse<GameResponse> gameResultResponse =
+                gameServiceClient.getGameById(gameId);
+
+        GameResponse game = gameResultResponse.data();
+        GameStatus status = game.status();
+
+        return status.isEnd();
     }
 
     private Map<String, String> getBettingMap(String key){
@@ -106,11 +116,34 @@ public class BettingService {
     public Page<BettingResponseDto> getBetListByGameId(
             UUID gameId, Pageable pageable
     ){
-        // 1. Repository에서 페이지 & 정렬하여 배달 목록 조회
-        Page<Betting> bettingPage = bettingRepository.findAllByGameId(gameId, pageable);
+        boolean finished = isGameEnd(gameId);
 
-        // 2. Entity -> DTO 반환
-        return bettingPage.map(BettingResponseDto::from);
+        if(finished) {
+            // 종료된 경기
+            // 1. Repository에서 페이지 & 정렬하여 배달 목록 조회
+            Page<Betting> bettingPage = bettingRepository.findAllByGameId(gameId, pageable);
+
+            // 2. Entity -> DTO 반환
+            return bettingPage.map(BettingResponseDto::from);
+        }else{
+            // 진행 중 경기 → Redis에서 조회
+            List<Betting> bets = loadBetsFromRedis(gameId);
+
+            // Pageable 적용 (메모리 페이징)
+            int start = (int) pageable.getOffset();
+            int end = Math.min(start + pageable.getPageSize(), bets.size());
+
+            if (start >= bets.size()) {
+                return Page.empty(pageable);
+            }
+
+            List<BettingResponseDto> content = bets.subList(start, end).stream()
+                    .map(BettingResponseDto::from)
+                    .toList();
+            return new PageImpl<>(content, pageable, bets.size());
+        }
+
+
     }
 
     // 베팅내역 조회_유저
@@ -144,6 +177,10 @@ public class BettingService {
                         .subtract(pendingBetAmount)
                         .subtract(betAmount);
         long remainingPoint = remainingDecimal.longValue(); // 소수점 없다는 전제
+
+        log.info("[DEBUG] currentBalance={}, pendingBetAmount={}, betAmount={}",
+                currentBalanceDecimal, pendingBetAmount, betAmount);
+        log.info("[DEBUG] remainingDecimal={}", remainingDecimal);
 
         // 잔액 검증
         if (remainingDecimal.compareTo(BigDecimal.ZERO)  < 0) {

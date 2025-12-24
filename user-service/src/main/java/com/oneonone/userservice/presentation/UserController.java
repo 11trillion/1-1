@@ -45,7 +45,6 @@ public class UserController {
     )
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse<SignupResponse>> signup(
-            @Parameter(description = "사용자 생성 요청 정보", required = true)
             @Valid @RequestBody SignupRequest request) {
         SignupCommand command = new SignupCommand(
                 request.username(),
@@ -90,7 +89,6 @@ public class UserController {
     )
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponse>> login(
-            @Parameter(description = "로그인 정보", required = true)
             @Valid @RequestBody LoginRequest request) {
         LoginCommand command = new LoginCommand(
                 request.username(),
@@ -144,7 +142,6 @@ public class UserController {
     @PreAuthorize("hasAnyRole('USER', 'MASTER')")
     public ResponseEntity<ApiResponse<UserResponse>> updateMyProfile(
             @Parameter(hidden = true) @RequestHeader("X-User-Id") Long userId,
-            @Parameter(description = "수정하고자 하는 정보", required = true)
             @Valid @RequestBody UpdateUserRequest request) {
         UpdateUserCommand command = new UpdateUserCommand(
                 request.password(),
@@ -200,7 +197,6 @@ public class UserController {
     @PreAuthorize("hasRole('MASTER')")
     @PatchMapping("/{userId}")
     public ResponseEntity<ApiResponse<MasterUserResponse>> updateUser(
-            @Parameter(description = "수정하고자 하는 정보", required = true)
             @RequestBody UpdateMasterRequest request,
             @Parameter(description = "수정할 사용자 ID", required = true)
             @PathVariable Long userId) {
@@ -258,7 +254,6 @@ public class UserController {
     public ResponseEntity<ApiResponse<BalanceResponse>> updateBalance(
             @Parameter(description = "포인트 잔액을 수정할 사용자 ID", required = true)
             @PathVariable Long userId,
-            @Parameter(description = "포인트 증감량(증가: 양수, 감소: 음수)", required = true)
             @RequestBody UpdateBalanceRequest request) {
 
         if (request.sagaId() != null) {

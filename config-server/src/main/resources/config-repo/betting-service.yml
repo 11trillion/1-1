@@ -47,10 +47,17 @@ spring:
     redis:
       host: redis      # docker-compose 서비스 이름
       port: 6379
-      database: 0
-
 
 management:
+  zipkin:
+    tracing:
+      endpoint: "http://zipkin:9411/api/v2/spans"
+  tracing:
+    sampling:
+      probability: 1.0
+      host: host.docker.internal      # docker-compose 서비스 이름
+      port: 6379
+      database: 0
   endpoints:
     web:
       exposure:

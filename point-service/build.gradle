@@ -20,8 +20,14 @@ dependencies {
 
     // Eureka
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+    
+    // Monitoring
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'io.micrometer:micrometer-tracing-bridge-brave'
+    implementation 'io.github.openfeign:feign-micrometer'
+    implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
     runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
+
     // DB Driver
     runtimeOnly 'org.postgresql:postgresql'
 

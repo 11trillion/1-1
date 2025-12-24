@@ -58,7 +58,7 @@ public class GameControllerV2 {
 
     }
 
-    @Operation(summary = "게임 단건 조회" , description = "한 게임의 대한 정보를 조회한다.")
+    @Operation(summary = "게임 단건 조회" , description = "한 게임에 대한 정보를 조회한다.")
     @PreAuthorize("hasAnyRole('USER', 'MASTER')")
     @GetMapping("/{gameId}")
     public ResponseEntity<ApiResponse<GameResponse>> getGameById(
@@ -86,7 +86,7 @@ public class GameControllerV2 {
         return ResponseEntity.ok(ApiResponse.success(result,"게임 정보 수정이 완료되었습니다."));
     }
 
-    @Operation(summary = "게임 정보 삭제", description = "게임 정보를 삭제합니다")
+    @Operation(summary = "게임 정보 삭제", description = "게임 정보를 삭제합니다.")
     @PreAuthorize("hasRole('MASTER')")
     @DeleteMapping("/{gameId}")
     public ResponseEntity<ApiResponse<Void>> deleteGame(

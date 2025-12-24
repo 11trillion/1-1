@@ -1,0 +1,64 @@
+name: Deploy Template
+
+on:
+  workflow_call:
+    inputs:
+      service:
+        required: true
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Build Service
+        run: |
+          chmod +x ./gradlew
+          ./gradlew :${{ inputs.service }}:clean :${{ inputs.service }}:build -x test
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      - name: Login to ECR Public
+        run: |
+          aws ecr-public get-login-password --region us-east-1 | \
+          docker login --username AWS --password-stdin public.ecr.aws
+
+      - name: Docker build & push
+        run: |
+          docker build \
+          -f ${{ inputs.service }}/Dockerfile \
+          -t ${{ secrets.ECR_REGISTRY }}/${{ inputs.service }}:latest \
+          .
+          docker push ${{ secrets.ECR_REGISTRY }}/${{ inputs.service }}:latest
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to EC2 (Ubuntu)
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          script: |
+            cd /home/ubuntu/oneonone
+            docker compose -f docker-compose.prod.yml pull ${{ inputs.service }}
+            docker compose -f docker-compose.prod.yml stop ${{ inputs.service }}
+            docker compose -f docker-compose.prod.yml rm -f ${{ inputs.service }}
+            docker compose -f docker-compose.prod.yml up -d --no-deps ${{ inputs.service }}

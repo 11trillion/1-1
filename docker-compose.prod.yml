@@ -1,0 +1,360 @@
+#version: "3.9"
+
+  services:
+    redis:
+      image: redis:7.2
+      ports:
+        - "6379:6379"
+      restart: always
+      volumes:
+        - redis_data:/data
+      networks:
+        - promnet
+      deploy:
+        resources:
+          limits:
+            memory: 256M
+            cpus: '0.5'
+      logging:
+        driver: "json-file"
+        options:
+          max-size: "10m"
+          max-file: "3"
+
+    zookeeper:
+      image: wurstmeister/zookeeper:latest
+      platform: linux/amd64
+      ports:
+        - "2181:2181"
+      environment:
+        ZOOKEEPER_CLIENT_PORT: 2181
+        ZOOKEEPER_TICK_TIME: 2000
+      restart: always
+      networks:
+        - promnet
+      mem_limit: 256m
+      logging:
+        driver: "json-file"
+        options:
+          max-size: "10m"
+          max-file: "3"
+
+    kafka:
+      image: wurstmeister/kafka:latest
+      platform: linux/amd64
+      environment:
+        KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+        KAFKA_LISTENERS: INSIDE://0.0.0.0:29092
+        KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka:29092
+        KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT
+        KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+        KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+        KAFKA_HEAP_OPTS: "-Xmx512M -Xms256M"
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+      depends_on:
+        - zookeeper
+      restart: always
+      networks:
+        - promnet
+      mem_limit: 768m
+      logging:
+        driver: "json-file"
+        options:
+          max-size: "10m"
+          max-file: "3"
+
+    kafka-ui:
+      image: provectuslabs/kafka-ui:latest
+      platform: linux/amd64
+      ports:
+        - "9093:8080"
+      environment:
+        KAFKA_CLUSTERS_0_NAME: oneonone-local
+        KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+        KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+        KAFKA_CLUSTERS_0_READONLY: "false"
+      deploy:
+        resources:
+          limits:
+            memory: 512M
+            cpus: '0.5'
+      logging:
+        driver: "json-file"
+        options:
+          max-size: "10m"
+          max-file: "3"
+      depends_on:
+        - kafka
+      restart: always
+      networks:
+        - promnet
+
+    zipkin:
+      image: openzipkin/zipkin:latest
+      platform: linux/amd64
+      ports:
+        - "9411:9411"
+      environment:
+        STORAGE_TYPE: mem
+      restart: always
+      networks:
+        - promnet
+      deploy:
+        resources:
+          limits:
+            memory: 512M
+            cpus: '0.5'
+          reservations:
+            memory: 256M
+            cpus: '0.25'
+      logging:
+        driver: "json-file"
+        options:
+          max-size: "10m"
+          max-file: "3"
+
+    prometheus:
+      image: prom/prometheus
+      ports:
+        - "9090:9090"
+      volumes:
+        - ./prometheus:/etc/prometheus
+      command:
+        - '--config.file=/etc/prometheus/prometheus.yml'
+      networks:
+        - promnet
+      deploy:
+        resources:
+          limits:
+            memory: 512M
+            cpus: '0.5'
+      logging:
+        driver: "json-file"
+        options:
+          max-size: "10m"
+          max-file: "3"
+
+    grafana:
+      user: "root"
+      image: grafana/grafana
+      ports:
+        - 3100:3000
+      volumes:
+        - ./grafana/volume:/var/lib/grafana
+      restart: always
+      networks:
+        - promnet
+      deploy:
+        resources:
+          limits:
+            memory: 256M
+            cpus: '0.5'
+      logging:
+        driver: "json-file"
+        options:
+          max-size: "10m"
+          max-file: "3"
+
+    eureka-server:
+      image: ${ECR_REGISTRY}/eureka-server:latest
+      ports:
+        - "8761:8761"
+      environment:
+        EUREKA_CLIENT_REGISTER_WITH_EUREKA: "false"
+        EUREKA_CLIENT_FETCH_REGISTRY: "false"
+      mem_limit: 384m
+      cpus: "0.3"
+      logging:
+        driver: "json-file"
+        options:
+          max-size: "10m"
+          max-file: "3"
+      healthcheck:
+        test: [ "CMD", "curl", "-f", "http://localhost:8761/actuator/health" ]
+        interval: 5s
+        timeout: 3s
+        retries: 5
+        start_period: 60s
+      networks:
+        - promnet
+
+    config-server:
+      image: ${ECR_REGISTRY}/config-server:latest
+      ports:
+        - "8888:8888"
+      environment:
+        EUREKA_DEFAULT_ZONE: ${EUREKA_DEFAULT_ZONE}
+        SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+        DB_USERNAME: ${DB_USERNAME}
+        DB_PASSWORD: ${DB_PASSWORD}
+        JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+        MAIL_USERNAME: ${MAIL_USERNAME}
+        MAIL_PASSWORD: ${MAIL_PASSWORD}
+        SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL}
+      mem_limit: 384m
+      cpus: "0.3"
+      logging:
+        driver: "json-file"
+        options:
+          max-size: "10m"
+          max-file: "3"
+      # .env 파일의 내용을 환경 변수로 컨테이너에 주입
+      env_file:
+        - .env
+      healthcheck:
+        test: [ "CMD", "curl", "-f", "http://localhost:8888/actuator/health" ]
+        interval: 5s
+        timeout: 3s
+        retries: 5
+        start_period: 20s
+      depends_on:
+        eureka-server:
+          condition: service_healthy
+      networks:
+        - promnet
+
+    betting-service:
+      image: ${ECR_REGISTRY}/betting-service:latest
+      environment:
+        EUREKA_DEFAULT_ZONE: ${EUREKA_DEFAULT_ZONE}
+        SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+        DB_USERNAME: ${DB_USERNAME}
+        DB_PASSWORD: ${DB_PASSWORD}
+        JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+        MAIL_USERNAME: ${MAIL_USERNAME}
+        MAIL_PASSWORD: ${MAIL_PASSWORD}
+        SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL}
+      cpus: "0.5"
+      logging:
+        driver: "json-file"
+        options:
+          max-size: "10m"
+          max-file: "3"
+      env_file:
+        - .env
+      depends_on:
+        config-server:
+          condition: service_healthy
+        eureka-server:
+          condition: service_started
+      networks:
+        - promnet
+
+    user-service:
+      image: ${ECR_REGISTRY}/user-service:latest
+      environment:
+        #유레카 호스트 설정
+        #EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+        EUREKA_DEFAULT_ZONE: ${EUREKA_DEFAULT_ZONE}
+        SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+        DB_USERNAME: ${DB_USERNAME}
+        DB_PASSWORD: ${DB_PASSWORD}
+        JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+        MAIL_USERNAME: ${MAIL_USERNAME}
+        MAIL_PASSWORD: ${MAIL_PASSWORD}
+        SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL}
+      cpus: "0.5"
+      logging:
+        driver: "json-file"
+        options:
+          max-size: "10m"
+          max-file: "3"
+      env_file:
+        - .env
+      depends_on:
+        eureka-server:
+          condition: service_started
+        config-server:
+          condition: service_healthy
+      networks:
+        - promnet
+
+    game-service:
+      image: ${ECR_REGISTRY}/game-service:latest
+      environment:
+        EUREKA_DEFAULT_ZONE: ${EUREKA_DEFAULT_ZONE}
+        SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+        DB_USERNAME: ${DB_USERNAME}
+        DB_PASSWORD: ${DB_PASSWORD}
+        JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+        MAIL_USERNAME: ${MAIL_USERNAME}
+        MAIL_PASSWORD: ${MAIL_PASSWORD}
+        SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL}
+      cpus: "0.4"
+      logging:
+        driver: "json-file"
+        options:
+          max-size: "10m"
+          max-file: "3"
+      # .env 파일의 내용을 환경 변수로 컨테이너에 주입
+      env_file:
+        - .env
+      depends_on:
+        eureka-server:
+          condition: service_started
+        config-server:
+          condition: service_healthy
+      networks:
+        - promnet
+
+    point-service:
+      image: ${ECR_REGISTRY}/point-service:latest
+      environment:
+        EUREKA_DEFAULT_ZONE: ${EUREKA_DEFAULT_ZONE}
+        SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+        DB_USERNAME: ${DB_USERNAME}
+        DB_PASSWORD: ${DB_PASSWORD}
+        JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+        MAIL_USERNAME: ${MAIL_USERNAME}
+        MAIL_PASSWORD: ${MAIL_PASSWORD}
+        SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL}
+      cpus: "0.4"
+      logging:
+        driver: "json-file"
+        options:
+          max-size: "10m"
+          max-file: "3"
+      env_file:
+        - .env
+      depends_on:
+        eureka-server:
+          condition: service_started
+        config-server:
+          condition: service_healthy
+      networks:
+        - promnet
+
+    api-gateway:
+      image: ${ECR_REGISTRY}/api-gateway:latest
+      ports:
+        - "8080:8080"
+      environment:
+        EUREKA_DEFAULT_ZONE: ${EUREKA_DEFAULT_ZONE}
+        SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+        JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      mem_limit: 512m
+      cpus: "0.5"
+      logging:
+        driver: "json-file"
+        options:
+          max-size: "10m"
+          max-file: "3"
+      env_file:
+        - .env
+      depends_on:
+        - config-server
+        - eureka-server
+        - betting-service
+        - user-service
+        - game-service
+        - point-service
+      networks:
+        - promnet
+
+  volumes:
+    redis_data:
+
+  networks:
+    promnet:
+      driver: bridge

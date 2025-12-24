@@ -1,0 +1,14 @@
+name: User Service Deploy
+
+on:
+  push:
+    paths:
+      - user-service/**
+    branches: [ main, dev, release ]
+
+jobs:
+  user-service:
+    uses: ./.github/workflows/deploy-template.yml
+    with:
+      service: user-service
+    secrets: inherit

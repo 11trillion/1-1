@@ -5,7 +5,7 @@ spring:
   application:
     name: game-service
   datasource:
-    url: jdbc:postgresql://postgres:5432/oneonone
+    url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver

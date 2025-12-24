@@ -1,0 +1,14 @@
+name: Game Service Deploy
+
+on:
+  push:
+    paths:
+      - game-service/**
+    branches: [ main, dev, release ]
+
+jobs:
+  game-service:
+    uses: ./.github/workflows/deploy-template.yml
+    with:
+      service: game-service
+    secrets: inherit

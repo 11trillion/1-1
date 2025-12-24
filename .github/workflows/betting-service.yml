@@ -1,0 +1,14 @@
+name: Betting Service Deploy
+
+on:
+  push:
+    paths:
+      - betting-service/**
+    branches: [ main, dev, release ]
+
+jobs:
+  betting-service:
+    uses: ./.github/workflows/deploy-template.yml
+    with:
+      service: betting-service
+    secrets: inherit

@@ -90,7 +90,7 @@ public class UserController {
     )
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponse>> login(
-            @Parameter(description = "로그인 요청 정보", required = true)
+            @Parameter(description = "로그인 정보", required = true)
             @Valid @RequestBody LoginRequest request) {
         LoginCommand command = new LoginCommand(
                 request.username(),

@@ -166,7 +166,6 @@ public class Point extends BaseEntity {
         }
     }
 
-    // todo: 이부분이 없어져야할수도 있음. 그러면 update api부분은 어떻게 처리할 것인가?
     public void changeStatus(PointStatus newStatus) {
         if (this.status == PointStatus.SUCCESS) {
             throw new BusinessException(PointErrorCode.STATUS_CANNOT_CHANGE);

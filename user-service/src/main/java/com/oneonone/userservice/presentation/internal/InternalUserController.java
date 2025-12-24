@@ -54,7 +54,7 @@ public class InternalUserController {
         }
 
         UpdateBalanceCommand command = new UpdateBalanceCommand(
-                request.sagaId(),        // TODO: sagaId는 호출하는 쪽 (Betting Service)가 관리하도록 수정
+                request.sagaId(),
                 request.amount(),
                 request.type(),
                 UUID.randomUUID(),       // eventId는 여기서 생성

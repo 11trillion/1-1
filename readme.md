@@ -1,526 +1,588 @@
-# 🍀️ 1:1 🍀🍀
+## 🏁경기 예측 프로그램 1:1 ! 🏁
 
-<br>
+![스크린샷 2025-12-23 오후 4.22.10.png](attachment:8fced9d5-a7e0-45a5-83cd-d88839139d47:스크린샷_2025-12-23_오후_4.22.10.png)
 
-## ❇️ [프로젝트 개요](https://github.com/LuckyVickyLogistics/backend-v1/tree/develop?tab=readme-ov-file)
-#### B2B 물류 관리 및 배송 시스템을 위한 MSA 기반 플랫폼
+## 서비스/프로젝트 소개
+
+<aside>
+💡
+
+**경기의 결과를 맞히면 배당금을 받는 MSA 기반 스포츠 승률 예측 시스템**
+
+</aside>
+
+## 서비스/프로젝트 목표
+
+- **실시간 스포츠 베팅 서비스 아키텍처 설계**
+실시간 경기 환경에서 사용자가 베팅하고, 경기 종료 시 결과에 따라 포인트가 자동으로 정산되는 흐름을 안정적으로 설계
+- **대규모 동시 접속 환경에서도 정합성이 보장되는 구조**
+다수 사용자의 동시 베팅 상황을 가정해 포인트 잔액과 베팅 내역의 정합성이 깨지지 않도록 동시성 제어 구조를 설계
+- **포인트 정산 내역의 투명성을 확보한 이벤트 추적 구조**
+Outbox 패턴을 적용하여 포인트 정산 과정에서 발생하는 금액 흐름을 이벤트 단위로 추적 가능하도록 구현
+- **트래픽 집중 구간에 대한 DB 락 전략 및 성능 검증**
+동시성 제어가 필요한 핵심 구간에 DB 락 전략을 적용하고, 부하 테스트를 통해 성능과 정합성을 비교·검증
+- **성능 검증 결과를 반영한 안정적인 서비스 구조**
+부하 테스트 결과를 기반으로 성능 저하 없이 안정적으로 동작하는 구조로 설계를 개선 및 반영
+- **도메인 책임 분리를 고려한 MSA 적용**
+- **서비스 운영을 고려한 모니터링 및 분산 추적 환경 구성**
+Prometheus, Grafana 기반의 모니터링과 분산 추적을 통해 서비스 상태를 실시간으로 가시화
+- **이상 징후에 대한 실시간 알림 시스템 설계**
+서버 부하 증가 및 장애 징후 발생 시 외부 메신저를 통해 즉각적으로 알림을 받을 수 있는 구조를 설계
+
+## 인프라 설계도
+
+<img width="800" height="800" alt="image" src="https://github.com/user-attachments/assets/06c70486-fcd5-42d9-8680-8e158a1aeed0" />
+
+
+<img width="800" height="600" alt="image" src="https://github.com/user-attachments/assets/7b291631-57f2-45d1-8f61-1888d824f6d8" />
+
+## 주요 기능
+
 <details>
-<summary>[ERD]</summary>
-
+  <summary> 공통 (Common)</summary>
+  
+- **도메인별 예외 및 오류 처리 구조 설계**
+    - 공통 에러 추상화 후 도메인별 예외 및 에러 코드를 분리하여 장애 발생 시 원인 식별이 용이하도록 구성
+- **JWT 기반 인증·인가 공통 필터 적용**
+    - User 서비스에서 발급한 토큰이 존재해야 API 접근이 가능하도록 제한
+    - 시나리오 기반 테스트를 통해 인증·인가 흐름 검증
+- **Kafka & OpenFeign 기반 MSA 통신 구조**
+    - 이벤트 기반 비동기 통신(Kafka)과 동기 호출(OpenFeign)을 혼합해 서비스 간 결합도 최소화
 
 </details>
-[API 명세서]
-
-## 서비스 구성 및 실행방법!
-```
-프로젝트 파일에서 
-cd infra
-docker compose up -d 실행 (db 및 docker 세팅 완료)
-eureka-server 먼저 실행 후 다른 서비스 실행
-```
-
-## 👨‍👩‍👧‍👦 팀원 소개
-| 이름                         | 프로필 | 담당 역할                                                                                                            |
-|----------------------------| --- |------------------------------------------------------------------------------------------------------------------|
-| [김진현](https://github.com/) | <img src="https://github.com/user-attachments/assets/96c5ca6f-c366-49d6-9756-7c0939cbed92" width="120" /> | `경기`<br>경기 CRUD 기능 구현<br>상품 상태 실시간 확인 및 재고 변경 로직 개발<br>`주문`<br>주문 RUD 개발<br>`공통`<br>각 서비스 권한별 분기 처리              |
-| [권용은](https://github.com/) | <img src="https://github.com/user-attachments/assets/b4584ff5-1479-44c4-8f6d-d3e94e9aba44" width="120" />  | `포인트`<br>업체 CRUD 기능 구현<br> `Gateway`<br>gateWay 세팅<br> `공통` <br>프로젝트의 전반 공통 기능들을 common 으로 마이그레이션 하며 기타 오류 처리<br> |
-| [최은서](https://github.com/) | <img src="https://github.com/user-attachments/assets/b97a3423-1711-4175-a44e-55d74128ce69" width="120" />  | `사용자`<br>메세지 발송,목록 조회, 상태 수정, 삭제 구현<br> `AI`<br>Gemini를 사용해 프롬프트 CRUD 기능 구현 <br>`주문`<br>주문 C 개발 + Kafka 처리<br>   |
-| [김주영](https://github.com/) | <img src="https://github.com/user-attachments/assets/26eefb33-ed31-44d1-97ba-37e58311f492" width="120" /> | `베팅`<br>회원가입 및 로그인 처리, 회원 관리 기능 개발 <br>`인증/인가`<br>JWT 인증 구현<br>                                                  |
-## 🚀 기술 스택
-
-Category | Stack
---- | --- |
-Language | ![Java](https://img.shields.io/badge/java%2017-007396?style=for-the-badge&logo=java&logoColor=white)
-IDE | ![intellij-idea](https://img.shields.io/badge/intellij%20idea-000000?style=for-the-badge&logo=intellijidea&logoColor=white) 
-Framework | ![Spring Boot](https://img.shields.io/badge/Spring%20Boot%203.5.7-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)
-Build Tool | ![gradle](https://img.shields.io/badge/gradle-02303A?style=for-the-badge&logo=gradle&logoColor=white)
-Database | ![PostgreSQL](https://img.shields.io/badge/postgresql-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
-Library | ![Spring Security](https://img.shields.io/badge/spring%20security-6DB33F?style=for-the-badge&logo=springsecurity&logoColor=white) ![JPA](https://img.shields.io/badge/JPA-6DB33F?style=for-the-badge) ![Spring Cloud](https://img.shields.io/badge/spring%20cloud-6DB33F?style=for-the-badge&logo=spring&logoColor=white) ![Spring Cloud Gateway](https://img.shields.io/badge/spring%20cloud%20gateway-6DB33F?style=for-the-badge&logo=spring&logoColor=white) ![Eureka](https://img.shields.io/badge/eureka-6DB33F?style=for-the-badge&logo=spring&logoColor=white)
-API | ![Swagger](https://img.shields.io/badge/swagger-85EA2D?style=for-the-badge&logo=swagger&logoColor=black) ![Google Gemini](https://img.shields.io/badge/google%20gemini-8E75B2?style=for-the-badge&logo=googlegemini&logoColor=white) ![RestClient](https://img.shields.io/badge/RestClient-007396?style=for-the-badge)
-DevOps | ![Docker](https://img.shields.io/badge/docker-2496ED?style=for-the-badge&logo=docker&logoColor=white) ![Redis](https://img.shields.io/badge/redis-DC382D?style=for-the-badge&logo=redis&logoColor=white) ![Kafka](https://img.shields.io/badge/apache%20kafka-231F20?style=for-the-badge&logo=apachekafka&logoColor=white)
-Tools | ![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=GitHub&logoColor=white) ![git](https://img.shields.io/badge/git-F05032?style=for-the-badge&logo=git&logoColor=white) ![slack](https://img.shields.io/badge/slack-4A154B?style=for-the-badge&logo=slack&logoColor=white) ![notion](https://img.shields.io/badge/notion-000000?style=for-the-badge&logo=notion&logoColor=white) ![discord](https://img.shields.io/badge/discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)
-
 <details>
-<summary><strong>📣기술 & 라이브러리 선정 이유</strong></summary>
-<div markdown="1">   
-  <br/>
-  <details>
-  <summary><strong> 1️⃣ Spring Boot 3.5.7</strong></summary>
-    <div markdown="1"> 
-
-    1. 자동 설정 기능으로 개발 생산성이 높으며 설정 부담이 적다는 장점이 있습니다.
-    2. 스타터 패키지 제공으로 의존성 관리가 간편합니다.
-    3. 내장 Tomcat 서버를 제공하여 별도의 WAS 설정 없이 바로 실행 가능합니다.
-    4. 최신 버전으로 보안 패치와 성능 개선이 반영되어 있습니다.
-    5. 3.x 버전은 현대적 아키텍쳐와의 호환성이 높다는 장점이 있습니다.
-
-  </details> 
-
-  <details>
-  <summary><strong> 2️⃣ PostgreSQL</strong></summary>
-    <div markdown="1">     
-
-    1. 무료로 제공되는 오픈소스 RDBMS입니다.
-    2. 안정성과 확장성이 뛰어나며 대규모 환경에서도 안정적으로 동작합니다.
-    3. JSON 타입 지원 등 다양한 데이터 타입을 제공합니다.
-    4. ACID 특성을 완벽하게 지원하여 데이터 무결성을 보장합니다.
-    5. 대규모 트랜잭션 처리 및 복잡한 쿼리 처리에 강하다는 장점이 있습니다.
-
-  </details> 
-
-  <details>
-  <summary><strong> 3️⃣ JWT & Spring Security</strong></summary>
-    <div markdown="1">     
-
-    1. 서버 상태를 저장하지 않는 Stateless한 인증 방식으로 확장성이 좋습니다.
-    2. Spring Security와의 완벽한 통합으로 보안 구현이 용이합니다.
-    3. 토큰 기반 인증으로 세션 관리 부담이 없습니다. 즉, 서버의 부담이 적습니다.
-    4. 역할 기반 접근 제어(RBAC)를 쉽게 구현할 수 있습니다.
-    5. MSA 구조에서 서비스 간의 인증과 인가 적용에 유리합니다.
-
-  </details> 
-
-  <details>
-  <summary><strong> 4️⃣ Docker</strong></summary>
-    <div markdown="1">
-
-    1. Docker파일을 기반으로 팀원 모두가 동일한 개발 환경을 쉽게 구성할 수 있으며,
-       환경 차이로 인한 오류를 방지 할 수 있습니다. (개발 환경과 운영 환경의 일관성 유지)
-    2. 각 MSA 서비스는 독립된 컨테이너에서 실행되어 시스템 간의 간섭 없이 안정적으로 테스트 가능합니다.
-    3. 이미지 기반의 배포 방식이기 때문에 일관되고 빠른 배포가 가능합니다.
-    4. 마이크로서비스 아키텍처로의 확장이 용이합니다.
-     -> 서비스 단위로 배포, 스케일링이 용이합니다.
-    5. 추후 CI/CD 파이프라인과 연동해 자동화된 배포 환경을 구축 가능합니다.
-
-  </details> 
-
-  <details>
-  <summary><strong> 5️⃣ Redis </strong></summary>
-    <div markdown="1">     
-
-    1. Redis는 인메모리 기반으로 매우 빠른 읽기 및 쓰기 성능을 제공합니다
-    2. MSA 환경에서 트래픽 분산 및 응답 속도 개선, lock을 통한 동시성 제어가 가능합니다.
-    3. TTL 기능으로 데이터 만료 처리가 간편합니다.
-
-  </details> 
-
-  <details>
-  <summary><strong> 6️⃣ RestClient</strong></summary>
-    <div markdown="1">     
-
-    1. RestTemplate의 후속 버전으로 더 나은 성능과 유지보수성을 제공합니다.
-    2. 동기 방식으로 구현이 간단하고 직관적입니다.
-    3. 예외 처리가 명확해 안정적인 API 호출을 구성할 수 있습니다.
-    4. 현재 프로젝트 규모에서는 비동기보다 동기 방식이 더 적합합니다.
-    5. 외부 API나 MSA 간 서비스 호출 시 코드의 가독성이 더 좋습니다.
-
-  </details> 
-
-  <details>
-  <summary><strong> 7️⃣ Google Gemini API</strong></summary>
-    <div markdown="1">
-
-    1. Java/Spring 환경에서도 손쉽게 연동할 수 있습니다
-    2. 자연스러운 한국어 생성이 가능합니다.
-    3. API 호출이 간단하여 빠르게 통합할 수 있습니다.
-    4. 무료 티어로 프로젝트 테스트가 가능합니다.
-    5. 텍스트 요약, 분류, 문장 생성 등 다양한 기능을 활용할 수 있습니다.
-
-  </details> 
-
-  <details>
-  <summary><strong> 8️⃣ eureka + gateway</strong></summary>  
-  <div markdown="1">     
-
-    1. Eureka는 서비스 관련 기능을 제공해 MSA 환경에서 서비스 위치를 자동으로 관리할 수 있습니다.
-    2. Eureka Server를 먼저 실행해 각 마이크로서비스(Product, Order, Company, Hub 등)가 자동으로 등록되도록 구성했습니다.
-    3. 서비스들이 Eureka에 등록되면 Gateway가 해당 정보를 기반으로 자동 라우팅을 수행하기 때문에, 별도의 수동 설정 없이 서비스 추가·변경을 처리할 수 있습니다.
-    4. 서비스 간 결합도를 낮추고, 각각의 서비스가 독립적으로 배포·확장될 수 있어 MSA 환경에서 유연한 확장성을 확보할 수 있습니다.
-
-  </details> 
-
-  <details>
-  <summary><strong> 9️⃣ Kafka </strong></summary>  
-  <div markdown="1">     
-
-    1.실시간 스트림 처리 구조를 구성하여 재고 동기화, 주문 상태 업데이트, 알림 기능 등을 효율적으로 구현할 수 있습니다.
-    2.Kafka는 대용량 실시간 데이터 처리에 강해 주문 생성, 재고 변경, 배송 상태 변경 등 이벤트 기반 처리에 적합합니다.
-    3.MSA 환경에서 서비스 간 직접적인 의존성을 줄이고, 비동기 이벤트 기반 통신을 가능하게 하여 시스템 결합도를 낮춥니다.
-
-  </details> 
-
-</div>
-</details>
-</br>
-
-## 📁 아키텍처
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/9bd325e8-17b6-488a-9184-016444e5c9a1" width="500" />
-</p>
-
-```
-럭키비키로지스틱스 아키텍처는 다음과 같이 구성됩니다:
-- **Microservices Architecture(MSA)** 기반 설계
-- **Aggregate** 단위로 각 서비스 분리
-- Eureka Sever에 각 서비스를 등록하고 **Gateway**를 통해 서버 간 통신
--  Docker 컨테이너화로 일관된 실행 환경 제공
-```
-
-<br>
-
-
-### 테이블 구조 (총 13개)
-<details>
-<summary><strong>서비스별 상세 테이블 구조</strong></summary>
-
-#### 👤 User (1개)
-- `p_user`
-
-  | 컬럼명              | 데이터 타입        | 제약 조건                  |
-      |--------------------|-----------------|---------------------------|
-  | user_id            | bigint          | PK, NOT NULL              |
-  | identifier         | uuid            | UNIQUE, NOT NULL          |
-  | organization_type  | varchar(255)    |                           |
-  | password           | varchar(255)    | NOT NULL                  |
-  | role               | varchar(255)    | NOT NULL                  |
-  | slack_id           | varchar(255)    | NOT NULL                  |
-  | status             | varchar(255)    |                           |
-  | username           | varchar(100)    | UNIQUE, NOT NULL          |
-  | created_at         | timestamp(6)    |                           |
-  | created_by         | varchar(100)    |                           |
-  | updated_at         | timestamp(6)    |                           |
-  | updated_by         | varchar(100)    |                           |
-  | deleted_at         | timestamp(6)    |                           |
-  | deleted_by         | varchar(100)    |                           |
-
-
-#### 🏪 Hub (3개)
-- `p_hub`
-
-  | 컬럼명              | 데이터 타입        | 제약 조건                  |
-      |--------------------|-----------------|---------------------------|
-  | user_id            | bigint          | PK, NOT NULL              |
-  | identifier         | uuid            | UNIQUE, NOT NULL          |
-  | organization_type  | varchar(255)    |                           |
-  | password           | varchar(255)    | NOT NULL                  |
-  | role               | varchar(255)    | NOT NULL                  |
-  | slack_id           | varchar(255)    | NOT NULL                  |
-  | status             | varchar(255)    |                           |
-  | username           | varchar(100)    | UNIQUE, NOT NULL          |
-  | created_at         | timestamp(6)    |                           |
-  | created_by         | varchar(100)    |                           |
-  | updated_at         | timestamp(6)    |                           |
-  | updated_by         | varchar(100)    |                           |
-  | deleted_at         | timestamp(6)    |                           |
-  | deleted_by         | varchar(100)    |                           |
-
-- `p_hub_manager`
-
-  | 컬럼명          | 데이터 타입     | 제약 조건        |
-      |----------------|----------------|----------------|
-  | hub_manager_id  | uuid           | PK, NOT NULL   |
-  | user_id         | bigint         | NOT NULL       |
-  | hub_id          | uuid           | NOT NULL       |
-  | is_deleted      | boolean        |                |
-  | name            | varchar(255)   |                |
-  | slack_id        | varchar(255)   |                |
-  | created_at      | timestamp      | NOT NULL       |
-  | created_by      | bigint         |                |
-  | updated_at      | timestamp      |                |
-  | updated_by      | bigint         |                |
-  | deleted_at      | timestamp      |                |
-  | deleted_by      | bigint         |                |
-
-- `p_hub_route`
-
-  | 컬럼명       | 데이터 타입       | 제약 조건        |
-      |-------------|-----------------|----------------|
-  | route_id    | uuid            | PK, NOT NULL   |
-  | distance    | doubleprecision | NOT NULL       |
-  | time        | integer         | NOT NULL       |
-  | from_hub_id | uuid            | NOT NULL       |
-  | to_hub_id   | uuid            | NOT NULL       |
-  | is_deleted  | boolean         |                |
-  | created_at  | timestamp       | NOT NULL       |
-  | created_by  | bigint          |                |
-  | updated_at  | timestamp       |                |
-  | updated_by  | bigint          |                |
-  | deleted_at  | timestamp       |                |
-  | deleted_by  | bigint          |                |
-
-#### 🛒 Product (1개)
-- `p_products`
-
-  | 컬럼명                 | 데이터 타입     | 제약 조건        |
-      |-----------------------|----------------|----------------|
-  | product_id            | uuid           | PK, NOT NULL   |
-  | company_id            | uuid           | NOT NULL       |
-  | hub_id                | uuid           | NOT NULL       |
-  | price                 | integer        | NOT NULL       |
-  | product_name          | varchar(255)   | NOT NULL       |
-  | product_quantity      | integer        | NOT NULL       |
-  | p_status              | varchar(255)   | NOT NULL       |
-  | product_total_quantity| integer        | NOT NULL       |
-  | created_by            | varchar(255)   |                |
-  | updated_by            | varchar(255)   |                |
-  | deleted_by            | varchar(255)   |                |
-  | created_at            | timestamp      | NOT NULL       |
-  | updated_at            | timestamp      |                |
-  | deleted_at            | timestamp      |                |
-
-
-#### 🎁 Order (1개)
-- `p_orders`
-
-  | 컬럼명            | 데이터 타입     | 제약 조건        |
-      |------------------|----------------|----------------|
-  | order_id         | uuid           | PK, NOT NULL   |
-  | quantity         | integer        | NOT NULL       |
-  | customer_id      | uuid           | NOT NULL       |
-  | delivery_id      | uuid           |                |
-  | product_id       | uuid           | NOT NULL       |
-  | supplier_id      | uuid           | NOT NULL       |
-  | delivery_address | varchar(255)   | NOT NULL       |
-  | request          | varchar(255)   | NOT NULL       |
-  | status           | varchar(255)   | NOT NULL       |
-  | created_by       | varchar(255)   |                |
-  | updated_by       | varchar(255)   |                |
-  | deleted_by       | varchar(255)   |                |
-  | created_at       | timestamp      | NOT NULL       |
-  | updated_at       | timestamp      |                |
-
-#### 📦 Delivery (3개)
-- `p_delivery`
-
-  | 컬럼명                     | 데이터 타입     | 제약 조건        |
-      |----------------------------|----------------|----------------|
-  | delivery_id                | uuid           | PK, NOT NULL   |
-  | arrival_hub_id             | uuid           | NOT NULL       |
-  | delivery_address           | varchar(500)   | NOT NULL       |
-  | departure_hub_id           | uuid           | NOT NULL       |
-  | order_id                   | uuid           | NOT NULL       |
-  | recipient_name             | varchar(100)   | NOT NULL       |
-  | recipient_slack_id         | varchar(100)   | NOT NULL       |
-  | status                     | varchar(20)    | NOT NULL       |
-  | company_delivery_manager_id| bigint         | NOT NULL       |
-  | created_at                 | timestamp      | NOT NULL       |
-  | created_by                 | bigint         |                |
-  | updated_at                 | timestamp      |                |
-  | updated_by                 | bigint         |                |
-  | deleted_at                 | timestamp      |                |
-  | deleted_by                 | bigint         |                |
-
-- `p_delivery_manager`
-
-  | 컬럼명              | 데이터 타입     | 제약 조건        |
-      |--------------------|----------------|----------------|
-  | delivery_manager_id| bigint         | PK, NOT NULL   |
-  | delivery_sequence  | integer        | NOT NULL       |
-  | hub_id             | varchar(255)   |                |
-  | slack_id           | varchar(100)   | NOT NULL       |
-  | type               | varchar(20)    | NOT NULL       |
-  | end_time           | time           | NOT NULL       |
-  | start_time         | time           | NOT NULL       |
-  | created_at         | timestamp      | NOT NULL       |
-  | created_by         | bigint         |                |
-  | updated_at         | timestamp      |                |
-  | updated_by         | bigint         |                |
-  | deleted_at         | timestamp      |                |
-  | deleted_by         | bigint         |                |
-
-- `p_delivery_route`
-
-  | 컬럼명               | 데이터 타입      | 제약 조건        |
-      |---------------------|-----------------|----------------|
-  | delivery_route_id   | uuid            | PK, NOT NULL   |
-  | actual_distance     | numeric(10,2)   |                |
-  | actual_duration     | integer         |                |
-  | arrival_hub_id      | uuid            | NOT NULL       |
-  | delivery_id         | uuid            | NOT NULL       |
-  | departure_hub_id    | uuid            | NOT NULL       |
-  | estimated_distance  | numeric(10,2)   | NOT NULL       |
-  | estimated_duration  | integer         | NOT NULL       |
-  | sequence            | integer         | NOT NULL       |
-  | status              | varchar(20)     | NOT NULL       |
-  | hub_delivery_manager_id | bigint      | NOT NULL       |
-  | created_at          | timestamp       | NOT NULL       |
-  | created_by          | bigint          |                |
-  | updated_at          | timestamp       |                |
-  | updated_by          | bigint          |                |
-  | deleted_at          | timestamp       |                |
-  | deleted_by          | bigint          |                |
-
-#### 🕊 Company (2개)
-- `p_company`
-
-  | 컬럼명       | 데이터 타입 | 제약 조건        |
-      |-------------|------------|----------------|
-  | company_id  | uuid       | PK, NOT NULL   |
-  | hub_id      | uuid       | NOT NULL       |
-  | name        | varchar    | NOT NULL       |
-  | address     | varchar    | NOT NULL       |
-  | type        | varchar    | NOT NULL       |
-  | created_at  | timestamp  | NOT NULL       |
-  | created_by  | bigint     | NOT NULL       |
-  | updated_at  | timestamp  |                |
-  | updated_by  | bigint     |                |
-  | deleted_at  | timestamp  |                |
-  | deleted_by  | bigint     |                |
-
-- `p_company_manager`
-
-  | 컬럼명      | 데이터 타입 | 제약 조건        |
-      |------------|------------|----------------|
-  | manager_id | uuid       | PK, NOT NULL   |
-  | user_id    | bigint     | NOT NULL       |
-  | company_id | uuid       | NOT NULL       |
-  | created_at | timestamp  | NOT NULL       |
-  | created_by | bigint     | NOT NULL       |
-  | updated_at | timestamp  |                |
-  | updated_by | bigint     |                |
-  | deleted_at | timestamp  |                |
-  | deleted_by | bigint     |                |
-
-#### 🤖 AI (1개)
-- `p_ai_prompt`
-
-  | 컬럼명            | 데이터 타입  | 제약 조건      |
-      |------------------|--------------|----------------|
-  | ai_prompt_id     | uuid         | PK, NOT NULL   |
-  | request_content  | text         | NOT NULL       |
-  | status           | varchar(255) | NOT NULL       |
-  | created_at       | timestamp    |                |
-  | created_by       | bigint       |                |
-  | updated_at       | timestamp    |                |
-  | updated_by       | bigint       |                |
-  | deleted_at       | timestamp    |                |
-  | deleted_by       | bigint       |                |
-  | response_content | timestamp    |                |
-
-#### 🕊 SLACK (1개)
-- `p_slack_message`
-
-  | 컬럼명          | 데이터 타입  | 제약 조건      |
-      |----------------|--------------|----------------|
-  | slack_message_id | uuid         | PK, NOT NULL   |
-  | content          | text         | NOT NULL       |
-  | receiver_email   | varchar(255) | NOT NULL       |
-  | status           | varchar(255) | NOT NULL       |
-  | created_at       | timestamp    |                |
-  | created_by       | bigint       |                |
-  | updated_at       | timestamp    |                |
-  | updated_by       | bigint       |                |
-  | deleted_at       | timestamp    |                |
-  | deleted_by       | bigint       |                |
-
+  <summary> User (사용자) - 회원 및 포인트 잔액 관리</summary>
+  
+- **회원가입·로그인·로그아웃 및 JWT 인증 흐름 구현**
+    - Access / Refresh 토큰 발급 및 RTR(Refresh Token Rotation) 적용으로 토큰 탈취 시 재사용 방지
+    - 로그아웃 시 Redis Blacklist를 적용해 기존 토큰 즉시 무효화
+- **이메일 인증 기반 회원가입**
+    - 회원가입 과정에서 이메일 인증 절차를 도입해 계정 신뢰성 강화
+- **사용자 및 관리자 권한별 기능 분리**
+    - 사용자 정보 조회·수정·탈퇴 기능과 관리자에 의한 특정 사용자 포인트 및 정보 수정 기능을 분리 구현
 
 </details>
-
-<br>
-
-
-### 도메인 구성
-```
-✅ Gateway : 헤더의 토큰 파싱 후 인가 처리
-✅ User: 회원 관리, JWT 기반 액세스 토큰, 리프레시 토큰을 통한 인증 처리
-✅ Hub: 허브 관리, 각 허브 간 경로 관리, 허브 관리자 관리
-✅ Product: 상품 관리
-✅ Order: 주문 관리, 배송 생성 요청
-✅ Delivery : 배송 관리, 배송 경로 관리, 배송 담당자 관리
-✅ Company : 업체 관리
-✅ AI: Google Gemini API를 활용한 최종 발송 시한 계산
-✅ Slack: Slack API를 활용한 개별 다이렉트 메시지 발송
-```
-
-<br>
-
-##  🛠 주요 기능
-```
-👨‍👩‍👧 유저: 로그인, 회원가입, JWT 인증, 권한 관리
-🏪 허브: 허브 생성/조회/관리, 허브관리자 생성, 허브 경로 관리
-🍱 업체: 업체 생성/조회/관리, 업체담당자 생성/조회
-🛒 상품: 상품 생성/조회, 상품 정보 및 재고 관리
-🎁 주문: 주문 생성/조회, 주문 상태 관리
-📦 배송: 배송 생성/조회/관리, 배송담당자 생성/조회/관리, 배송 경로 조회/관리
-💳 AI : 프롬프트 생성/조회/관리
-⭐ SLACK: 메세지 조회/관리, 워크스페이스 참가여부 확인
-```
 <details>
-  <summary><strong>1️⃣ 사용자 및 JWT 인증/인가</strong></summary>
-
-- ✅ Spring Security와 JWT를 활용한 Stateless 인증
-- ✅ 토큰 기반 인증으로 확장성 확보
-- ✅ 로그인 및 기본 회원가입 기능 제공
+  <summary> Game (경기) - 경기 일정 및 상태 관리</summary>
+  
+- **경기 생성·수정·삭제·조회 기능**
+    - 경기 일정 및 팀 정보를 관리
+    - 경기 단건/전체 조회 API 제공
+- **경기 종료 시 동시성 제어 및 이벤트 중복 방지**
+    - 경기 상태를 `END`로 변경하는 시점에 비관적 락 적용 → 중복 종료 및 중복 이벤트 발행 방지
+    - 부하 테스트로 동시 종료 시에도 단일 이벤트 발행 검증
+- **경기 종료 이벤트 기반 정산 흐름 연결**
+    - 경기 종료 시 Kafka 이벤트를 발행 → Bet 도메인의 포인트 정산 프로세스로 연계
+- **CQRS 기반 조회 성능 최적화**
+    - 조회 트래픽을 분리
+    - JMeter를 활용한 단건·전체 조회 성능 비교 및 검증 후 적용
 
 </details>
 
 <details>
-  <summary><strong>2️⃣ 허브</strong></summary>
-
-- ✅ 허브 생성 및 조회
-- ✅ 다익스트라 알고리즘을 통한 허브 경로 플랜 구현
-- ✅ 허브 담당자 배정 및 조회
-- ✅ 허브 및 허브 담당자 관리
-
+  <summary> Bet (베팅) - 베팅 내역 및 결과 관리</summary>
+  
+  - **동시 베팅 환경을 고려한 Redis 사전 처리 구조**
+    - 경기 시작 직전 동시 요청이 집중되는 구간에서 베팅 요청을 Redis에 먼저 저장
+    - 경기 결과 수신 시 확정 데이터만 DB에 반영
+- **Redis 적용 효과 검증**
+    - Redis 적용 전·후를 비교해 동시 베팅 시나리오에서 p95, p99 응답 지연 감소 및 DB 락·트랜잭션 부하 분산 효과 검증
+- **다양한 조회 방식 제공**
+    - 게임별, 사용자별, 단건 조회로 베팅 조회 API를 세분화
+- **Kafka 기반 이벤트 중심 도메인 연계**
+    - 배팅 도메인이 Kafka 이벤트를 통해 MSA 내 다른 도메인과 상호작용하도록 구성
 </details>
 
 <details>
-  <summary><strong>3️⃣ 업체</strong></summary>
-
-- ✅ 업체 생성 및 상세 조회/검색 기능
-- ✅ 업체 상태 관리 기능 제공
-- ✅ 업체 담당자 생성
-- ✅ RoleValidator 를 통한 인가처리
-
+  <summary> Point (포인트) – 트랜잭션 이력 및 정합성 관리</summary>
+  
+- **포인트 Ledger 기반 이력 관리**
+    - 사용자 포인트 생성, 조회, 상태 변경을 트랜잭션 단위로 기록
+- **Outbox 패턴을 활용한 포인트 정산 추적**
+    - 포인트 처리 내역을 Outbox에 저장해 이벤트 유실 없이 추적 가능하도록 구현
+- **Saga 패턴 기반 보상 트랜잭션 설계**
+    - Kafka 또는 내부 오류로 포인트 처리 실패 시 User, Bet 서비스와 통신해 보상 트랜잭션 수행
+    - 실패·재시도 시나리오에서도 포인트 정합성이 유지되는지 검증
+- **비관적 락 기반 포인트 동시성 제어**
+    - 포인트 관련 모든 트랜잭션에 비관적 락을 적용해 중복 처리 및 정합성 문제를 방지
 </details>
 
-<details>
-  <summary><strong>4️⃣ 상품</strong></summary>
 
-- ✅ 검색 기능
-- ✅ 상품 생성 및 정보 관리
-- ✅ 재고 관리 기능
+## 적용 기술
 
-</details>
+| **Backend** | Spring Boot, Java 17 |
+| --- | --- |
+| **Database** | PostgreSQL(RDS), Redis |
+| **Messaging & Communication** | Kafka, OpenFeign |
+| **Deploy** | Docker, Docker Compose, EC2, ECR |
+| **Monitoring** | Prometheus, Grafana |
+| **Load Test** | JMeter |
 
-<details>
-  <summary><strong>5️⃣ 주문</strong></summary>
+**Backend**
 
-- ✅ 주문 생성 및 상태 관리
-- ✅ 주문에 따른 이벤트 발행(to 상품, 주문, 허브 도메인)
-- ✅ 주문 조회(단건, 내역) 기능
+**: Spring Boot (Java)**
 
-</details>
+- 동시성이 높은 트랜잭션 처리를 안정적으로 구현하기 위해 사용
 
-<details>
-  <summary><strong>6️⃣ 배송</strong></summary>
+ 
 
-- ✅ 배송 생성 및 조회와 상태 관리
-- ✅ 배송에 따른 담당자 할당 및 관련 데이터 조회/관리 기능 제공
-- ✅ 배송 경로 조회 및 관리
-- ✅ 생성·상태 변경 로그 관리
-- ✅ 배송 시퀀스 및 경로 관리
+**Database**
 
-</details>
+**: PostgreSQL (트랜잭션 기록)**
 
-<details>
-  <summary><strong>7️⃣ AI</strong></summary>
+- 전체 데이터베이스로 사용
+- 베팅 내역 및 포인트 내역 등 정합성이 중요한 데이터를 ACID 원칙을 기반으로 트랜잭션 단위로 관리
 
-- ✅ Google Gemini API 연동
-- ✅ AI 호출 로그 저장
-- ✅ 프롬프트 생성 및 조회
-- ✅ 프롬프트 상태 로그 관리
+**Cache & Concurrency**
 
-</details>
+**: Redis** 
 
-<details>
-  <summary><strong>8️⃣ Slack</strong></summary>
+- 동시 요청이 집중되는 배팅 처리 구간에서 쓰기 트래픽을 흡수
+- 토큰 블랙리스트 및 세션 관리에 활용
 
-- ✅ Slack API 연동
-- ✅ 메시지 조회
-- ✅ 메시지 발송 상태 관리
-- ✅ 워크스페이스 참가 여부 체크
+**: DB Lock (Pessimistic, Optimistic)**
 
-</details>
+- 도메인 특성에 따라 비관적 락과 낙관적 락을 선택적으로 적용해 동시성 문제 제어
 
-<br>
+**Messaging & Communication**
+
+ **: Kafka** 
+
+- 서비스 간 이벤트 기반 비동기 통신을 위한 메시지 브로커로 사용
+
+**: OpenFeign**
+
+- 사용자 정보 조회 등 즉각적인 응답이 필요한 경우 서비스 간 동기 통신에 활용
+
+**Architecture & Deployment & Design**
+
+**: Docker** 
+
+- 모든 서비스를 컨테이너 단위로 구성해 개발 및 배포 환경을 통일
+
+**: Eureka / Spring Cloud Gateway**
+
+- 서비스 디스커버리와 단일 진입점을 구성해 MSA 환경을 관리
+
+**: DDD(Domain-Driven Design, 도메인 주도 설계)**
+
+- User, Game, Bet, Point를 각각 독립 도메인으로 분리해 설계
+- 도메인 규칙(상태 전이, 정산 조건, 포인트 처리)을 도메인 계층에서 일관되게 관리
+- 정합성이 중요한 로직을 서비스나 컨트롤러에 분산시키지 않고, 도메인 모델 중심으로 검증과 상태 변경을 수행하도록 설계
+- 각 서비스는 Presentation – Application – Domain – Infrastructure 계층 구조로 구성
+
+**Testing & Monitoring**
+
+**: JMeter**
+
+- API 시나리오 기반 부하 테스트를 통해 성능과 정합성을 검증
+
+**Prometheus / Grafana / Zipkin**
+
+- 모니터링과 분산 추적을 통해 MSA 환경에서의 성능과 상태를 가시화
+
+**Slack 알림 연동**
+
+- 서버 부하 증가 및 이상 징후 발생 시 실시간 알림을 수신하도록 구성
+
+## 기술적 의사결정
+
+---
+
+### 베팅 처리 구간에 Redis 적용
+
+- 베팅 관련 CRUD는 경기 시작 직전 동시 요청과 트래픽이 집중되는 특성으로 인해, DB에 직접 쓰기 트래픽이 몰릴 경우 락 경합(Race Condition)과 지연 발생 가능성이 존재
+- 이를 해결하기 위해 배팅 요청을 Redis에 우선 저장하고, 경기 결과를 Kafka Listener로 수신하는 시점에 확정 데이터만 DB에 반영하는 구조를 선택
+- Redis 적용 전·후 부하 테스트를 통해 p99(Tail Latency) 지연 감소와 DB 트랜잭션 부하 분산 효과를 확인
+
+### **도메인별 락 전략 분리 적용**
+
+- 모든 영역에 동일한 락 전략을 적용할 경우 성능 저하 및 불필요한 구조적 복잡성 증가가 발생할 수 있다고 판단
+    - 경기 종료 및 포인트 정산처럼 단 한 번만 발생해야 하는 상태 전이 구간에는 비관적 락을 적용해 안정성을 우선
+    - 충돌 가능성이 상대적으로 낮은 영역에는 낙관적 락을 부분적으로 적용해 불필요한 락 경합을 최소화
+- 동시 요청 시나리오 테스트를 통해 각 락 전략의 응답 시간과 충돌 발생 여부를 비교하고, 도메인 특성에 맞는 최종 락 전략을 결정
+
+### Kafka 기반 정산 처리
+
+- 배팅 결과에 따른 포인트 정산은 즉시성보다 누락 없는 처리와 안정성이 더 중요하다고 판단
+- 경기 종료 시 Game 서비스에서 이벤트를 수신한 Betting 서비스가 Kafka 이벤트를 발행
+→ Point 서비스가 이를 소비해 정산을 처리하는 구조 선택
+- 해당 구조를 통해 서비스 간 결합도를 낮추고, 트래픽 집중 구간에서도 정산 처리를 분산
+- Saga 패턴을 적용해 트랜잭션 실패나 Kafka 오류 등 서비스 장애 발생 시 보상 흐름을 수행하도록 구성
+
+### MSA + Gateway 구조 선택
+
+- 각 도메인을 단일 서비스로 구성할 경우 확장성과 장애 격리 측면에서 한계가 존재한다고 판단
+- Eureka 기반 서비스 디스커버리와 Gateway를 도입해 서비스 위치에 대한 의존성 제거
+- 인증·라우팅·부하 분산을 중앙에서 관리하는 구조를 선택
+
+### DDD(Domain-Driven Design) 적용
+
+- 배팅 및 정산 도메인은 단순 CRUD가 아니라 경기 상태 전이(END), 배팅 가능 조건, 정산 규칙, 포인트 기록 등 도메인 규칙이 강하게 작동하는 영역
+    - 기능을 API 단위로 분리하기보다 User / Game / Bet / Point 도메인으로 경계를 명확히 구분
+    - 각 도메인이 책임져야 할 규칙을 도메인 계층에 고정해 정합성을 유지하기 쉬운 구조로 설계
+- 도메인 간 연계는 Kafka 이벤트와 Saga 기반 보상 흐름으로 구성해 결합도를 낮추고, 장애 발생 시에도 최종 정합성을 회복할 수 있도록 설계
+
+### Docker 기반 배포 환경
+
+- 분리된 MSA 환경에서는 개발·테스트·배포 환경 차이로 인한 오류를 최소화하는 것이 중요하다고 판단
+- Docker를 통해 모든 서비스를 컨테이너 단위로 구성해 환경 일관성을 유지하고, 서비스 단위로 독립적인 배포가 가능하도록 구성
+
+### PostgreSQL 선택
+
+- 베팅 내역과 포인트 원장은 데이터 정합성과 트랜잭션 일관성이 핵심 요구사항
+- PostgreSQL의 ACID 트랜잭션과 UUID 기반 식별자를 활용해 MSA 환경에서도 전역적으로 일관된 데이터 관리가 가능하다고 판단
+- MongoDB는 트랜잭션 제약이 존재하고, MySQL은 UUID 기반 설계와 복잡한 정산 트랜잭션 처리 과정에서 관리 비용이 높다고 판단해 PostgreSQL을 최종 선택
+
+## 트러블슈팅
+
+- games update의 DB Lock 결정방법
+    
+    (아래 db lock 분석에 상세하게 적혀있습니다)
+    
+    [경기 DB Lock 분석 ](https://www.notion.so/DB-Lock-2ca2dc3ef5148047abb5fde7e23db5ba?pvs=21) 
+    
+    경기 정보를 수정할 때 락이 없어서 **“과거 상태를 동시에 보게 됨”** 이라는 문제에 직면해 Lock을 선택하는 과정이었습니다. 
+    
+    Lock 적용 이전에는, 항상 이전의 상태가 적용되었기에, 동시에 점수가 수정될 경우, update가 소실되는 문제가 발생했습니다. 예를 들어 
+    
+    - 트랜잭션 A: homeScore = 2 , awayScore = 3
+    - 트랜잭션 B: homeScore = 3,  awayScore = 1
+    
+    이 될 경우, 마지막 커밋이 이기는 문제가 발생했으며, 이를 막기 위해 락을 적용하고, 어떤 Lock을 적용하는 것인지 테스팅 및 이론적 비교로 선택했습니다. 
+    
+    각 Lock을 적용해 Jmeter 로 테스팅하며, 비관적 락에는 아래와 같은 테스팅을 적용했습니다. 
+    
+    - 50 Threads / 50 rps
+    - 100 Threads / 100 rps
+    - 200 Threads / 150 rps
+    
+    비관적 락 결과표
+    
+    | 테스트 조건  | 주요 수치  | 해석 |
+    | --- | --- | --- |
+    | 50 Threads/ 50 rps | p95 = 10ms | 락 대기 거의 없음 |
+    | 100 Threads / 100 rps | p 99: 38ms / Max:224  | 일부 요청만 락 대기  |
+    | 200 Threads / 150 rps | p99: 953ms , Error 20.64% | 직렬 처리 한계 도달 |
+    
+    낮은 부하에서는 정합성 + 성능을 모두 만족하지만, 
+    
+    부하가 커질 수록
+    
+    - 평균 응답 시간은 낮으나 꼬리 지연 시간(p99) 급증,
+    - 락 대기 큐로 인해 일부 요청 실패
+    
+    → 안전하게 모든 트랜잭션이 일어나지만 확장성은 낮은 락
+    
+    낙관적 락에는 수치가 아닌 충돌 결과를 봐야했기에 
+    
+     50 Threads / 50 rps 로만 진행했습니다. 
+    
+    낙관적 락 결과표
+    
+    | 조건 | 결과 |
+    | --- | --- |
+    | 50  Threads | 다수의 ObjectOptimisticLockingFailureException |
+    | JMeter | 500 Error |
+    | 서버 로그 | Version 출동 정상 발생 |
+    
+    충돌 발생 시 재시도 로직이 필수적임
+    
+    경기점수 수정 / end 전환의 프로세스는 충돌 시 재시도 의미 없으며, 중복 이벤트의 위험이 증가함
+    
+    ⇒ Game write 도메인에는 부적합하다는 결론 도출
+    
+    결과 도출:
+    
+    1. 낙관적 락은 재시도가 가능한 도메인에만 적합하며, Game의 상태 변경은 재시도보다 단일 확정이 중요함
+    2. Game 도메인의 상태 변경(점수 수정, END 전환)은 반드시 단일 트랜잭션으로 처리되어야 함
+    - 경기 종료는 단 한번만 발생되어야 함
+    - Kafka 이벤트 중복 발행을 방지함
+    - 처리 빈도는 낮고, 정합성이 우선되어야 하는 도메인
+    
+    결론 
+    
+    ⇒ 비관적 락을 채택해 적용함.
+    
+- games CQRS 테스트
+    
+    [경기 도메인 CQRS Jmeter 테스트](https://www.notion.so/CQRS-Jmeter-2c72dc3ef51480d8bad9e86bd1f8a34d?pvs=21) 
+    
+    자세한 방법은 위를 참조해주세요.
+    
+    2가지 테스트를 나눠서 진행, 
+    
+    **테스트 조건**
+    
+    - 1000명 · 1초 · 10회 (총 10,000 요청)
+    - 5000명 · 1초 · 10회 (총 50,000 요청)
+    - 동일 서버 / 동일 JMeter 설정
+    - 차이점: CQRS 적용 여부
+    
+    단건 조회의 경우:
+    
+    (1만회 요청)
+    
+    | 항목 | v1(CQRS X) | v2 (CQRS O) | 해석 |
+    | --- | --- | --- | --- |
+    | Average  | 1817 ms | 1002 ms | 45 % 개선 |
+    | Median | 1638 ms | 1024 ms | 응답 일관성 개선 |
+    | P95 | 3050 ms | 1138 ms | **2.7배 감소** |
+    | Throughput | 510 req/s | 875 req/s | **71% 처리량 증가** |
+    | Error % | 0% | 0.03% | 동일 수준 |
+    - CQRS 적용 후 평균 응답 시간 및 처리량, 꼬리 지연(P95) 크게 개선,
+    - 단건 조회는 쓰기 트랜젝션과 무관하며, Read Model의 장점이 극대화되었음
+    - P95가 크게 감소해 사용자 체감 성능이 향상됨.
+    
+    (5만회 요청)
+    
+    | 항목 | v1(CQRS X) | v2 (CQRS O) | 해석 |
+    | --- | --- | --- | --- |
+    | Average | 6358ms | 6981ms | 평균은 증가 |
+    | P95 | 10277ms | 9174ms | 꼬리 지연 감소 |
+    | P99 | 10845ms | 9609ms | 극단 지연 감소 |
+    | Error % | 1.43% | 0.01% | 안정성 개선 |
+    
+    평균 응답 시간은 느려지나, P95 이상 지연 및 에러율 크게 감소. 고부하 환경에서 CQRS는 속도보다는 안정성을 선택한다는 점을 확인 가능함!
+    
+    종합적으로 단건 조회 파트에서는
+    
+    ⇒ CQRS의 목적인 조회 최적화에 알맞음
+    
+    전체 조회 CQRS 성능 비교
+    
+    (10000회 요청)
+    
+    | 항목 | v1(CQRS X) | v2 (CQRS O) | 해석 |
+    | --- | --- | --- | --- |
+    | Average  | 2489 ms | 1041 ms | 58 % 개선 |
+    | P95 | 4527 ms | 1146 ms | 3,.95배 이상 감소 |
+    | Throughput | 377 req/s | 848 req/s | 2.2 배 증가 |
+    
+    전체 조회에서도 저, 중부하에서는 CQRS의 효과가 매우 크다. 
+    
+    조회 트래픽이 많은 Game에서의 특성과 잘 부합함
+    
+    (50000회 요청)
+    
+    | 항목 | v1(CQRS X) | v2 (CQRS O) | 해석 |
+    | --- | --- | --- | --- |
+    | Average | 6358ms | 4044ms | 36% 개선 |
+    | P95 | 10481ms | 17480ms | 꼬리 증가 |
+    | Error % | 0.06% | 57.57% | Read 과부하 |
+    
+    평균 처리량은 개선되었으나, 캐시 및 Read Replica가 없는 CQRS의 한계로 인해 에러 크게 발생
+    
+    ⇒ 캐시 및 Read 확장을 적용한다면 읽기 효율이 더 증가될 것으로 추정됨.
+    
+    결론 도출 :
+    
+    Game 도메인은 조회 요청이 매우 많고(경기 목록, 경기 상세)쓰기보다 읽기 비중이 높은 도메인입니다. 
+    
+    CQRS 적용 실험 결과, 단건 조회에서는 평균 응답 시간이 최대 58% 개선되고 처리량이 2배 이상 증가해 조회 최적화 목적을 달성했습니다.
+    
+    즉 CQRS의 효과가 가장 잘 드러난 도메인이며, 부하 테스트를 이용한 결과로 실제 서비스에  CQRS를 적용해 성능을 크게 개선했습니다.  
+    
+    추후 고부하 환경에서는 CQRS의 단독 한계를 확인했으며, 캐시 및 Read 확장을 통해 안정된 서비스로 개선하겠습니다. 
+    
+- point 의 DB Lock 결정방법
+    
+    User Balance 변경 비관적 락 적용 이유
+    
+    **User balance는 금전 데이터라 동시성 충돌을 허용할 수 없어서 비관적 락을 사용했습니다.**
+    
+    ![IMG_3015.jpeg](attachment:4b13cbd6-0289-4f29-a543-4053e64c267e:IMG_3015.jpeg)
+    
+    1. 시스템 구조 전체
+    - User 테이블
+        - 실제 사용자의 현재 잔액(balance)을 보유
+        - 실시간으로 값이 바뀌는 핵심 금전 데이터
+    - Point 원장
+        - 잔액 변경 이력을 기록하는 불변 로그
+        - Kafka 이벤트 기반으로 비동기 기록
+    - 트랜잭션 방식
+        - 잔액 변경 실패 시 Kafka 기반 Saga 패턴으로 보상 처리
+    1. User Balance에 동시성 문제가 발생하는 이유
+        - 한 사용자가 동시에 여러 베팅 요청을 보낼 수 있음
+        - 경기 종료 이벤트가 동시에 여러 개 도착할 수 있음
+        - 이 경우
+            - 같은 User row를 동시에 수정
+            - → Lost Update, Double Spend 위험 발생
+        
+        → User balance는 “절대 틀리면 안 되는 값”
+        
+        **낙관적 락이 아닌 비관적 락을 선택한 이유**
+        
+        낙관적 락의 한계
+        
+        - 충돌 발생 시 재시도 필요
+        - 재시도 중:
+            - 잔액 부족 판정 오류
+            - 중복 차감/증가 가능성
+        - 베팅 서비스 특성상
+            - 실패 후 재시도 자체가 비즈니스적으로 위험
+        
+        비관적 락의 장점
+        
+        - User row를 선점 잠금
+        - 한 트랜잭션이 끝날 때까지 다른 요청 차단
+        - 동시성 문제를 사전에 차단
+        - 잔액 차감/증가를 단일 직렬 흐름으로 보장
+        
+        → 금전 데이터에서는 성능보다 정확성이 우선
+        
+        - 비관적 락은 즉시 정합성(Strong Consistency) 담당
+        - Kafka + Saga는 최종 정합성(Eventual Consistency) 담당
+        
+        → 서로 역할이 겹치지 않고 책임이 명확
+        
+        동시 베팅 환경에서 User balance 수정 시 No Lock과 Optimistic Lock은 높은 실패율을 보였고, Distributed Lock은 과도한 지연이 발생했습니다. 반면 비관적 락은 성능 저하 없이 에러율 0%를 기록해, 금전 데이터의 정확성을 가장 안정적으로 보장할 수 있었기 때문에 최종적으로 선택했습니다.
+        
+        성능 차이는 크지 않았지만, 에러율이 0%인 비관적 락만이 금전 도메인 요구사항을 만족했습니다.
+        
+        우리 서비스에서 실제 잔액은 User 테이블에 존재하기 때문에, 동시 베팅이나 경기 종료 이벤트가 겹칠 경우 금액 오류가 발생할 수 있습니다. 금전 데이터는 재시도나 충돌이 허용되지 않기 때문에, 낙관적 락 대신 비관적 락을 적용해 User balance를 직렬화했습니다. 변경 이력은 Kafka 기반 Point 원장으로 비동기 기록하고, 실패 시에는 Saga 패턴으로 보상 처리하여 정확성과 확장성을 동시에 확보했습니다.
+        
+- Kafka 파티셔닝
+    
+    ![경기 종료 후 베팅 정산 및 포인트 기록까지 End-to-End 시간 측정](attachment:237d1102-82ff-483f-b8f8-838d00fd6666:스크린샷_2025-12-22_오전_4.18.35.png)
+    
+    경기 종료 후 베팅 정산 및 포인트 기록까지 End-to-End 시간 측정
+    
+    이벤트가 몰리는 시점에 P95/P99가 10~11초까지  급증
+    
+    이벤트가 동시에 들어왔음에도 불구하고 partition과 consumer 1개 → 완전 직렬 처리
+    
+    대기 시간 + 처리 시간 ⇒ latency ⬆️
+    
+    개별 이벤트의 처리 로직 자체는 크게 느려지지 않고, 평균 처리 시간은 안정적인 편
+    
+    → P95/P99만 증가한 것은 consumer의 병렬성 부족에 의한 것
+    
+    추후 partition / consumer의 개수를 늘려 병렬 처리 필요
+    
+- Redis 결정
+    
+    ![image.png](attachment:5e00e306-168c-4514-9b78-89a4bba6bbbf:image.png)
+    
+    | 지표 | DB 조회 (`조회_DB`) | Redis 조회 (`조회_Redis`) | 향상 내용 |
+    | --- | --- | --- | --- |
+    | Average 응답시간 | 116 ms | 26 ms | **90 ms 단축 (약 4.5배 빠름, 78% 감소)** |
+    | Min 응답시간 | 7 ms | 7 ms | 동일 |
+    | Max 응답시간 | 1776 ms | 150 ms | **1626 ms 단축 (최악 지연 크게 감소)** |
+    | Std. Dev. | 266.69 ms | 19.82 ms | **약 247 ms 감소 (응답 분산 축소)** |
+    | Throughput | 48.0 req/sec | 48.0 req/sec | 동일 부하에서 더 낮은 지연으로 처리 |
+    - 기존에는 RDBMS에만 베팅 내역을 저장·조회하면서, 짧은 시간 동안 동일 사용자 조회가 반복되면 DB에 불필요한 읽기 부하가 집중되는 구조였다.
+    - 베팅 도메인의 특성상 “실시간으로 적재한 데이터를 이후 정산·조회에 반복 활용”하는 패턴이 강해, 반복 조회 데이터를 인메모리 캐시에 적재하는 방식이 적합하다고 판단해 Redis를 도입했다.
+    - 동일 userId에 대한 베팅 내역을 반복 조회한 결과, DB 직접 조회의 평균 응답시간은 116ms인 반면 Redis 캐시 조회는 26ms로 약 4.5배 빠르게 응답했고, 최대 응답시간도 1.7초대에서 150ms 수준으로 크게 줄어들어 피크 지연이 현저히 감소했다.
+    - 표준편차 역시 266ms에서 20ms 수준으로 감소해 응답시간이 훨씬 일정하게 유지되었으며, 동일한 초당 처리량(약 48 req/sec)을 유지하면서 지연만 크게 줄인 점을 고려할 때, Redis 캐시는 읽기 중심 베팅 조회 트래픽을 효과적으로 완충하는 최적화 수단으로 검증되었다.
+    
+- CI/CD 파이프라인
+    
+    **문제 상황**
+    
+    - dev, release 브랜치에 변경이 발생할 경우
+    모든 서비스가 일괄 재배포되도록 파이프라인이 구성되어 있음
+    - 실제로는 수정이 발생하지 않은 서비스까지 재배포되는 비효율 발생
+    
+    ⇒ 변경이 발생한 서비스만 배포할 필요가 있었음
+    
+    **원인**
+    
+    - GitHub Actions 트리거가 **서비스 단위가 아닌 전체 저장소 기준**으로 동작
+    
+    **해결 방법**
+    변경이 발생한 서비스 경로에 대해서만 배포 트리거 설정
+    
+    - betting-service.yml
+    
+    ```yaml
+    name: Betting Service Deploy
+    
+    on:
+      push:
+        paths:
+          - betting-service/**
+        branches: [ main, dev, release ]
+    
+    jobs:
+      deploy:
+        uses: ./.github/workflows/deploy-template.yml
+        with:
+          service: betting-service
+    ```
+    
+    반복되는 작업을 줄이기 위해 배포 템플릿으로 분리
+    
+    - deploy-template.yml
+    
+    ```yaml
+          - name: Docker build & push
+            run: |
+              cd ${{ inputs.service }}
+              docker build -t ${{ inputs.service }} .
+              docker tag ${{ inputs.service }}:latest \
+                ${{ secrets.ECR_URL }}/${{ inputs.service }}:latest
+              docker push ${{ secrets.ECR_URL }}/${{ inputs.service }}:latest
+    ```
+    
+    **결과**
+    
+    변경이 발생한 서비스만 선택적으로 배포 가능
+    
+    전체 재배포로 인한 빌드·배포 시간 및 리소스 낭비 감소
+    
+    **추가로 발생한 문제**
+    
+    하지만 config-server, eureka-server, api-gateway 등의 인프라 서비스 변경 시
+    
+    **해당 설정을 의존하는 모든 비즈니스 서비스 재기동 필요**
+    
+    → 인프라 서비스가 완전히 준비되기 전에 비즈니스 서비스가 먼저 실행되면서
+    
+    **서비스 등록 실패 및 전체 서비스 중단 문제 발생**❗️
+    
+    **현재 대응 방식**
+    
+    ⇒ 인프라 서비스 → 비즈니스 서비스 순으로 배포 및 실행 순서를 명시적으로 제어
+    
+    **추후 블루-그린 등의 무중단 배포 전략 도입 필요(배포 중에도 서비스 가용성 유지 위함)**
+    
+
+## CONTRIBUTORS
+
+| 팀원명 | 포지션 | 담당(개인별 기여점) | 깃허브 링크 |
+| --- | --- | --- | --- |
+| 권용은 | 귀여움 담당 ← 인정을인정합니다 | ▶ Point Domain
+- Point Domain을 CRUD 구조 구현, 포인트 적립, 차감과 조회 책임을 분리하기 위해 CQRS 구조로 전환
+▶ **User balance 동시성 제어 전략 수립**
+- No Lock / Optimistic Lock / Pessimistic Lock / Distributed Lock 비교 실험 설계
+- JMeter 부하 테스트를 통해 성능·에러율 수치화테스트 결과를 근거로 비관적 락(Pessimistic Lock) 최종 채택
+- Error Rate 0% 달성, 금전 데이터 정합성 확보
+▶ **Kafka 기반 Saga 패턴 구현**
+- 잔액 변경을 Kafka 이벤트로 비동기 처리잔액 변경을
+Kafka 이벤트로 비동기 처리
+- DB 실패 시 보상 트랜잭션(Saga) 구현 | https://github.com/rlooko |
+| 김주영 |  | ▶ Batting Domain
+- Betting CRUD
+- 성능을 위해 Redis 구현
+- 게임 결과 Kafka로 받은 후 배당률에 따라 승리포인트 제공 요청 회원에게 포인트 변경 Kafka로 요청 
+▶프로젝트 배포를 위한 Docker 기반 실행 환경 설정 파일(Dockerfile, docker-compose)을 구성
+-
+- |  |
+| 김진현 | 팀원 | ▶ Games Domain
+- Games CRUD
+- Jmeter 테스팅을 통해 CQRS 적용
+- 게임이 끝나면 Kafka를 통해 경기결과를 베팅 도메인에 전송함
+- DB Lock 테스팅을 통한 락 전략 구현
+- 코드 리팩토링
+▶ Docker 파일 및 배포파일 사전세팅
+ |  |
+| 최은서 | 팀장 | ▶ User Domain 
+- JWT 기반 인증·인가 서비스 설계 및 개발 
+- Spring Cloud Gateway 기반 JWT 검증 및 라우팅
+- 사용자 정보 관리 기능 구현 및 Kafka 이벤트를 통한 포인트 잔액 동기화 구조 설계
+▶ 모니터링 시스템
+- Prometheus와 Grafana를 활용한 서비스별 메트릭 수집 및 대시보드 구성
+▶ CI/CD
+- ECR, EC2 기반 서비스 배포
+- Github Actions를 활용한 CI/CD 파이프라인 구축 | https://github.com/Cho2unseo |

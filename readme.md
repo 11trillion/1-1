@@ -37,7 +37,7 @@
 | --- | --- | --- | --- |
 | 권용은 | 팀원 | ▶ **Point Domain** <br> - Point Domain을 CRUD 구조 구현, 포인트 적립, 차감과 조회 책임을 분리하기 위해 CQRS 구조로 전환 <br> ▶ **User balance 동시성 제어 전략 수립** <br> - No Lock / Optimistic Lock / Pessimistic Lock / Distributed Lock 비교 실험 설계 <br> - JMeter 부하 테스트를 통해 성능·에러율 수치화테스트 결과를 근거로 비관적 락(Pessimistic Lock) 최종 채택 <br> - Error Rate 0% 달성, 금전 데이터 정합성 확보 <br> ▶ **Kafka 기반 Saga 패턴 구현** <br> - 잔액 변경을 Kafka 이벤트로 비동기 처리 <br> - DB 실패 시 보상 트랜잭션(Saga) 구현 | https://github.com/rlooko |
 | 김주영 | 팀원 | ▶ **Betting Domain** <br> - Betting CRUD <br> - 성능을 위해 Redis 구현 <br> - 게임 결과 Kafka로 받은 후 배당률에 따라 승리포인트 제공 요청 회원에게 포인트 변경 Kafka로 요청 <br> ▶ **프로젝트 배포를 위한 Docker 기반 실행 환경 설정 파일(Dockerfile, docker-compose)을 구성** |  |
-| 김진현 | 팀원 | ▶ **Games Domain** <br> - Games CRUD <br> - Jmeter 테스팅을 통해 CQRS 적용 <br> - 게임이 끝나면 Kafka를 통해 경기결과를 베팅 도메인에 전송함 <br> - DB Lock 테스팅을 통한 락 전략 구현 <br> - 코드 리팩토링 <br> ▶ **Docker 파일 및 배포파일 사전세팅** |  |
+| 김진현 | 팀원 | ▶ **Games Domain** <br> - Games CRUD <br> - Jmeter 테스팅을 통해 CQRS 적용 <br> - 게임이 끝나면 Kafka를 통해 경기결과를 베팅 도메인에 전송함 <br> - DB Lock 테스팅을 통한 락 전략 구현 <br> - 코드 리팩토링 <br> ▶ **Docker 파일 및 배포파일 사전세팅** | https://github.com/rollingball211 |
 | 최은서 | 팀장 | ▶ **User Domain** <br> - JWT 기반 인증·인가 서비스 설계 및 개발 <br> - Spring Cloud Gateway 기반 JWT 검증 및 라우팅 <br> - 사용자 정보 관리 기능 구현 및 Kafka 이벤트를 통한 포인트 잔액 동기화 구조 설계 <br> ▶ **모니터링 시스템** <br> - Prometheus와 Grafana를 활용한 서비스별 메트릭 수집 및 대시보드 구성 <br> ▶ **CI/CD** <br> - ECR, EC2 기반 서비스 배포 <br> - Github Actions를 활용한 CI/CD 파이프라인 구축 | https://github.com/Cho2unseo |
 
 
